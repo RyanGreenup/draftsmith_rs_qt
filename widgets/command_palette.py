@@ -36,16 +36,17 @@ class CommandPalette(PopupPalette):
             return None
             
         # Create display text with action name and description
-        display_text = f"{action.text()}"
+        display_text = action.text()
         if action.statusTip():
-            display_text = f"{action.text():20} • {action.statusTip()}"
+            # Use a wider space for the action name and add a subtle separator
+            display_text = f"{action.text():<30} • {action.statusTip()}"
             
         item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, action)
         
         # Style the item
-        font = item.font()
-        font.setPointSize(10)
+        font = QFont()
+        font.setPointSize(11)
         item.setFont(font)
         
         return item

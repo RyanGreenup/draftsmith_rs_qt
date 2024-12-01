@@ -1,34 +1,95 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QListWidget
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QListWidget, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtGui import QKeyEvent, QColor, QPalette, QFont
 
 class PopupPalette(QWidget):
     """Base class for popup command palettes"""
     
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowType.Popup)
+        self.setMinimumWidth(500)  # Set minimum width
+        self.setMaximumHeight(400)  # Set maximum height
+        
+        # Set window background
+        palette = self.palette()
+        palette.setColor(QPalette.ColorRole.Window, QColor(45, 45, 45))
+        palette.setColor(QPalette.ColorRole.Base, QColor(60, 60, 60))
+        palette.setColor(QPalette.ColorRole.Text, QColor(200, 200, 200))
+        palette.setColor(QPalette.ColorRole.PlaceholderText, QColor(130, 130, 130))
+        self.setPalette(palette)
+        
         self.setup_ui()
         
     def setup_ui(self):
         """Initialize the UI components"""
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
         
-        # Search input
+        # Search input styling
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Type to search...")
         self.search_input.textChanged.connect(self.on_search)
+        search_font = QFont()
+        search_font.setPointSize(12)
+        self.search_input.setFont(search_font)
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                padding: 8px;
+                border: none;
+                border-radius: 4px;
+                background-color: #404040;
+                color: #E0E0E0;
+            }
+            QLineEdit:focus {
+                background-color: #454545;
+            }
+        """)
         layout.addWidget(self.search_input)
         
-        # Results list
+        # Results list styling
         self.results_list = QListWidget()
         self.results_list.itemActivated.connect(self.on_item_activated)
+        self.results_list.setStyleSheet("""
+            QListWidget {
+                border: none;
+                border-radius: 4px;
+                background-color: #404040;
+                color: #E0E0E0;
+                padding: 4px;
+            }
+            QListWidget::item {
+                padding: 8px;
+                border-radius: 4px;
+            }
+            QListWidget::item:selected {
+                background-color: #2979ff;
+                color: white;
+            }
+            QListWidget::item:hover:!selected {
+                background-color: #505050;
+            }
+        """)
         layout.addWidget(self.results_list)
         
         self.setLayout(layout)
         
     def show_palette(self):
         """Show the palette and focus the search input"""
+        # Add drop shadow
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 160))
+        shadow.setOffset(0, 2)
+        self.setGraphicsEffect(shadow)
+        
+        # Center the palette on screen
+        screen = self.screen().geometry()
+        self.move(
+            screen.center().x() - self.width() // 2,
+            screen.center().y() - self.height() // 2
+        )
+        
         self.show()
         self.search_input.setFocus()
         self.search_input.clear()
