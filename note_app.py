@@ -47,27 +47,28 @@ class NoteApp(QMainWindow):
                 self.text_edit.clear()
 
     def add_dummy_data(self):
-        categories = {
-            "Work": [
+        notes_hierarchy = {
+            Note("Work", "General work-related notes and tasks"): [
                 Note("Meeting Notes", "Meeting agenda:\n1. Project updates\n2. Timeline review"),
                 Note("Project Ideas", "New features to implement:\n- Dark mode\n- Auto-save"),
                 Note("To-Do List", "- Send report\n- Update documentation")
             ],
-            "Personal": [
+            Note("Personal", "My personal notes and plans"): [
                 Note("Shopping List", "- Groceries\n- Household items"),
                 Note("Travel Plans", "Places to visit:\n1. Paris\n2. Tokyo"),
                 Note("Goals", "2024 Goals:\n1. Learn Python\n2. Exercise more")
             ]
         }
         
-        for category, notes in categories.items():
-            category_item = QTreeWidgetItem(self.tree)
-            category_item.setText(0, category)
+        for parent_note, child_notes in notes_hierarchy.items():
+            parent_item = QTreeWidgetItem(self.tree)
+            parent_item.setText(0, parent_note.title)
+            parent_item.setData(0, Qt.UserRole, parent_note)
             
-            for note in notes:
-                note_item = QTreeWidgetItem(category_item)
-                note_item.setText(0, note.title)
-                note_item.setData(0, Qt.UserRole, note)
+            for child_note in child_notes:
+                child_item = QTreeWidgetItem(parent_item)
+                child_item.setText(0, child_note.title)
+                child_item.setData(0, Qt.UserRole, child_note)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
