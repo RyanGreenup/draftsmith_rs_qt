@@ -12,6 +12,7 @@ class NoteApp(QMainWindow):
 
         # Create main splitter
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.splitter.setHandleWidth(10)  # Increase handle width
 
         # Create tree widget for sidebar
         self.tree = NotesTreeWidget()
@@ -34,6 +35,7 @@ class NoteApp(QMainWindow):
 
         # Create a new splitter for the right sidebar
         self.right_splitter = QSplitter(Qt.Orientation.Vertical)
+        self.right_splitter.setHandleWidth(10)  # Increase handle width
         self.right_splitter.addWidget(self.tags_tree)
         self.right_splitter.addWidget(self.additional_tree)
 
