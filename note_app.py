@@ -61,7 +61,7 @@ class NoteApp(QMainWindow):
         self.setGeometry(100, 100, 1000, 600)
 
         # Create main splitter
-        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter = QSplitter(Qt.Orientation.Horizontal)
 
         # Create tree widget for sidebar
         self.tree = NotesTreeWidget()
