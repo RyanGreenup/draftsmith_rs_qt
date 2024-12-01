@@ -7,17 +7,18 @@ from .notes_tree import NotesTreeWidget
 class NoteApp(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.handle_size = 20
         self.setWindowTitle("Note Taking App")
         self.setGeometry(100, 100, 1000, 600)
 
         # Create main splitter
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.splitter.setHandleWidth(10)  # Increase handle width
+        self.splitter.setHandleWidth(self.handle_size)
 
         # Create tree widget for sidebar
         self.tree = NotesTreeWidget()
         self.tree.setHeaderLabel("Notes")
-        self.tree.setMinimumWidth(200)
+        self.tree.setMinimumWidth(100)
         self.tree.itemSelectionChanged.connect(self.on_selection_changed)
 
         # Create text edit for main content
@@ -26,7 +27,7 @@ class NoteApp(QMainWindow):
         # Create tags tree widget for sidebar
         self.tags_tree = NotesTreeWidget()
         self.tags_tree.setHeaderLabel("Tags")
-        self.tags_tree.setMinimumWidth(200)
+        self.tags_tree.setMinimumWidth(100)
 
         # Create additional tree widget for sidebar
         self.additional_tree = NotesTreeWidget()
@@ -35,7 +36,7 @@ class NoteApp(QMainWindow):
 
         # Create a new splitter for the right sidebar
         self.right_splitter = QSplitter(Qt.Orientation.Vertical)
-        self.right_splitter.setHandleWidth(10)  # Increase handle width
+        self.right_splitter.setHandleWidth(self.handle_size)
         self.right_splitter.addWidget(self.tags_tree)
         self.right_splitter.addWidget(self.additional_tree)
 
