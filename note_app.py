@@ -8,29 +8,41 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QKeyEvent
+from typing import Optional, Union
+from enum import IntEnum
 import sys
+
+class Key(IntEnum):
+    """Define key constants to satisfy type checker"""
+    Key_J = Qt.Key.Key_J
+    Key_K = Qt.Key.Key_K
+    Key_Space = Qt.Key.Key_Space
+    Key_Right = Qt.Key.Key_Right
+    Key_Left = Qt.Key.Key_Left
+    Key_Down = Qt.Key.Key_Down
+    Key_Up = Qt.Key.Key_Up
 
 
 class NotesTreeWidget(QTreeWidget):
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_J:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Key.Key_J:
             # Create a new QKeyEvent for Down key
-            new_event = QKeyEvent(QEvent.KeyPress, Qt.Key_Down, event.modifiers())
+            new_event = QKeyEvent(QEvent.Type.KeyPress, Key.Key_Down, event.modifiers())
             super().keyPressEvent(new_event)
 
-        elif event.key() == Qt.Key_K:
+        elif event.key() == Key.Key_K:
             # Create a new QKeyEvent for Up key
-            new_event = QKeyEvent(QEvent.KeyPress, Qt.Key_Up, event.modifiers())
+            new_event = QKeyEvent(QEvent.Type.KeyPress, Key.Key_Up, event.modifiers())
             super().keyPressEvent(new_event)
 
-        elif event.key() in (Qt.Key_Space, Qt.Key_Right, Qt.Key_Left):
+        elif event.key() in (Key.Key_Space, Key.Key_Right, Key.Key_Left):
             current = self.currentItem()
             if current:
-                if event.key() == Qt.Key_Left:
+                if event.key() == Key.Key_Left:
                     current.setExpanded(False)
-                elif event.key() == Qt.Key_Right:
+                elif event.key() == Key.Key_Right:
                     current.setExpanded(True)
-                elif event.key() == Qt.Key_Space:
+                elif event.key() == Key.Key_Space:
                     current.setExpanded(not current.isExpanded())
         else:
             super().keyPressEvent(event)
