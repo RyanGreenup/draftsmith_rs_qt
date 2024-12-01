@@ -1,33 +1,37 @@
 from PySide6.QtWidgets import QMenu, QApplication, QStyle
 from PySide6.QtGui import QAction
+from typing import Dict, Tuple
 
-def create_file_menu(parent):
-    "Create a file menu with dummy actions"
+def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
+    "Create a file menu with actions and return both menu and actions dictionary"
 
     file_menu = QMenu("File", parent)
+    actions = {}
     
     style = QApplication.style()
+    
+    # New action
     new_icon = style.standardIcon(QStyle.SP_FileDialogNewFolder)
-    new_action = QAction(new_icon, "New", parent)
-    new_action.setShortcut("Ctrl+N")
-    file_menu.addAction(new_action)
+    actions['new'] = QAction(new_icon, "New", parent)
+    actions['new'].setShortcut("Ctrl+N")
+    file_menu.addAction(actions['new'])
 
-    style = QApplication.style()
+    # Open action
     open_icon = style.standardIcon(QStyle.SP_DialogOpenButton)
-    open_action = QAction(open_icon, "Open", parent)
-    open_action.setShortcut("Ctrl+O")
-    file_menu.addAction(open_action)
+    actions['open'] = QAction(open_icon, "Open", parent)
+    actions['open'].setShortcut("Ctrl+O")
+    file_menu.addAction(actions['open'])
 
-    style = QApplication.style()
+    # Save action
     save_icon = style.standardIcon(QStyle.SP_DialogSaveButton)
-    save_action = QAction(save_icon, "Save", parent)
-    save_action.setShortcut("Ctrl+S")
-    file_menu.addAction(save_action)
+    actions['save'] = QAction(save_icon, "Save", parent)
+    actions['save'].setShortcut("Ctrl+S")
+    file_menu.addAction(actions['save'])
 
-    style = QApplication.style()
+    # Exit action
     exit_icon = style.standardIcon(QStyle.SP_DialogCloseButton)
-    exit_action = QAction(exit_icon, "Exit", parent)
-    exit_action.setShortcut("Ctrl+Q")
-    file_menu.addAction(exit_action)
+    actions['exit'] = QAction(exit_icon, "Exit", parent)
+    actions['exit'].setShortcut("Ctrl+Q")
+    file_menu.addAction(actions['exit'])
 
-    return file_menu
+    return file_menu, actions
