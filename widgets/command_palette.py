@@ -12,11 +12,15 @@ class CommandPalette(PopupPalette):
         self.search_input.setPlaceholderText("Type command...")
         
     def populate_actions(self, menubar):
-        """Collect all actions from the menubar"""
+        """Collect all actions from the menubar's menus"""
         self.actions.clear()
+        # Get all top-level menus
         for menu in menubar.findChildren(QAction):
-            if menu.text():  # Skip empty actions
-                self.actions.append(menu)
+            if hasattr(menu, 'menu') and menu.menu():
+                # For each menu, get its actions
+                for action in menu.menu().actions():
+                    if action.text() and not action.menu():  # Skip empty actions and submenus
+                        self.actions.append(action)
                 
     def get_all_items(self):
         """Get all actions"""
