@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QListWidget
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeyEvent
 
 class PopupPalette(QWidget):
     """Base class for popup command palettes"""
@@ -39,6 +40,10 @@ class PopupPalette(QWidget):
             if list_item:
                 self.results_list.addItem(list_item)
         
+        # Select first item by default
+        if self.results_list.count() > 0:
+            self.results_list.setCurrentRow(0)
+        
     def get_all_items(self):
         """Get all items to be shown in the palette.
         To be implemented by subclasses."""
@@ -66,6 +71,25 @@ class PopupPalette(QWidget):
         """Filter items based on search text.
         To be implemented by subclasses."""
         pass
+        
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Handle keyboard navigation"""
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            current_row = self.results_list.currentRow()
+            
+            if event.key() == Qt.Key.Key_N:  # Next item
+                if current_row < self.results_list.count() - 1:
+                    self.results_list.setCurrentRow(current_row + 1)
+                event.accept()
+                return
+                
+            elif event.key() == Qt.Key.Key_P:  # Previous item
+                if current_row > 0:
+                    self.results_list.setCurrentRow(current_row - 1)
+                event.accept()
+                return
+                
+        super().keyPressEvent(event)
         
     def on_item_activated(self, item):
         """Handle item selection"""
