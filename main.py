@@ -22,11 +22,11 @@ if __name__ == "__main__":
         app.setStyleSheet(file.read())
 
     # Add file menu
-    file_menu = create_file_menu(window.menuBar())
+    file_menu, actions = create_file_menu(window.menuBar())
     window.menuBar().addMenu(file_menu)
 
     # Add toolbar
-    toolbar = create_toolbar(window)
+    toolbar = create_toolbar(window, actions)
     window.addToolBar(toolbar)
 
     window.show()
