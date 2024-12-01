@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMenu, QApplication, QStyle
 from PySide6.QtGui import QAction
+from PySide6.QtCore import QCoreApplication
 from typing import Dict, Tuple
 
 def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
@@ -41,5 +42,6 @@ def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     actions['exit'].setStatusTip("Exit the application")
     actions['exit'].setToolTip("Exit the application") 
     file_menu.addAction(actions['exit'])
+    actions['exit'].triggered.connect(QCoreApplication.instance().quit)
 
     return file_menu, actions
