@@ -63,9 +63,12 @@ class PopupPalette(QWidget):
                 list_item = self.create_list_item(item_data)
                 if list_item:
                     self.results_list.addItem(list_item)
-            return
+        else:
+            self.filter_items(text)
             
-        self.filter_items(text)
+        # Select first item if any exist
+        if self.results_list.count() > 0:
+            self.results_list.setCurrentRow(0)
     
     def filter_items(self, text):
         """Filter items based on search text.
