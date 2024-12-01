@@ -18,10 +18,8 @@ if __name__ == "__main__":
     window = NoteApp()
 
     # Load and apply the stylesheet
-    with QFile("ui/styles/style.qss") as file:
-        file.open(QFile.ReadOnly | QFile.Text)
-        stream = QTextStream(file)
-        app.setStyleSheet(stream.readAll())
+    with open("ui/styles/style.qss", "r") as file:
+        app.setStyleSheet(file.read())
 
     # Add file menu
     file_menu = create_file_menu(window.menuBar())
