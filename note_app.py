@@ -20,7 +20,7 @@ class NotesTreeWidget(QTreeWidget):
                 else:  # Item is top level
                     if index < self.topLevelItemCount() - 1:
                         self.setCurrentItem(self.topLevelItem(index + 1))
-        
+    
         elif event.key() == Qt.Key_K:
             current = self.currentItem()
             if current:
@@ -34,14 +34,17 @@ class NotesTreeWidget(QTreeWidget):
                 else:  # Item is top level
                     if index > 0:
                         self.setCurrentItem(self.topLevelItem(index - 1))
-        
-        elif event.key() == Qt.Key_Tab:
+    
+        elif event.key() in (Qt.Key_Space, Qt.Key_Right, Qt.Key_Left):
             current = self.currentItem()
             if current:
-                if current.isExpanded():
+                # Right arrow or Space expands, Left arrow collapses
+                if event.key() == Qt.Key_Left:
                     current.setExpanded(False)
-                else:
+                elif event.key() == Qt.Key_Right:
                     current.setExpanded(True)
+                elif event.key() == Qt.Key_Space:
+                    current.setExpanded(not current.isExpanded())
         else:
             super().keyPressEvent(event)
 
