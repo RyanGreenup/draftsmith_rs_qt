@@ -33,6 +33,12 @@ class PopupPalette(QWidget):
         self.search_input.clear()
         self.results_list.clear()
         
+        # Show all items initially
+        for item_data in self.get_all_items():
+            list_item = self.create_list_item(item_data)
+            if list_item:
+                self.results_list.addItem(list_item)
+        
     def get_all_items(self):
         """Get all items to be shown in the palette.
         To be implemented by subclasses."""
