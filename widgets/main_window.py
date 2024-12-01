@@ -22,9 +22,15 @@ class NoteApp(QMainWindow):
         # Create text edit for main content
         self.text_edit = QTextEdit()
 
+        # Create tags tree widget for sidebar
+        self.tags_tree = NotesTreeWidget()
+        self.tags_tree.setHeaderLabel("Tags")
+        self.tags_tree.setMinimumWidth(200)
+
         # Add widgets to splitter
         self.splitter.addWidget(self.tree)
         self.splitter.addWidget(self.text_edit)
+        self.splitter.addWidget(self.tags_tree)
 
         # Set splitter as central widget
         self.setCentralWidget(self.splitter)
