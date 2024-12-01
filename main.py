@@ -1,6 +1,5 @@
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QFile
-from PySide6.QtGui import QTextStream
+from PySide6.QtCore import QFile, QTextStream
 import sys
 from ui.menu_manager import create_file_menu
 from ui.toolbar_manager import create_toolbar
