@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QTreeWidget
+from PySide6.QtWidgets import QTreeWidget, QApplication
+from PySide6.QtCore import QEvent, Qt
 from PySide6.QtCore import QEvent
 from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
@@ -8,6 +9,13 @@ from utils.key_constants import Key
 
 
 class NotesTreeWidget(QTreeWidget):
+    def cycle_fold_level_of_all_items(self):
+        """Cycle the fold level of all items in the tree."""
+        current_state = self.isExpanded(self.topLevelItem(0))
+        for i in range(self.topLevelItemCount()):
+            item = self.topLevelItem(i)
+            item.setExpanded(not current_state)
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Key.Key_J:
             # Create a new QKeyEvent for Down key
