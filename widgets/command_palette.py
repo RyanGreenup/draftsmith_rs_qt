@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QListWidgetItem
+from PySide6.QtWidgets import QListWidgetItem, QMainWindow
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction
 from .popup_palette import PopupPalette
@@ -10,6 +10,10 @@ class CommandPalette(PopupPalette):
         super().__init__(parent)
         self.actions = []
         self.search_input.setPlaceholderText("Type command...")
+        self.main_window = self.get_main_window()
+        
+        # Connect selection change signal
+        self.results_list.currentItemChanged.connect(self.on_selection_changed)
         
     def populate_actions(self, menubar):
         """Collect all actions from the menubar's menus"""
@@ -56,9 +60,27 @@ class CommandPalette(PopupPalette):
                 if item:
                     self.results_list.addItem(item)
                 
+    def get_main_window(self):
+        """Get reference to main window"""
+        parent = self.parent()
+        while parent is not None:
+            if isinstance(parent, QMainWindow):
+                return parent
+            parent = parent.parent()
+        return None
+
+    def on_selection_changed(self, current, previous):
+        """Update status bar when selection changes"""
+        if current and self.main_window:
+            action = current.data(Qt.ItemDataRole.UserRole)
+            if action and action.statusTip():
+                self.main_window.statusBar().showMessage(action.statusTip())
+
     def on_item_activated(self, item):
         """Trigger the selected action"""
         action = item.data(Qt.ItemDataRole.UserRole)
         if action and action.isEnabled():
             action.trigger()
+        if self.main_window:
+            self.main_window.statusBar().showMessage("Ready")
         self.hide()
