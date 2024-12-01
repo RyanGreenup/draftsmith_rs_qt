@@ -12,8 +12,10 @@ from typing import Optional, Union
 from enum import IntEnum
 import sys
 
+
 class Key(IntEnum):
     """Define key constants to satisfy type checker"""
+
     Key_J = Qt.Key.Key_J
     Key_K = Qt.Key.Key_K
     Key_Space = Qt.Key.Key_Space
