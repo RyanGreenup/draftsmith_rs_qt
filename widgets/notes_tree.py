@@ -34,8 +34,10 @@ class NotesTreeWidget(QTreeWidget):
                     current.setExpanded(False)
                 elif event.key() == Key.Key_Right:
                     current.setExpanded(True)
-                elif event.key() == Key.Key_Space:
+                elif event.key() == Key.Key_Space and not event.modifiers() & Qt.ShiftModifier:
                     current.setExpanded(not current.isExpanded())
+                elif event.key() == Key.Key_Space and event.modifiers() & Qt.ShiftModifier:
+                    self.cycle_fold_level_of_all_items()
         else:
             super().keyPressEvent(event)
 
