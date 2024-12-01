@@ -1,44 +1,24 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, 
                              QTreeWidget, QTreeWidgetItem, QTextEdit)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QEvent
+from PySide6.QtGui import QKeyEvent
 import sys
 
 class NotesTreeWidget(QTreeWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_J:
-            # Get current item
-            current = self.currentItem()
-            if current:
-                # Get index of current item
-                index = self.indexOfTopLevelItem(current)
-                if index == -1:  # Item is not top level
-                    parent = current.parent()
-                    index = parent.indexOfChild(current)
-                    # Get next item
-                    if index < parent.childCount() - 1:
-                        self.setCurrentItem(parent.child(index + 1))
-                else:  # Item is top level
-                    if index < self.topLevelItemCount() - 1:
-                        self.setCurrentItem(self.topLevelItem(index + 1))
-    
+            # Create a new QKeyEvent for Down key
+            new_event = QKeyEvent(QEvent.KeyPress, Qt.Key_Down, event.modifiers())
+            super().keyPressEvent(new_event)
+        
         elif event.key() == Qt.Key_K:
-            current = self.currentItem()
-            if current:
-                index = self.indexOfTopLevelItem(current)
-                if index == -1:  # Item is not top level
-                    parent = current.parent()
-                    index = parent.indexOfChild(current)
-                    # Get previous item
-                    if index > 0:
-                        self.setCurrentItem(parent.child(index - 1))
-                else:  # Item is top level
-                    if index > 0:
-                        self.setCurrentItem(self.topLevelItem(index - 1))
-    
+            # Create a new QKeyEvent for Up key
+            new_event = QKeyEvent(QEvent.KeyPress, Qt.Key_Up, event.modifiers())
+            super().keyPressEvent(new_event)
+        
         elif event.key() in (Qt.Key_Space, Qt.Key_Right, Qt.Key_Left):
             current = self.currentItem()
             if current:
-                # Right arrow or Space expands, Left arrow collapses
                 if event.key() == Qt.Key_Left:
                     current.setExpanded(False)
                 elif event.key() == Qt.Key_Right:
