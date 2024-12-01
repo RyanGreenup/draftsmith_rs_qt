@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QListWidgetItem, QMainWindow
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Key
 from PySide6.QtGui import QAction
 from .popup_palette import PopupPalette
 
@@ -84,3 +84,13 @@ class CommandPalette(PopupPalette):
         if self.main_window:
             self.main_window.statusBar().showMessage("Ready")
         self.hide()
+
+    def keyPressEvent(self, event):
+        """Handle key press events"""
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            current_item = self.results_list.currentItem()
+            if current_item:
+                self.on_item_activated(current_item)
+        else:
+            # Let parent class handle other keys
+            super().keyPressEvent(event)
