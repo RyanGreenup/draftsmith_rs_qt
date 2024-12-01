@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem
+from PySide6.QtWidgets import QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem, QStatusBar
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from models.note import Note
@@ -8,6 +8,11 @@ from .notes_tree import NotesTreeWidget
 class NoteApp(QMainWindow):
     def __init__(self):
         super().__init__()
+        # Create and set status bar
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        self.status_bar.showMessage("Ready")
+        
         self.handle_size = 20
         self.setWindowTitle("Note Taking App")
         self.setGeometry(100, 100, 1000, 600)
