@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QMenu, QAction
+from PySide6.QtWidgets import QMenu
+from PySide6.QtGui import QAction
 
 def create_file_menu(parent):
     "Create a file menu with dummy actions"
