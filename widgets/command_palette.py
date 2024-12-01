@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QListWidgetItem, QAction
+from PySide6.QtCore import Qt
 from .popup_palette import PopupPalette
 
 class CommandPalette(PopupPalette):
