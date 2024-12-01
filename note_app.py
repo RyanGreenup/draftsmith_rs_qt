@@ -3,6 +3,48 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter,
 from PySide6.QtCore import Qt
 import sys
 
+class NotesTreeWidget(QTreeWidget):
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_J:
+            # Get current item
+            current = self.currentItem()
+            if current:
+                # Get index of current item
+                index = self.indexOfTopLevelItem(current)
+                if index == -1:  # Item is not top level
+                    parent = current.parent()
+                    index = parent.indexOfChild(current)
+                    # Get next item
+                    if index < parent.childCount() - 1:
+                        self.setCurrentItem(parent.child(index + 1))
+                else:  # Item is top level
+                    if index < self.topLevelItemCount() - 1:
+                        self.setCurrentItem(self.topLevelItem(index + 1))
+        
+        elif event.key() == Qt.Key_K:
+            current = self.currentItem()
+            if current:
+                index = self.indexOfTopLevelItem(current)
+                if index == -1:  # Item is not top level
+                    parent = current.parent()
+                    index = parent.indexOfChild(current)
+                    # Get previous item
+                    if index > 0:
+                        self.setCurrentItem(parent.child(index - 1))
+                else:  # Item is top level
+                    if index > 0:
+                        self.setCurrentItem(self.topLevelItem(index - 1))
+        
+        elif event.key() == Qt.Key_Tab:
+            current = self.currentItem()
+            if current:
+                if current.isExpanded():
+                    current.setExpanded(False)
+                else:
+                    current.setExpanded(True)
+        else:
+            super().keyPressEvent(event)
+
 class Note:
     def __init__(self, title, content=""):
         self.title = title
@@ -18,7 +60,7 @@ class NoteApp(QMainWindow):
         self.splitter = QSplitter(Qt.Horizontal)
         
         # Create tree widget for sidebar
-        self.tree = QTreeWidget()
+        self.tree = NotesTreeWidget()
         self.tree.setHeaderLabel("Notes")
         self.tree.setMinimumWidth(200)
         self.tree.itemSelectionChanged.connect(self.on_selection_changed)
