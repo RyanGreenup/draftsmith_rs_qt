@@ -11,10 +11,13 @@ from utils.key_constants import Key
 class NotesTreeWidget(QTreeWidget):
     def cycle_fold_level_of_all_items(self):
         """Cycle the fold level of all items in the tree."""
-        current_state = self.isExpanded(self.topLevelItem(0))
-        for i in range(self.topLevelItemCount()):
-            item = self.topLevelItem(i)
-            item.setExpanded(not current_state)
+        if self.topLevelItemCount() > 0:
+            index = self.indexFromItem(self.topLevelItem(0))
+            current_state = self.isExpanded(index)
+            for i in range(self.topLevelItemCount()):
+                item = self.topLevelItem(i)
+                index = self.indexFromItem(item)
+                item.setExpanded(not current_state)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Key.Key_J:
