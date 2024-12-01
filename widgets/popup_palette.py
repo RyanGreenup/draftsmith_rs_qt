@@ -33,9 +33,32 @@ class PopupPalette(QWidget):
         self.search_input.clear()
         self.results_list.clear()
         
+    def get_all_items(self):
+        """Get all items to be shown in the palette.
+        To be implemented by subclasses."""
+        return []
+
+    def create_list_item(self, data):
+        """Create a list widget item from the data.
+        To be implemented by subclasses."""
+        pass
+
     def on_search(self, text):
         """Handle search text changes"""
-        # To be implemented by subclasses
+        self.results_list.clear()
+        
+        if not text.strip():  # Show all items when search is empty
+            for item_data in self.get_all_items():
+                list_item = self.create_list_item(item_data)
+                if list_item:
+                    self.results_list.addItem(list_item)
+            return
+            
+        self.filter_items(text)
+    
+    def filter_items(self, text):
+        """Filter items based on search text.
+        To be implemented by subclasses."""
         pass
         
     def on_item_activated(self, item):

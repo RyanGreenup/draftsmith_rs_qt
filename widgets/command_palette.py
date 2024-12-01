@@ -18,17 +18,27 @@ class CommandPalette(PopupPalette):
             if menu.text():  # Skip empty actions
                 self.actions.append(menu)
                 
-    def on_search(self, text):
+    def get_all_items(self):
+        """Get all actions"""
+        return [action for action in self.actions if action.text()]
+
+    def create_list_item(self, action):
+        """Create a list item from an action"""
+        if not action.text():
+            return None
+        item = QListWidgetItem(action.text())
+        item.setData(Qt.ItemDataRole.UserRole, action)
+        return item
+
+    def filter_items(self, text):
         """Filter actions based on search text"""
-        self.results_list.clear()
         search_terms = text.lower().split()
-        
         for action in self.actions:
             action_text = action.text().lower()
             if all(term in action_text for term in search_terms):
-                item = QListWidgetItem(action.text())
-                item.setData(Qt.ItemDataRole.UserRole, action)
-                self.results_list.addItem(item)
+                item = self.create_list_item(action)
+                if item:
+                    self.results_list.addItem(item)
                 
     def on_item_activated(self, item):
         """Trigger the selected action"""
