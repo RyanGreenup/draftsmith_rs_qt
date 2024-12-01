@@ -67,17 +67,35 @@ class NoteApp(QMainWindow):
                 Note(
                     "Meeting Notes",
                     "Meeting agenda:\n1. Project updates\n2. Timeline review",
-                ),
+                ): [
+                    Note("Agenda Item 1", "Discuss project timeline"),
+                    Note("Agenda Item 2", "Review milestones"),
+                ],
                 Note(
                     "Project Ideas",
                     "New features to implement:\n- Dark mode\n- Auto-save",
-                ),
-                Note("To-Do List", "- Send report\n- Update documentation"),
+                ): [
+                    Note("Dark Mode", "Implement dark theme for the app"),
+                    Note("Auto-Save", "Add auto-save functionality"),
+                ],
+                Note("To-Do List", "- Send report\n- Update documentation"): [
+                    Note("Report", "Prepare and send project report"),
+                    Note("Documentation", "Update user manual"),
+                ],
             ],
             Note("Personal", "My personal notes and plans"): [
-                Note("Shopping List", "- Groceries\n- Household items"),
-                Note("Travel Plans", "Places to visit:\n1. Paris\n2. Tokyo"),
-                Note("Goals", "2024 Goals:\n1. Learn Python\n2. Exercise more"),
+                Note("Shopping List", "- Groceries\n- Household items"): [
+                    Note("Groceries", "Milk, Bread, Eggs"),
+                    Note("Household Items", "Cleaning supplies, Towels"),
+                ],
+                Note("Travel Plans", "Places to visit:\n1. Paris\n2. Tokyo"): [
+                    Note("Paris", "Visit Eiffel Tower, Louvre Museum"),
+                    Note("Tokyo", "Explore Shibuya, Visit Senso-ji Temple"),
+                ],
+                Note("Goals", "2024 Goals:\n1. Learn Python\n2. Exercise more"): [
+                    Note("Learn Python", "Complete online courses and projects"),
+                    Note("Exercise More", "Join a gym, Practice yoga"),
+                ],
             ],
         }
 
