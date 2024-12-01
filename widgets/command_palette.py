@@ -30,8 +30,20 @@ class CommandPalette(PopupPalette):
         """Create a list item from an action"""
         if not action.text():
             return None
-        item = QListWidgetItem(action.text())
+            
+        # Create display text with action name and description
+        display_text = f"{action.text()}"
+        if action.statusTip():
+            display_text = f"{action.text():20} • {action.statusTip()}"
+            
+        item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, action)
+        
+        # Style the item
+        font = item.font()
+        font.setPointSize(10)
+        item.setFont(font)
+        
         return item
 
     def filter_items(self, text):
