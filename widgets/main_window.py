@@ -81,6 +81,7 @@ class NoteApp(QMainWindow):
             ],
         }
 
+        # Add dummy data to the notes sidebar
         for parent_note, child_notes in notes_hierarchy.items():
             parent_item = QTreeWidgetItem(self.tree)
             parent_item.setText(0, parent_note.title)
@@ -90,3 +91,25 @@ class NoteApp(QMainWindow):
                 child_item = QTreeWidgetItem(parent_item)
                 child_item.setText(0, child_note.title)
                 child_item.setData(0, Qt.ItemDataRole.UserRole, child_note)
+
+        # Add dummy data to the tags sidebar
+        tags_hierarchy = {
+            Note("Work Tags", "Tags related to work"): [
+                Note("Meeting", "Notes about meetings"),
+                Note("Project", "Notes about projects"),
+            ],
+            Note("Personal Tags", "Tags for personal notes"): [
+                Note("Shopping", "Notes about shopping"),
+                Note("Travel", "Notes about travel"),
+            ],
+        }
+
+        for parent_tag, child_tags in tags_hierarchy.items():
+            parent_item = QTreeWidgetItem(self.tags_tree)
+            parent_item.setText(0, parent_tag.title)
+            parent_item.setData(0, Qt.ItemDataRole.UserRole, parent_tag)
+
+            for child_tag in child_tags:
+                child_item = QTreeWidgetItem(parent_item)
+                child_item.setText(0, child_tag.title)
+                child_item.setData(0, Qt.ItemDataRole.UserRole, child_tag)
