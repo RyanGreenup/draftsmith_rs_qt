@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QListWidgetItem, QMainWindow
-from PySide6.QtCore import Qt, Key
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction
 from .popup_palette import PopupPalette
 
