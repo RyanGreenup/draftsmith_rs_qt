@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QTextEdit,
 )
-from PySide6.QtCore import Qt, QEvent, ItemDataRole
+from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QKeyEvent
 from typing import Optional, Union
 from enum import IntEnum
@@ -86,7 +86,7 @@ class NoteApp(QMainWindow):
         selected_items = self.tree.selectedItems()
         if selected_items:
             item = selected_items[0]
-            note = item.data(0, ItemDataRole.UserRole)
+            note = item.data(0, Qt.ItemDataRole.UserRole)
             if note:
                 self.text_edit.setText(note.content)
             else:
@@ -115,12 +115,12 @@ class NoteApp(QMainWindow):
         for parent_note, child_notes in notes_hierarchy.items():
             parent_item = QTreeWidgetItem(self.tree)
             parent_item.setText(0, parent_note.title)
-            parent_item.setData(0, ItemDataRole.UserRole, parent_note)
+            parent_item.setData(0, Qt.ItemDataRole.UserRole, parent_note)
 
             for child_note in child_notes:
                 child_item = QTreeWidgetItem(parent_item)
                 child_item.setText(0, child_note.title)
-                child_item.setData(0, ItemDataRole.UserRole, child_note)
+                child_item.setData(0, Qt.ItemDataRole.UserRole, child_note)
 
 
 if __name__ == "__main__":
