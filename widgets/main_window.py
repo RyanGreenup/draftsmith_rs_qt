@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem
+from PySide6.QtWidgets import QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem, QShortcut
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeySequence
 from models.note import Note
 from .notes_tree import NotesTreeWidget
 
@@ -48,6 +49,14 @@ class NoteApp(QMainWindow):
         # Set splitter as central widget
         self.setCentralWidget(self.splitter)
 
+        # Create command palette
+        from .command_palette import CommandPalette
+        self.command_palette = CommandPalette(self)
+        
+        # Add shortcut for command palette
+        self.command_shortcut = QShortcut(QKeySequence("Ctrl+P"), self)
+        self.command_shortcut.activated.connect(self.show_command_palette)
+        
         # Add dummy data
         self.add_dummy_data()
 
@@ -61,6 +70,11 @@ class NoteApp(QMainWindow):
             else:
                 self.text_edit.clear()
 
+    def show_command_palette(self):
+        """Show the command palette and populate it with current menu actions"""
+        self.command_palette.populate_actions(self.menuBar())
+        self.command_palette.show_palette()
+        
     def add_dummy_data(self):
         notes_hierarchy = [
             (Note("Work", "General work-related notes and tasks"), [
