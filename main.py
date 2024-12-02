@@ -9,10 +9,17 @@ from widgets.main_window import NoteApp
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    # Create actions
+    
+    # Create empty window first
+    window = NoteApp(None)  # Temporarily pass None for actions
+    
+    # Now create actions using the window
     actions = create_actions(window)
     
-    window = NoteApp(actions)
+    # Update window with the actions
+    window.actions = actions
+    window.menu_handler = MenuHandler(window, actions)
+    window.menu_handler.setup_menus()
 
     # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
