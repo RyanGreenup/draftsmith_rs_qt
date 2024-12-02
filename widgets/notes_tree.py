@@ -139,9 +139,15 @@ class NotesTreeWidget(QTreeWidget):
         return state
 
     def restore_state(self, state: Dict[str, Any]) -> None:
-        """Restore the tree state from the given state."""
-        self._set_expanded_items_by_id(state["expanded_items"])
-        self.select_note_by_id(state["selected_item_id"])
+        """
+        Restore expansion and selection state where possible, without modifying tree structure.
+        Only expands/selects items that exist in the current tree.
+        """
+        if "expanded_items" in state:
+            self._set_expanded_items_by_id(state["expanded_items"])
+        
+        if "selected_item_id" in state and state["selected_item_id"] is not None:
+            self.select_note_by_id(state["selected_item_id"])
 
     def _get_expanded_item_ids(self) -> Set[int]:
         expanded_ids = set()
@@ -160,10 +166,16 @@ class NotesTreeWidget(QTreeWidget):
         return expanded_ids
 
     def _set_expanded_items_by_id(self, expanded_ids: Set[int]) -> None:
+        """Set expansion state only for items that exist in the tree"""
         def recurse(item):
             note_data = item.data(0, Qt.ItemDataRole.UserRole)
-            if note_data:
-                item.setExpanded(note_data.id in expanded_ids)
+            if note_data and note_data.id in expanded_ids:
+                # Expand parents first to ensure proper expansion
+                parent = item.parent()
+                while parent:
+                    parent.setExpanded(True)
+                    parent = parent.parent()
+                item.setExpanded(True)
             for i in range(item.childCount()):
                 recurse(item.child(i))
 
