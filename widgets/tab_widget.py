@@ -13,6 +13,7 @@ class NotesTabWidget(QTabWidget):
         tab_content = MainContent(handle_size=20)
         index = self.addTab(tab_content, title)
         self.setCurrentIndex(index)
+        tab_content.initialize_dummy_data()
         return tab_content
         
     def close_tab(self, index):
