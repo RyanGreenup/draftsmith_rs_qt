@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, Dict, Any, Set, List
 from PySide6.QtWidgets import QTreeWidget, QApplication, QTreeWidgetItem
 from PySide6.QtCore import QEvent, Qt
+from models.note import Note
 from models.notes_model import NotesModel
 from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
@@ -128,3 +129,71 @@ class NotesTreeWidget(QTreeWidget):
                     self.cycle_fold_level_of_all_items()
         else:
             super().keyPressEvent(event)
+
+    def save_state(self) -> Dict[str, Any]:
+        """Save the tree state, including expanded items and selected item."""
+        state = {
+            "expanded_items": self._get_expanded_item_ids(),
+            "selected_item_id": self._get_selected_item_id(),
+        }
+        return state
+
+    def restore_state(self, state: Dict[str, Any]) -> None:
+        """Restore the tree state from the given state."""
+        self._set_expanded_items_by_id(state["expanded_items"])
+        self.select_note_by_id(state["selected_item_id"])
+
+    def _get_expanded_item_ids(self) -> Set[int]:
+        expanded_ids = set()
+
+        def recurse(item):
+            if item.isExpanded():
+                note_data = item.data(0, Qt.ItemDataRole.UserRole)
+                if note_data:
+                    expanded_ids.add(note_data.id)
+            for i in range(item.childCount()):
+                recurse(item.child(i))
+
+        for i in range(self.topLevelItemCount()):
+            recurse(self.topLevelItem(i))
+
+        return expanded_ids
+
+    def _set_expanded_items_by_id(self, expanded_ids: Set[int]) -> None:
+        def recurse(item):
+            note_data = item.data(0, Qt.ItemDataRole.UserRole)
+            if note_data:
+                item.setExpanded(note_data.id in expanded_ids)
+            for i in range(item.childCount()):
+                recurse(item.child(i))
+
+        for i in range(self.topLevelItemCount()):
+            recurse(self.topLevelItem(i))
+
+    def _get_selected_item_id(self) -> Optional[int]:
+        current_item = self.currentItem()
+        if current_item:
+            note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
+            if note_data:
+                return note_data.id
+        return None
+
+    def update_tree(self, root_notes: List[Note]) -> None:
+        """Update the tree widget with the given root notes."""
+        self.clear()
+        for note in root_notes:
+            item = self._create_tree_item(note)
+            self.addTopLevelItem(item)
+            self._add_children_recursive(item, note)
+
+    def _create_tree_item(self, note: Note) -> QTreeWidgetItem:
+        item = QTreeWidgetItem()
+        item.setText(0, note.title)
+        item.setData(0, Qt.ItemDataRole.UserRole, note)
+        return item
+
+    def _add_children_recursive(self, parent_item: QTreeWidgetItem, note: Note):
+        for child_note in note.children:
+            child_item = self._create_tree_item(child_note)
+            parent_item.addChild(child_item)
+            self._add_children_recursive(child_item, child_note)

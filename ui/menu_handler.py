@@ -56,3 +56,6 @@ class MenuHandler:
         self.actions["focus_previous"].triggered.connect(
             self.main_window.focus_previous_widget
         )
+        self.actions["refresh"].triggered.connect(
+            self.main_window.refresh_model
+        )
