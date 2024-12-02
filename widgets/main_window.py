@@ -33,7 +33,7 @@ class NoteApp(QMainWindow):
         self.menubar = self.menuBar()
 
         # Add File menu
-        from ui.menu_manager import create_file_menu, create_view_menu
+        from ui.menu_manager import create_file_menu, create_view_menu, create_tabs_menu
         self.file_menu, self.file_actions = create_file_menu(self)
         self.menubar.addMenu(self.file_menu)
 
