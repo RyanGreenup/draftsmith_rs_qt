@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import (QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem,
-                              QStatusBar, QComboBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import QMainWindow, QTreeWidgetItem, QStatusBar
 from PySide6.QtCore import Qt
+from .main_content import MainContent
 from PySide6.QtGui import QKeySequence, QShortcut
 from models.note import Note
 from .notes_tree import NotesTreeWidget
