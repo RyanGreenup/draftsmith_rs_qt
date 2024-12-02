@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QListWidgetItem, QMainWindow
+from typing import List, Optional, Any
+from PySide6.QtWidgets import QListWidgetItem, QMainWindow, QMenuBar
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QFont
 from .popup_palette import PopupPalette
@@ -6,43 +7,43 @@ from .popup_palette import PopupPalette
 class CommandPalette(PopupPalette):
     """Popup palette for executing menu commands"""
     
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QMainWindow] = None) -> None:
         super().__init__(parent)
-        self.actions = []
+        self._actions: List[QAction] = []
         self.search_input.setPlaceholderText("Type command...")
         self.main_window = self.get_main_window()
         
         # Connect selection change signal
         self.results_list.currentItemChanged.connect(self.on_selection_changed)
         
-    def populate_actions(self, menubar):
+    def populate_actions(self, menubar: QMenuBar) -> None:
         """Collect all actions from the menubar's menus"""
-        self.actions.clear()
+        self._actions.clear()
         # Get all top-level menus
         for menu in menubar.findChildren(QAction):
             if hasattr(menu, 'menu') and menu.menu():
                 # For each menu, get its actions
                 for action in menu.menu().actions():
                     if action.text().replace('&', '') and not action.menu():  # Skip empty actions and submenus
-                        self.actions.append(action)
+                        self._actions.append(action)
                 
-    def get_all_items(self):
+    def get_all_items(self) -> List[QAction]:
         """Get all actions"""
-        return [action for action in self.actions if action.text()]
+        return [action for action in self._actions if action.text()]
 
-    def create_list_item(self, action):
+    def create_list_item(self, data: Any) -> Optional[QListWidgetItem]:
         """Create a list item from an action"""
-        if not action.text():
+        if not isinstance(data, QAction) or not data.text():
             return None
             
         # Create display text with action name and description
-        display_text = action.text()
-        if action.statusTip():
+        display_text = data.text()
+        if data.statusTip():
             # Use a wider space for the action name and add a subtle separator
-            display_text = f"{action.text().replace('&', ''):<30} • {action.statusTip()}"
+            display_text = f"{data.text().replace('&', ''):<30} • {data.statusTip()}"
             
         item = QListWidgetItem(display_text)
-        item.setData(Qt.ItemDataRole.UserRole, action)
+        item.setData(Qt.ItemDataRole.UserRole, data)
         
         # Style the item
         font = QFont()
@@ -51,17 +52,17 @@ class CommandPalette(PopupPalette):
         
         return item
 
-    def filter_items(self, text):
+    def filter_items(self, text: str) -> None:
         """Filter actions based on search text"""
         search_terms = text.lower().split()
-        for action in self.actions:
+        for action in self._actions:
             action_text = action.text().lower()
             if all(term in action_text for term in search_terms):
                 item = self.create_list_item(action)
                 if item:
                     self.results_list.addItem(item)
                 
-    def get_main_window(self):
+    def get_main_window(self) -> Optional[QMainWindow]:
         """Get reference to main window"""
         parent = self.parent()
         while parent is not None:
@@ -70,14 +71,14 @@ class CommandPalette(PopupPalette):
             parent = parent.parent()
         return None
 
-    def on_selection_changed(self, current, previous):
+    def on_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]) -> None:
         """Update status bar when selection changes"""
         if current and self.main_window:
             action = current.data(Qt.ItemDataRole.UserRole)
             if action and action.statusTip():
                 self.main_window.statusBar().showMessage(action.statusTip())
 
-    def on_item_activated(self, item):
+    def on_item_activated(self, item: QListWidgetItem) -> None:
         """Trigger the selected action"""
         action = item.data(Qt.ItemDataRole.UserRole)
         if action and action.isEnabled():
@@ -86,7 +87,7 @@ class CommandPalette(PopupPalette):
             self.main_window.statusBar().showMessage("Ready")
         self.hide()
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: Qt.Key) -> None:
         """Handle key press events"""
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             current_item = self.results_list.currentItem()
