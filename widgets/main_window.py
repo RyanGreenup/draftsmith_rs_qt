@@ -125,13 +125,18 @@ class NoteApp(QMainWindow):
         self.main_content.left_sidebar.tree.select_note_by_id(note_id)
         # This will trigger the tree's selection changed signal, which will update everything else
 
-    def update_right_sidebar(self, note: Note, forward_links: List[Note], backlinks: List[Note]) -> None:
+    def update_right_sidebar(
+        self, 
+        note: Note, 
+        forward_links: List[Note], 
+        backlinks: List[Note],
+        tags: List[Tag]
+    ) -> None:
         """Update right sidebar content when a note is selected"""
         if note:
             self.main_content.right_sidebar.update_forward_links(forward_links)
             self.main_content.right_sidebar.update_backlinks(backlinks)
-            # For now, just show empty tags list
-            self.main_content.right_sidebar.update_tags([])
+            self.main_content.right_sidebar.update_tags(tags)
 
     def new_tab(self):
         self.tab_handler.new_tab()

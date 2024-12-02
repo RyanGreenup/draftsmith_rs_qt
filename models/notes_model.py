@@ -1,9 +1,11 @@
 from typing import Optional, List, Dict, Set
 from api.client import (
     NoteAPI,
+    TagAPI,
     Note as APINote,
     TreeNote as APITreeNote,
     UpdateNoteRequest,
+    Tag,
 )
 from models.note import Note
 from datetime import datetime
@@ -15,12 +17,13 @@ class NotesModel(QObject):
 
     notes_updated = Signal()  # Emitted when notes data changes
     note_selected = Signal(
-        Note, list, list
-    )  # Emitted when a note is selected, includes forward links and backlinks
+        Note, list, list, list
+    )  # Emitted when a note is selected, includes forward links, backlinks, and tags
 
     def __init__(self, api_url: str):
         super().__init__()
         self.api = NoteAPI(api_url)
+        self.api.tag_api = TagAPI(api_url)  # Add TagAPI
         self.notes: Dict[int, Note] = {}  # id -> Note mapping
         self.root_notes: List[Note] = []  # Top-level notes
 
@@ -87,6 +90,21 @@ class NotesModel(QObject):
             print(f"Error getting backlinks: {e}")
             return []
 
+    def get_note_tags(self, note_id: int) -> List[Tag]:
+        """Get all tags for a note"""
+        try:
+            # Get the note-tag relations
+            relations = self.api.tag_api.get_note_tag_relations()
+            # Filter relations for this note
+            note_tag_ids = [rel.tag_id for rel in relations if rel.note_id == note_id]
+            # Get all tags
+            all_tags = self.api.tag_api.get_all_tags()
+            # Filter tags for this note
+            return [tag for tag in all_tags if tag.id in note_tag_ids]
+        except Exception as e:
+            print(f"Error getting tags for note {note_id}: {e}")
+            return []
+
     def select_note(self, note_id: int) -> None:
         """Handle note selection and emit signals with all necessary data"""
         note = self.notes.get(note_id)
@@ -94,11 +112,12 @@ class NotesModel(QObject):
             try:
                 forward_links = self.get_forward_links(note_id)
                 backlinks = self.get_backlinks(note_id)
-                # Update signal to include backlinks
-                self.note_selected.emit(note, forward_links, backlinks)
+                tags = self.get_note_tags(note_id)  # Get tags for the note
+                # Update signal to include tags
+                self.note_selected.emit(note, forward_links, backlinks, tags)
             except Exception as e:
-                print(f"Error getting links for note {note_id}: {e}")
-                self.note_selected.emit(note, [], [])
+                print(f"Error getting data for note {note_id}: {e}")
+                self.note_selected.emit(note, [], [], [])
 
     def create_note(
         self, title: str, content: str, parent_id: Optional[int] = None
