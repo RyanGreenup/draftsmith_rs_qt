@@ -84,11 +84,11 @@ class NoteApp(QMainWindow):
 
     def toggle_left_sidebar(self):
         """Toggle the visibility of the left sidebar"""
-        if self.left_sidebar.isVisible():
-            self.left_sidebar.hide()
+        if self.main_content.left_sidebar.isVisible():
+            self.main_content.left_sidebar.hide()
             self.view_actions['toggle_left_sidebar'].setText("Show &Left Sidebar")
         else:
-            self.left_sidebar.show()
+            self.main_content.left_sidebar.show()
             self.view_actions['toggle_left_sidebar'].setText("Hide &Left Sidebar")
 
     def toggle_right_sidebar(self):
