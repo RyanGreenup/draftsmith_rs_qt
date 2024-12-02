@@ -63,4 +63,20 @@ def create_view_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     actions['toggle_right_sidebar'].setStatusTip("Toggle right sidebar visibility")
     view_menu.addAction(actions['toggle_right_sidebar'])
     
+    # Add separator
+    view_menu.addSeparator()
+    
+    # Markdown view controls
+    actions['maximize_editor'] = QAction("Ma&ximize Editor", parent)
+    actions['maximize_editor'].setShortcut("Ctrl+Shift+E")
+    actions['maximize_editor'].setStatusTip("Toggle maximize editor view")
+    actions['maximize_editor'].setCheckable(True)
+    view_menu.addAction(actions['maximize_editor'])
+    
+    actions['maximize_preview'] = QAction("Maximize &Preview", parent)
+    actions['maximize_preview'].setShortcut("Ctrl+Shift+P")
+    actions['maximize_preview'].setStatusTip("Toggle maximize preview")
+    actions['maximize_preview'].setCheckable(True)
+    view_menu.addAction(actions['maximize_preview'])
+    
     return view_menu, actions

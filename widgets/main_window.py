@@ -100,6 +100,12 @@ class NoteApp(QMainWindow):
         self.view_menu, self.view_actions = create_view_menu(self)
         self.menubar.addMenu(self.view_menu)
 
+        # Connect markdown view actions
+        self.text_edit.set_view_actions(
+            self.view_actions['maximize_editor'],
+            self.view_actions['maximize_preview']
+        )
+
         # Connect view actions
         self.view_actions['toggle_left_sidebar'].triggered.connect(self.toggle_left_sidebar)
         self.view_actions['toggle_right_sidebar'].triggered.connect(self.toggle_right_sidebar)

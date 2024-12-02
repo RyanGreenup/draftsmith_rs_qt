@@ -77,3 +77,38 @@ class MarkdownEditor(QWidget):
 
     def set_content(self, content: str):
         self.editor.setPlainText(content)
+
+    def maximize_editor(self, checked: bool):
+        if checked:
+            # Store current sizes for restoration
+            self._stored_sizes = self.splitter.sizes()
+            self.splitter.setSizes([1, 0])  # Show only editor
+            # Uncheck preview maximize if it's checked
+            self._maximize_preview_action.setChecked(False)
+        else:
+            # Restore previous sizes if stored
+            if hasattr(self, '_stored_sizes'):
+                self.splitter.setSizes(self._stored_sizes)
+            else:
+                self.splitter.setSizes([300, 300])
+
+    def maximize_preview(self, checked: bool):
+        if checked:
+            # Store current sizes for restoration
+            self._stored_sizes = self.splitter.sizes()
+            self.splitter.setSizes([0, 1])  # Show only preview
+            # Uncheck editor maximize if it's checked
+            self._maximize_editor_action.setChecked(False)
+        else:
+            # Restore previous sizes if stored
+            if hasattr(self, '_stored_sizes'):
+                self.splitter.setSizes(self._stored_sizes)
+            else:
+                self.splitter.setSizes([300, 300])
+
+    def set_view_actions(self, maximize_editor_action, maximize_preview_action):
+        """Connect view actions to the editor"""
+        self._maximize_editor_action = maximize_editor_action
+        self._maximize_preview_action = maximize_preview_action
+        maximize_editor_action.triggered.connect(self.maximize_editor)
+        maximize_preview_action.triggered.connect(self.maximize_preview)
