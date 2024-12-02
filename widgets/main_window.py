@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from models.note import Note
 from .notes_tree import NotesTreeWidget
+from .markdown_editor import MarkdownEditor
 
 #
 
@@ -50,8 +51,8 @@ class NoteApp(QMainWindow):
         # Initially hide tags tree
         self.tags_tree.hide()
 
-        # Create text edit for main content
-        self.text_edit = QTextEdit()
+        # Create markdown editor for main content
+        self.text_edit = MarkdownEditor()
 
         # Create widgets for right sidebar
         self.additional_tree = NotesTreeWidget()
@@ -120,9 +121,9 @@ class NoteApp(QMainWindow):
             item = selected_items[0]
             note = item.data(0, Qt.ItemDataRole.UserRole)
             if note:
-                self.text_edit.setText(note.content)
+                self.text_edit.set_content(note.content)
             else:
-                self.text_edit.clear()
+                self.text_edit.set_content("")
 
     def on_tree_selection_changed(self, text):
         if text == "Notes":
