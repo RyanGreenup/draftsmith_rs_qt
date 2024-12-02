@@ -1,6 +1,8 @@
+from typing import List
 from PySide6.QtWidgets import QSplitter, QTextEdit
 from PySide6.QtCore import Qt
 from .notes_tree import NotesTreeWidget
+from models.note import Note
 
 
 class RightSidebar(QSplitter):

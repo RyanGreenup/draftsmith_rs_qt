@@ -1,6 +1,7 @@
 from typing import Optional
 from PySide6.QtWidgets import QTreeWidget, QApplication, QTreeWidgetItem
 from PySide6.QtCore import QEvent, Qt
+from models.notes_model import NotesModel
 from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
 

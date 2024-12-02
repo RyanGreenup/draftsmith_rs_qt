@@ -1,6 +1,8 @@
+from typing import List
 from PySide6.QtWidgets import QMainWindow, QStatusBar
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtCore import Qt
+from models.note import Note
 from ui.menu_handler import MenuHandler
 from ui.tab_handler import TabHandler
 from models.notes_model import NotesModel
