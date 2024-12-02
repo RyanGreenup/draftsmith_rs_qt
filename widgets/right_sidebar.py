@@ -9,19 +9,19 @@ class RightSidebar(QSplitter):
         self.text_top = QTextEdit()
         self.text_mid = QTextEdit()
         self.text_bottom = QTextEdit()
-        
+
         self._setup_ui(handle_size)
-    
+
     def _setup_ui(self, handle_size):
         self.setHandleWidth(handle_size)
-        
-        self.additional_tree.setHeaderLabel("Additional")
+
+        self.additional_tree.setHeaderLabel("Backlinks")
         self.additional_tree.setMinimumWidth(200)
-        
-        self.text_top.setPlaceholderText("Top Section")
-        self.text_mid.setPlaceholderText("Mid Section")
-        self.text_bottom.setPlaceholderText("Bottom Section")
-        
+
+        self.text_top.setPlaceholderText("Forward Links")
+        self.text_mid.setPlaceholderText("Tags")
+        self.text_bottom.setPlaceholderText("Similar Pages (Not Yet Implemented, Don't Touch)")
+
         self.addWidget(self.additional_tree)
         self.addWidget(self.text_top)
         self.addWidget(self.text_mid)
