@@ -1,5 +1,5 @@
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QWidget, QStyle
 from PySide6.QtCore import QCoreApplication
 from typing import Dict, Optional
 
@@ -11,21 +11,21 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
 
     # File actions
     actions["new"] = QAction(
-        style.standardIcon(style.SP_FileIcon), "&New", parent
+        style.standardIcon(QStyle.SP_FileIcon), "&New", parent
     )
     actions["new"].setShortcut("Ctrl+N")
     actions["new"].setStatusTip("Create a new note")
     actions["new"].setToolTip("Create a new note")
 
     actions["open"] = QAction(
-        style.standardIcon(style.SP_DialogOpenButton), "&Open", parent
+        style.standardIcon(QStyle.SP_DialogOpenButton), "&Open", parent
     )
     actions["open"].setShortcut("Ctrl+O")
     actions["open"].setStatusTip("Open an existing note")
     actions["open"].setToolTip("Open an existing note")
 
     actions["save"] = QAction(
-        style.standardIcon(style.SP_DialogSaveButton), "&Save", parent
+        style.standardIcon(QStyle.SP_DialogSaveButton), "&Save", parent
     )
     actions["save"].setShortcut("Ctrl+S")
     actions["save"].setStatusTip("Save the current note")
@@ -33,7 +33,7 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
 
     # Exit action
     actions["exit"] = QAction(
-        style.standardIcon(style.SP_DialogCloseButton), "E&xit", parent
+        style.standardIcon(QStyle.SP_DialogCloseButton), "E&xit", parent
     )
     actions["exit"].setShortcut("Ctrl+Q")
     actions["exit"].setStatusTip("Exit the application")
@@ -43,14 +43,14 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
 
     # Navigation actions
     actions["back"] = QAction(
-        style.standardIcon(style.SP_ArrowBack), "Go &Back", parent
+        style.standardIcon(QStyle.SP_ArrowBack), "Go &Back", parent
     )
     actions["back"].setShortcut("Alt+Left")
     actions["back"].setStatusTip("Go to previously viewed note")
     actions["back"].setEnabled(False)  # Initially disabled
 
     actions["forward"] = QAction(
-        style.standardIcon(style.SP_ArrowForward), "Go &Forward", parent
+        style.standardIcon(QStyle.SP_ArrowForward), "Go &Forward", parent
     )
     actions["forward"].setShortcut("Alt+Right")
     actions["forward"].setStatusTip("Go to next viewed note")
