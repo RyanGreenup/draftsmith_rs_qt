@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QMenu, QApplication, QStyle
 from PySide6.QtGui import QAction
-from PySide6.QtCore import QCoreApplication
-from typing import Dict, Tuple
+from PySide6.QtCore import QCoreApplication, Qt
+from typing import Dict, Tuple, cast
 
 def create_tabs_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     """Create a tabs menu with actions"""
@@ -44,7 +44,7 @@ def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     style = QApplication.style()
     
     # New action
-    new_icon = style.standardIcon(QStyle.SP_FileDialogNewFolder)
+    new_icon = style.standardIcon(QStyle.StandardPixmap.SP_FileDialogNewFolder)
     actions['new'] = QAction(new_icon, "&New", parent)
     actions['new'].setShortcut("Ctrl+N")
     actions['new'].setStatusTip("Create a new note")
@@ -52,7 +52,7 @@ def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     file_menu.addAction(actions['new'])
 
     # Open action
-    open_icon = style.standardIcon(QStyle.SP_DialogOpenButton)
+    open_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogOpenButton)
     actions['open'] = QAction(open_icon, "&Open", parent)
     actions['open'].setShortcut("Ctrl+O")
     actions['open'].setStatusTip("Open an existing note")
@@ -60,7 +60,7 @@ def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     file_menu.addAction(actions['open'])
 
     # Save action
-    save_icon = style.standardIcon(QStyle.SP_DialogSaveButton)
+    save_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
     actions['save'] = QAction(save_icon, "&Save", parent)
     actions['save'].setShortcut("Ctrl+S")
     actions['save'].setStatusTip("Save the current note")
@@ -68,13 +68,14 @@ def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     file_menu.addAction(actions['save'])
 
     # Exit action
-    exit_icon = style.standardIcon(QStyle.SP_DialogCloseButton)
+    exit_icon = style.standardIcon(QStyle.StandardPixmap.SP_DialogCloseButton)
     actions['exit'] = QAction(exit_icon, "E&xit", parent)
     actions['exit'].setShortcut("Ctrl+Q")
     actions['exit'].setStatusTip("Exit the application")
     actions['exit'].setToolTip("Exit the application") 
     file_menu.addAction(actions['exit'])
-    actions['exit'].triggered.connect(QCoreApplication.instance().quit)
+    app = cast(QApplication, QCoreApplication.instance())
+    actions['exit'].triggered.connect(app.quit)
 
     return file_menu, actions
 
