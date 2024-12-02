@@ -109,6 +109,8 @@ class NoteApp(QMainWindow):
         # Connect view actions
         self.view_actions['toggle_left_sidebar'].triggered.connect(self.toggle_left_sidebar)
         self.view_actions['toggle_right_sidebar'].triggered.connect(self.toggle_right_sidebar)
+        self.view_actions['focus_next'].triggered.connect(self.focus_next_widget)
+        self.view_actions['focus_previous'].triggered.connect(self.focus_previous_widget)
 
         # Create command palette
         from .command_palette import CommandPalette
@@ -163,6 +165,14 @@ class NoteApp(QMainWindow):
         """Show the command palette and populate it with current menu actions"""
         self.command_palette.populate_actions(self.menuBar())
         self.command_palette.show_palette()
+
+    def focus_next_widget(self):
+        """Simulate Tab key press to move focus to next widget"""
+        self.focusNextChild()
+
+    def focus_previous_widget(self):
+        """Simulate Shift+Tab key press to move focus to previous widget"""
+        self.focusPreviousChild()
 
     def add_dummy_data(self):
         notes_hierarchy = [
