@@ -34,13 +34,13 @@ class NavigationModel(QObject):
         
     def add_to_history(self, note_id: int):
         """Add a new note to history"""
+        # Don't add if it's the same as current
+        if self._history and self._current_index >= 0 and self._history[self._current_index] == note_id:
+            return
+            
         # Remove any forward history when adding new note
         if self._current_index < len(self._history) - 1:
             self._history = self._history[:self._current_index + 1]
-            
-        # Don't add if it's the same as current
-        if self._history and self._history[self._current_index] == note_id:
-            return
             
         self._history.append(note_id)
         self._current_index = len(self._history) - 1
