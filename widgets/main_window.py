@@ -37,6 +37,10 @@ class NoteApp(QMainWindow):
         self.main_content.right_sidebar.forward_links.note_selected.connect(
             self.handle_forward_link_selection
         )
+        # Connect backlink selection
+        self.main_content.right_sidebar.backlinks.note_selected.connect(
+            self.handle_forward_link_selection  # We can reuse this as it does the same thing
+        )
 
         # Setup markdown view actions
         self.main_content.editor.set_view_actions(
@@ -121,10 +125,11 @@ class NoteApp(QMainWindow):
         self.main_content.left_sidebar.tree.select_note_by_id(note_id)
         # This will trigger the tree's selection changed signal, which will update everything else
 
-    def update_right_sidebar(self, note: Note, forward_links: List[Note]) -> None:
+    def update_right_sidebar(self, note: Note, forward_links: List[Note], backlinks: List[Note]) -> None:
         """Update right sidebar content when a note is selected"""
         if note:
             self.main_content.right_sidebar.update_forward_links(forward_links)
+            self.main_content.right_sidebar.update_backlinks(backlinks)
 
     def new_tab(self):
         self.tab_handler.new_tab()
