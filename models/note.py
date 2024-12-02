@@ -22,12 +22,16 @@ class Note:
     @classmethod
     def from_api_note(cls, api_note: APINote) -> 'Note':
         """Create a Note instance from an API Note response"""
+        # Handle optional datetime fields with defaults
+        created_at_val = api_note.created_at or datetime.now()
+        modified_at_val = api_note.modified_at or datetime.now()
+        
         return cls(
             id=api_note.id,
             title=api_note.title,
             content=api_note.content,
-            created_at=api_note.created_at,
-            modified_at=api_note.modified_at
+            created_at=created_at_val,  # Now guaranteed to be datetime
+            modified_at=modified_at_val  # Now guaranteed to be datetime
         )
 
     @classmethod

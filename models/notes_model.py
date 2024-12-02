@@ -62,8 +62,9 @@ class NotesModel(QObject):
     def create_note(self, title: str, content: str, parent_id: Optional[int] = None) -> Optional[Note]:
         """Create a new note"""
         try:
-            api_note: APINote = self.api.note_create(title, content)  # Add type hint
-            note = Note.from_api_note(api_note)
+            api_response = self.api.note_create(title, content)
+            # Convert API response to Note model explicitly
+            note = Note.from_api_note(api_response)
             
             self.notes[note.id] = note
             
