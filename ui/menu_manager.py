@@ -90,10 +90,10 @@ def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     actions["back"].setEnabled(False)  # Initially disabled
     file_menu.addAction(actions["back"])
 
-    # Forward action  
+    # Forward action
     forward_icon = style.standardIcon(QStyle.StandardPixmap.SP_ArrowForward)
     actions["forward"] = QAction(forward_icon, "Go &Forward", parent)
-    actions["forward"].setShortcut("Alt+Right") 
+    actions["forward"].setShortcut("Alt+Right")
     actions["forward"].setStatusTip("Go to next viewed note")
     actions["forward"].setEnabled(False)  # Initially disabled
     file_menu.addAction(actions["forward"])

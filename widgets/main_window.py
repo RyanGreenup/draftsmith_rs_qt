@@ -20,7 +20,7 @@ class NoteApp(QMainWindow):
         # Add notes model and load data
         self.notes_model = NotesModel("http://eir:37242")
         self.notes_model.load_notes()  # Load notes at startup
-        
+
         # Initialize navigation model
         self.navigation_model = NavigationModel()
 
@@ -55,7 +55,9 @@ class NoteApp(QMainWindow):
 
         # Connect navigation actions
         self.menu_handler.file_actions["back"].triggered.connect(self.navigate_back)
-        self.menu_handler.file_actions["forward"].triggered.connect(self.navigate_forward)
+        self.menu_handler.file_actions["forward"].triggered.connect(
+            self.navigate_forward
+        )
         self.navigation_model.navigation_changed.connect(self.update_navigation_actions)
 
         # Connect save action
@@ -147,21 +149,25 @@ class NoteApp(QMainWindow):
 
     def update_navigation_actions(self):
         """Update the enabled state of navigation actions"""
-        self.menu_handler.file_actions["back"].setEnabled(self.navigation_model.can_go_back())
-        self.menu_handler.file_actions["forward"].setEnabled(self.navigation_model.can_go_forward())
+        self.menu_handler.file_actions["back"].setEnabled(
+            self.navigation_model.can_go_back()
+        )
+        self.menu_handler.file_actions["forward"].setEnabled(
+            self.navigation_model.can_go_forward()
+        )
 
     def update_right_sidebar(
-        self, 
-        note: Note, 
-        forward_links: List[Note], 
+        self,
+        note: Note,
+        forward_links: List[Note],
         backlinks: List[Note],
-        tags: List[Tag]
+        tags: List[Tag],
     ) -> None:
         """Update right sidebar content when a note is selected"""
         if note:
             # Add note to navigation history
             self.navigation_model.add_to_history(note.id)
-            
+
             self.main_content.right_sidebar.update_forward_links(forward_links)
             self.main_content.right_sidebar.update_backlinks(backlinks)
             self.main_content.right_sidebar.update_tags(tags)

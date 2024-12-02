@@ -1,19 +1,20 @@
 from typing import List, Optional
 from PySide6.QtWidgets import (
-    QSplitter, 
-    QTextEdit, 
-    QListWidget, 
+    QSplitter,
+    QTextEdit,
+    QListWidget,
     QListWidgetItem,
-    QMessageBox
+    QMessageBox,
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent
 from models.note import Note
 from api.client import Tag
 
+
 class NavigableListWidget(QListWidget):
     """Base class for list widgets with keyboard navigation"""
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -33,10 +34,7 @@ class NavigableListWidget(QListWidget):
             event.accept()
         else:
             super().keyPressEvent(event)
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QKeyEvent
-from models.note import Note
-from api.client import Tag
+
 
 class BacklinksWidget(NavigableListWidget):
     note_selected = Signal(int)  # Emitted when a note is selected, passes note_id
@@ -69,7 +67,9 @@ class BacklinksWidget(NavigableListWidget):
         self.clear()
         if not backlinks:
             item = QListWidgetItem("No backlinks")
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)  # Make non-clickable
+            item.setFlags(
+                item.flags() & ~Qt.ItemFlag.ItemIsEnabled
+            )  # Make non-clickable
             self.addItem(item)
             return
 
@@ -147,7 +147,9 @@ class TagsWidget(NavigableListWidget):
         self.clear()
         if not tags:
             item = QListWidgetItem("No tags")
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)  # Make non-clickable
+            item.setFlags(
+                item.flags() & ~Qt.ItemFlag.ItemIsEnabled
+            )  # Make non-clickable
             self.addItem(item)
             return
 
