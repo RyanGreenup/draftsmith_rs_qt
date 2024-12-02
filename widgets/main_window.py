@@ -4,6 +4,7 @@ from PySide6.QtGui import QKeySequence, QShortcut
 from models.note import Note
 from .notes_tree import NotesTreeWidget
 
+#
 
 class NoteApp(QMainWindow):
     def __init__(self):
@@ -12,7 +13,7 @@ class NoteApp(QMainWindow):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("Ready")
-        
+
         self.handle_size = 20
         self.setWindowTitle("Note Taking App")
         self.setGeometry(100, 100, 1000, 600)
@@ -57,11 +58,11 @@ class NoteApp(QMainWindow):
         # Create command palette
         from .command_palette import CommandPalette
         self.command_palette = CommandPalette(self)
-        
+
         # Add shortcut for command palette
         self.command_shortcut = QShortcut(QKeySequence("Ctrl+P"), self)
         self.command_shortcut.activated.connect(self.show_command_palette)
-        
+
         # Add dummy data
         self.add_dummy_data()
 
@@ -79,7 +80,7 @@ class NoteApp(QMainWindow):
         """Show the command palette and populate it with current menu actions"""
         self.command_palette.populate_actions(self.menuBar())
         self.command_palette.show_palette()
-        
+
     def add_dummy_data(self):
         notes_hierarchy = [
             (Note("Work", "General work-related notes and tasks"), [
