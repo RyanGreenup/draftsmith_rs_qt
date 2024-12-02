@@ -29,6 +29,11 @@ class NoteApp(QMainWindow):
         self.tree.setMinimumWidth(100)
         self.tree.itemSelectionChanged.connect(self.on_selection_changed)
 
+        # Create tags tree widget for sidebar
+        self.tags_tree = NotesTreeWidget()
+        self.tags_tree.setHeaderLabel("Tags")
+        self.tags_tree.setMinimumWidth(100)
+
         # Create combo box for tree selection
         self.tree_selector = QComboBox()
         self.tree_selector.addItems(["Notes", "Tags"])
@@ -47,11 +52,6 @@ class NoteApp(QMainWindow):
 
         # Create text edit for main content
         self.text_edit = QTextEdit()
-
-        # Create tags tree widget for sidebar
-        self.tags_tree = NotesTreeWidget()
-        self.tags_tree.setHeaderLabel("Tags")
-        self.tags_tree.setMinimumWidth(100)
 
         # Create additional tree widget for sidebar
         self.additional_tree = NotesTreeWidget()
