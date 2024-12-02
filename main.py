@@ -21,9 +21,9 @@ if __name__ == "__main__":
      # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    # Load and apply the stylesheet
-    with open("ui/styles/style.qss", "r") as file:
-        app.setStyleSheet(file.read())
+    # # Load and apply the stylesheet
+    # with open("ui/styles/style.qss", "r") as file:
+    #     app.setStyleSheet(file.read())
 
     # Add file menu
     file_menu, actions = create_file_menu(window.menuBar())
