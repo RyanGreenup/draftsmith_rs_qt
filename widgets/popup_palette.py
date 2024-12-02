@@ -52,8 +52,9 @@ class PopupPalette(QWidget):
         self.setGraphicsEffect(shadow)
 
         # Position at top center of parent window
-        if self.parent():
-            parent_rect = self.parent().geometry()
+        parent = self.parent()
+        if isinstance(parent, QWidget):
+            parent_rect = parent.geometry()
             x = parent_rect.x() + (parent_rect.width() - self.width()) // 2
             # Position slightly below the top to give some breathing room
             y = parent_rect.y() + 50  # Adjust this value to control distance from top
