@@ -18,10 +18,21 @@ class RightSidebar(QSplitter):
     def _setup_ui(self, handle_size):
         self.setHandleWidth(handle_size)
 
+        # First add all widgets to the splitter
+        self.addWidget(self.additional_tree)
+        self.addWidget(self.text_top)
+        self.addWidget(self.text_mid)
+        self.addWidget(self.text_bottom)
+
+        # Then set up their properties
         self.additional_tree.setHeaderLabel("Backlinks")
         self.additional_tree.setMinimumWidth(200)
 
         self.text_top.setPlaceholderText("Forward Links")
+        self.text_mid.setPlaceholderText("Tags")
+        self.text_bottom.setPlaceholderText(
+            "Similar Pages (Not Yet Implemented, Don't Touch)"
+        )
         
     def update_forward_links(self, forward_links: List[Note]) -> None:
         """Update the forward links text area with linked notes"""
@@ -31,12 +42,3 @@ class RightSidebar(QSplitter):
             
         text = "\n".join(f"- {note.title}" for note in forward_links)
         self.text_top.setText(text)
-        self.text_mid.setPlaceholderText("Tags")
-        self.text_bottom.setPlaceholderText(
-            "Similar Pages (Not Yet Implemented, Don't Touch)"
-        )
-
-        self.addWidget(self.additional_tree)
-        self.addWidget(self.text_top)
-        self.addWidget(self.text_mid)
-        self.addWidget(self.text_bottom)
