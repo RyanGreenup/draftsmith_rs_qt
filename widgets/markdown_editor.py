@@ -7,8 +7,8 @@ class MarkdownEditor(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        # Create vertical splitter
-        self.splitter = QSplitter(Qt.Orientation.Vertical)
+        # Create horizontal splitter for side-by-side view
+        self.splitter = QSplitter(Qt.Orientation.Horizontal)
         
         # Create editor
         self.editor = QTextEdit()
