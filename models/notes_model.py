@@ -1,4 +1,8 @@
-from typing import Optional, List, Dict, Set
+from typing import Optional, List, Dict, Set, TypedDict
+
+class UpdateNoteRequest(TypedDict, total=False):
+    title: str 
+    content: str
 from api.client import NoteAPI, Note as APINote, TreeNote as APITreeNote
 from models.note import Note
 from datetime import datetime
@@ -62,7 +66,7 @@ class NotesModel(QObject):
     def create_note(self, title: str, content: str, parent_id: Optional[int] = None) -> Optional[Note]:
         """Create a new note"""
         try:
-            api_note = self.api.note_create(title, content)
+            api_note: APINote = self.api.note_create(title, content)  # Add type hint
             note = Note.from_api_note(api_note)
             
             self.notes[note.id] = note
@@ -89,8 +93,8 @@ class NotesModel(QObject):
             if not note:
                 return False
                 
-            # Only include fields that are being updated
-            update_data = {}
+            # Create properly typed update data
+            update_data: UpdateNoteRequest = {}
             if title is not None:
                 update_data["title"] = title
             if content is not None:
