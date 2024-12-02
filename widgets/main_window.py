@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import (QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem, 
+from PySide6.QtWidgets import (QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem,
                               QStatusBar, QComboBox, QVBoxLayout, QWidget)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeySequence, QShortcut
@@ -64,16 +64,20 @@ class NoteApp(QMainWindow):
         self.right_text_bottom = QTextEdit()
         self.right_text_bottom.setPlaceholderText("Bottom Section")
 
+        self.right_text_mid = QTextEdit()
+        self.right_text_mid.setPlaceholderText("Mid Section")
+
         # Create a new splitter for the right sidebar
         self.right_splitter = QSplitter(Qt.Orientation.Vertical)
         self.right_splitter.setHandleWidth(self.handle_size)
         self.right_splitter.addWidget(self.additional_tree)
         self.right_splitter.addWidget(self.right_text_top)
+        self.right_splitter.addWidget(self.right_text_mid)
         self.right_splitter.addWidget(self.right_text_bottom)
 
         # Set initial sizes for right splitter sections
-        right_heights = [200, 200, 200]  # Adjust these values as needed
-        self.right_splitter.setSizes(right_heights)
+        # right_heights = [200, 200, 200]  # Adjust these values as needed
+        # self.right_splitter.setSizes(right_heights)
 
         # Add widgets to main splitter
         self.splitter.addWidget(self.left_sidebar)
