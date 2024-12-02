@@ -5,6 +5,7 @@ from ui.actions_manager import create_actions
 from ui.menu_manager import create_file_menu, create_view_menu, create_tabs_menu
 from ui.toolbar_manager import create_toolbar
 from widgets.main_window import NoteApp
+from ui.menu_handler import MenuHandler
 
 
 if __name__ == "__main__":
