@@ -79,6 +79,25 @@ def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     app = cast(QApplication, QCoreApplication.instance())
     actions["exit"].triggered.connect(app.quit)
 
+    # Add separator before navigation actions
+    file_menu.addSeparator()
+
+    # Back action
+    back_icon = style.standardIcon(QStyle.StandardPixmap.SP_ArrowBack)
+    actions["back"] = QAction(back_icon, "Go &Back", parent)
+    actions["back"].setShortcut("Alt+Left")
+    actions["back"].setStatusTip("Go to previously viewed note")
+    actions["back"].setEnabled(False)  # Initially disabled
+    file_menu.addAction(actions["back"])
+
+    # Forward action  
+    forward_icon = style.standardIcon(QStyle.StandardPixmap.SP_ArrowForward)
+    actions["forward"] = QAction(forward_icon, "Go &Forward", parent)
+    actions["forward"].setShortcut("Alt+Right") 
+    actions["forward"].setStatusTip("Go to next viewed note")
+    actions["forward"].setEnabled(False)  # Initially disabled
+    file_menu.addAction(actions["forward"])
+
     return file_menu, actions
 
 
