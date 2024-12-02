@@ -51,13 +51,13 @@ class NoteApp(QMainWindow):
 
         # Setup markdown view actions
         self.main_content.editor.set_view_actions(
-            self.menu_handler.view_actions["maximize_editor"],
-            self.menu_handler.view_actions["maximize_preview"],
+            self.menu_handler.actions["maximize_editor"],
+            self.menu_handler.actions["maximize_preview"],
         )
 
         # Connect navigation actions
-        self.menu_handler.file_actions["back"].triggered.connect(self.navigate_back)
-        self.menu_handler.file_actions["forward"].triggered.connect(
+        self.menu_handler.actions["back"].triggered.connect(self.navigate_back)
+        self.menu_handler.actions["forward"].triggered.connect(
             self.navigate_forward
         )
         self.navigation_model.navigation_changed.connect(self.update_navigation_actions)
@@ -151,10 +151,10 @@ class NoteApp(QMainWindow):
 
     def update_navigation_actions(self):
         """Update the enabled state of navigation actions"""
-        self.menu_handler.file_actions["back"].setEnabled(
+        self.menu_handler.actions["back"].setEnabled(
             self.navigation_model.can_go_back()
         )
-        self.menu_handler.file_actions["forward"].setEnabled(
+        self.menu_handler.actions["forward"].setEnabled(
             self.navigation_model.can_go_forward()
         )
 
