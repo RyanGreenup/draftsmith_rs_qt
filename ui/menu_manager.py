@@ -3,6 +3,38 @@ from PySide6.QtGui import QAction
 from PySide6.QtCore import QCoreApplication
 from typing import Dict, Tuple
 
+def create_tabs_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
+    """Create a tabs menu with actions"""
+    tabs_menu = QMenu("&Tabs", parent)
+    actions = {}
+    
+    # New tab action
+    actions['new_tab'] = QAction("&New Tab", parent)
+    actions['new_tab'].setShortcut("Ctrl+T")
+    actions['new_tab'].setStatusTip("Create a new tab")
+    tabs_menu.addAction(actions['new_tab'])
+    
+    # Close tab action
+    actions['close_tab'] = QAction("&Close Tab", parent)
+    actions['close_tab'].setShortcut("Ctrl+W")
+    actions['close_tab'].setStatusTip("Close current tab")
+    tabs_menu.addAction(actions['close_tab'])
+    
+    tabs_menu.addSeparator()
+    
+    # Next/Previous tab actions
+    actions['next_tab'] = QAction("Next Tab", parent)
+    actions['next_tab'].setShortcut("Ctrl+Tab")
+    actions['next_tab'].setStatusTip("Switch to next tab")
+    tabs_menu.addAction(actions['next_tab'])
+    
+    actions['prev_tab'] = QAction("Previous Tab", parent)
+    actions['prev_tab'].setShortcut("Ctrl+Shift+Tab")
+    actions['prev_tab'].setStatusTip("Switch to previous tab")
+    tabs_menu.addAction(actions['prev_tab'])
+    
+    return tabs_menu, actions
+
 def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     "Create a file menu with actions and return both menu and actions dictionary"
 

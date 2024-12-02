@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMainWindow, QTreeWidgetItem, QStatusBar
 from PySide6.QtCore import Qt
 from .main_content import MainContent
+from .tab_widget import NotesTabWidget
 from PySide6.QtGui import QKeySequence, QShortcut
 from models.note import Note
 from .notes_tree import NotesTreeWidget
@@ -20,9 +21,10 @@ class NoteApp(QMainWindow):
         self.setWindowTitle("Note Taking App")
         self.setGeometry(100, 100, 1000, 600)
 
-        # Create and setup main content
-        self.main_content = MainContent(self.handle_size)
-        self.setCentralWidget(self.main_content)
+        # Create and setup tab widget
+        self.tab_widget = NotesTabWidget(self)
+        self.setCentralWidget(self.tab_widget)
+        self.main_content = self.tab_widget.add_new_tab("Main")
         
         # Connect selection signal
         self.main_content.left_sidebar.tree.itemSelectionChanged.connect(self.on_selection_changed)
@@ -38,6 +40,16 @@ class NoteApp(QMainWindow):
         # Add View menu
         self.view_menu, self.view_actions = create_view_menu(self)
         self.menubar.addMenu(self.view_menu)
+
+        # Add Tabs menu
+        self.tabs_menu, self.tabs_actions = create_tabs_menu(self)
+        self.menubar.addMenu(self.tabs_menu)
+
+        # Connect tab actions
+        self.tabs_actions['new_tab'].triggered.connect(self.new_tab)
+        self.tabs_actions['close_tab'].triggered.connect(self.close_current_tab)
+        self.tabs_actions['next_tab'].triggered.connect(self.next_tab)
+        self.tabs_actions['prev_tab'].triggered.connect(self.previous_tab)
 
         # Connect markdown view actions
         self.main_content.editor.set_view_actions(
@@ -113,7 +125,33 @@ class NoteApp(QMainWindow):
         """Simulate Shift+Tab key press to move focus to previous widget"""
         self.focusPreviousChild()
 
-    def add_dummy_data(self):
+    def new_tab(self):
+        """Create a new tab"""
+        tab_content = self.tab_widget.add_new_tab()
+        # Add dummy data to new tab
+        self.add_dummy_data(tab_content)
+
+    def close_current_tab(self):
+        """Close the current tab"""
+        current_index = self.tab_widget.currentIndex()
+        self.tab_widget.close_tab(current_index)
+
+    def next_tab(self):
+        """Switch to next tab"""
+        current = self.tab_widget.currentIndex()
+        next_index = (current + 1) % self.tab_widget.count()
+        self.tab_widget.setCurrentIndex(next_index)
+
+    def previous_tab(self):
+        """Switch to previous tab"""
+        current = self.tab_widget.currentIndex()
+        prev_index = (current - 1) % self.tab_widget.count()
+        self.tab_widget.setCurrentIndex(prev_index)
+
+    def add_dummy_data(self, target=None):
+        """Add dummy data to specified target or current tab"""
+        if target is None:
+            target = self.main_content
         notes_hierarchy = [
             (Note("Work", "General work-related notes and tasks"), [
                 (Note(
