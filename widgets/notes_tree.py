@@ -1,6 +1,6 @@
+from typing import Optional
 from PySide6.QtWidgets import QTreeWidget, QApplication, QTreeWidgetItem
-from PySide6.QtCore import QEvent, Qt
-from PySide6.QtCore import QEvent
+from PySide6.QtCore import QEvent, Qt, QtCore
 from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
 
@@ -22,7 +22,7 @@ class NotesTreeWidget(QTreeWidget):
         else:
             item.setExpanded(False)
 
-    def get_max_depth(self, item: QTreeWidgetItem = None, current_depth: int = 0) -> int:
+    def get_max_depth(self, item: Optional[QTreeWidgetItem] = None, current_depth: int = 0) -> int:
         """Get the maximum depth of the tree."""
         if item is None:
             max_depth = 0
@@ -72,9 +72,9 @@ class NotesTreeWidget(QTreeWidget):
                     current.setExpanded(False)
                 elif event.key() == Key.Key_Right:
                     current.setExpanded(True)
-                elif event.key() == Key.Key_Space and not event.modifiers() & Qt.ShiftModifier:
+                elif event.key() == Key.Key_Space and not event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier:
                     current.setExpanded(not current.isExpanded())
-                elif event.key() == Key.Key_Space and event.modifiers() & Qt.ShiftModifier:
+                elif event.key() == Key.Key_Space and event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier:
                     self.cycle_fold_level_of_all_items()
         else:
             super().keyPressEvent(event)
