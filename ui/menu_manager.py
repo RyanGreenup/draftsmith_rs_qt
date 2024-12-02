@@ -66,6 +66,20 @@ def create_view_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     # Add separator
     view_menu.addSeparator()
     
+    # Navigation controls
+    actions['focus_next'] = QAction("Focus &Next Widget", parent)
+    actions['focus_next'].setShortcut("Ctrl+J")
+    actions['focus_next'].setStatusTip("Move focus to next widget (like Tab)")
+    view_menu.addAction(actions['focus_next'])
+    
+    actions['focus_previous'] = QAction("Focus &Previous Widget", parent)
+    actions['focus_previous'].setShortcut("Ctrl+K")
+    actions['focus_previous'].setStatusTip("Move focus to previous widget (like Shift+Tab)")
+    view_menu.addAction(actions['focus_previous'])
+    
+    # Add separator
+    view_menu.addSeparator()
+    
     # Markdown view controls
     actions['maximize_editor'] = QAction("Ma&ximize Editor", parent)
     actions['maximize_editor'].setShortcut("Ctrl+Shift+E")
