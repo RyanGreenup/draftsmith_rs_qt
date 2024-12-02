@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem, QStatusBar
+from PySide6.QtWidgets import (QMainWindow, QSplitter, QTextEdit, QTreeWidgetItem, 
+                              QStatusBar, QComboBox, QVBoxLayout, QWidget)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from models.note import Note
@@ -28,6 +29,22 @@ class NoteApp(QMainWindow):
         self.tree.setMinimumWidth(100)
         self.tree.itemSelectionChanged.connect(self.on_selection_changed)
 
+        # Create combo box for tree selection
+        self.tree_selector = QComboBox()
+        self.tree_selector.addItems(["Notes", "Tags"])
+        self.tree_selector.currentTextChanged.connect(self.on_tree_selection_changed)
+
+        # Create a container widget for the combo box and current tree
+        self.left_sidebar = QWidget()
+        self.left_layout = QVBoxLayout(self.left_sidebar)
+        self.left_layout.setContentsMargins(0, 0, 0, 0)
+        self.left_layout.addWidget(self.tree_selector)
+        self.left_layout.addWidget(self.tree)
+        self.left_layout.addWidget(self.tags_tree)
+
+        # Initially hide tags tree
+        self.tags_tree.hide()
+
         # Create text edit for main content
         self.text_edit = QTextEdit()
 
@@ -48,7 +65,7 @@ class NoteApp(QMainWindow):
         self.right_splitter.addWidget(self.additional_tree)
 
         # Add widgets to main splitter
-        self.splitter.addWidget(self.tree)
+        self.splitter.addWidget(self.left_sidebar)
         self.splitter.addWidget(self.text_edit)
         self.splitter.addWidget(self.right_splitter)
 
@@ -75,6 +92,14 @@ class NoteApp(QMainWindow):
                 self.text_edit.setText(note.content)
             else:
                 self.text_edit.clear()
+
+    def on_tree_selection_changed(self, text):
+        if text == "Notes":
+            self.tree.show()
+            self.tags_tree.hide()
+        else:  # Tags
+            self.tree.hide()
+            self.tags_tree.show()
 
     def show_command_palette(self):
         """Show the command palette and populate it with current menu actions"""
