@@ -1,7 +1,7 @@
 from typing import List, Optional, Any
 from PySide6.QtWidgets import QListWidgetItem, QMainWindow, QMenuBar
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QFont
+from PySide6.QtGui import QAction, QFont, QKeyEvent
 from .popup_palette import PopupPalette
 
 class CommandPalette(PopupPalette):
@@ -87,9 +87,9 @@ class CommandPalette(PopupPalette):
             self.main_window.statusBar().showMessage("Ready")
         self.hide()
 
-    def keyPressEvent(self, event: Qt.Key) -> None:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle key press events"""
-        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             current_item = self.results_list.currentItem()
             if current_item:
                 self.on_item_activated(current_item)
