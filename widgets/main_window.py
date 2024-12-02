@@ -63,7 +63,7 @@ class NoteApp(QMainWindow):
         self.navigation_model.navigation_changed.connect(self.update_navigation_actions)
 
         # Connect save action
-        self.menu_handler.file_actions["save"].triggered.connect(self.save_current_note)
+        self.menu_handler.actions["save"].triggered.connect(self.save_current_note)
         self.main_content.editor.save_requested.connect(self.save_current_note)
 
         self.setup_command_palette()
