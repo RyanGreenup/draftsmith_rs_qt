@@ -1,6 +1,6 @@
 # Development Log
 
-## 2024-01-02: API Integration Setup
+## feat: Implement NotesModel and update MainContent to use dynamic note loading `fd6dd4e`
 
 ### Changes Made
 
