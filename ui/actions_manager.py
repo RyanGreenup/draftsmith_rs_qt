@@ -102,4 +102,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["prev_tab"].setShortcut("Ctrl+Shift+Tab")
     actions["prev_tab"].setStatusTip("Switch to previous tab")
 
+    # Add refresh action
+    actions["refresh"] = QAction("&Refresh", parent)
+    actions["refresh"].setShortcut("F5")  # Common shortcut for refresh
+    actions["refresh"].setStatusTip("Refresh notes from server")
+    actions["refresh"].setToolTip("Refresh notes from server")
+
     return actions
