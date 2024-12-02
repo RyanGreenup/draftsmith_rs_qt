@@ -13,8 +13,9 @@ from models.navigation_model import NavigationModel
 
 
 class NoteApp(QMainWindow):
-    def __init__(self):
+    def __init__(self, actions):
         super().__init__()
+        self.actions = actions
         self.setup_window()
 
         # Add notes model and load data
@@ -25,7 +26,7 @@ class NoteApp(QMainWindow):
         self.navigation_model = NavigationModel()
 
         # Initialize handlers
-        self.menu_handler = MenuHandler(self)
+        self.menu_handler = MenuHandler(self, self.actions)
         self.tab_handler = TabHandler(self)
 
         # Setup components

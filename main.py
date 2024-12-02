@@ -9,7 +9,10 @@ from widgets.main_window import NoteApp
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = NoteApp()
+    # Create actions
+    actions = create_actions(window)
+    
+    window = NoteApp(actions)
 
     # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -18,19 +21,7 @@ if __name__ == "__main__":
     with open("ui/styles/style.qss", "r") as file:
         app.setStyleSheet(file.read())
 
-    # Create actions
-    actions = create_actions(window)
-
-    # Create menus using actions
-    menubar = window.menuBar()
-    file_menu = create_file_menu(menubar, actions)
-    view_menu = create_view_menu(menubar, actions)
-    tabs_menu = create_tabs_menu(menubar, actions)
-    menubar.addMenu(file_menu)
-    menubar.addMenu(view_menu)
-    menubar.addMenu(tabs_menu)
-
-    # Add toolbar using the same actions
+    # Add toolbar using actions
     toolbar = create_toolbar(window, actions)
     window.addToolBar(toolbar)
 

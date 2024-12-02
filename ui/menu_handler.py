@@ -3,29 +3,27 @@ from typing import Dict, Any
 
 
 class MenuHandler:
-    def __init__(self, main_window):
+    def __init__(self, main_window, actions):
         self.main_window = main_window
         self.menubar = main_window.menuBar()
+        self.actions = actions
         self.file_menu = None
         self.view_menu = None
         self.tabs_menu = None
-        self.file_actions = {}
-        self.view_actions = {}
-        self.tabs_actions = {}
 
     def setup_menus(self):
         from ui.menu_manager import create_file_menu, create_view_menu, create_tabs_menu
 
         # Setup File menu
-        self.file_menu, self.file_actions = create_file_menu(self.main_window)
+        self.file_menu = create_file_menu(self.main_window, self.actions)
         self.menubar.addMenu(self.file_menu)
 
         # Setup View menu
-        self.view_menu, self.view_actions = create_view_menu(self.main_window)
+        self.view_menu = create_view_menu(self.main_window, self.actions)
         self.menubar.addMenu(self.view_menu)
 
         # Setup Tabs menu
-        self.tabs_menu, self.tabs_actions = create_tabs_menu(self.main_window)
+        self.tabs_menu = create_tabs_menu(self.main_window, self.actions)
         self.menubar.addMenu(self.tabs_menu)
 
         self._connect_actions()
