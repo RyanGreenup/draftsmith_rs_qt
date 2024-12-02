@@ -184,6 +184,32 @@ class NoteApp(QMainWindow):
     def previous_tab(self):
         self.tab_handler.previous_tab()
 
+    def create_new_note(self):
+        """Create a new note and select it in the tree"""
+        # Get currently selected note as parent
+        current_item = self.main_content.left_sidebar.tree.currentItem()
+        parent_id = None
+        if current_item:
+            parent_data = current_item.data(0, Qt.ItemDataRole.UserRole)
+            if parent_data:
+                parent_id = parent_data.id
+
+        # Create new note
+        new_note = self.notes_model.create_note(
+            title="New Note",
+            content="",
+            parent_id=parent_id
+        )
+        
+        if new_note:
+            # Select the new note in tree
+            self.main_content.left_sidebar.tree.select_note_by_id(new_note.id)
+            # Focus the editor
+            self.main_content.editor.setFocus()
+            self.status_bar.showMessage("Created new note", 3000)
+        else:
+            self.status_bar.showMessage("Failed to create note", 3000)
+
     def save_current_note(self):
         """Save the current note's content"""
         current_note = self.main_content.left_sidebar.tree.currentItem()

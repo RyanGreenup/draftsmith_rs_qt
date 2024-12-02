@@ -39,7 +39,12 @@ class MenuHandler:
         self.tabs_actions["next_tab"].triggered.connect(self.main_window.next_tab)
         self.tabs_actions["prev_tab"].triggered.connect(self.main_window.previous_tab)
 
-        # Connect view actions
+        # Connect file actions
+        self.file_actions["new"].triggered.connect(
+            self.main_window.create_new_note
+        )
+
+        # Connect view actions 
         self.view_actions["toggle_left_sidebar"].triggered.connect(
             self.main_window.toggle_left_sidebar
         )
