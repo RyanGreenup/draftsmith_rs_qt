@@ -22,7 +22,9 @@ class ForwardLinksWidget(QListWidget):
         self.clear()
         if not forward_links:
             item = QListWidgetItem("No forward links")
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)  # Make non-clickable
+            item.setFlags(
+                item.flags() & ~Qt.ItemFlag.ItemIsEnabled
+            )  # Make non-clickable
             self.addItem(item)
             return
 

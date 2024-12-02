@@ -29,10 +29,10 @@ class NoteApp(QMainWindow):
 
         # Connect the model to the trees
         self.main_content.left_sidebar.tree.set_model(self.notes_model)
-        
+
         # Connect note selection to right sidebar updates
         self.notes_model.note_selected.connect(self.update_right_sidebar)
-        
+
         # Connect forward link selection
         self.main_content.right_sidebar.forward_links.note_selected.connect(
             self.handle_forward_link_selection

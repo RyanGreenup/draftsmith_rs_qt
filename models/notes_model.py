@@ -14,7 +14,9 @@ class NotesModel(QObject):
     """Model class to handle notes data and API interactions"""
 
     notes_updated = Signal()  # Emitted when notes data changes
-    note_selected = Signal(Note, list)  # Emitted when a note is selected, includes forward links
+    note_selected = Signal(
+        Note, list
+    )  # Emitted when a note is selected, includes forward links
 
     def __init__(self, api_url: str):
         super().__init__()

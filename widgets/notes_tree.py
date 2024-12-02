@@ -13,7 +13,7 @@ class NotesTreeWidget(QTreeWidget):
         self.notes_model = None
         self.itemSelectionChanged.connect(self._on_selection_changed)
 
-    def set_model(self, model: 'NotesModel'):
+    def set_model(self, model: "NotesModel"):
         """Set the notes model for this tree widget"""
         self.notes_model = model
 
@@ -78,6 +78,7 @@ class NotesTreeWidget(QTreeWidget):
 
     def select_note_by_id(self, note_id: int) -> None:
         """Select the tree item corresponding to the given note ID"""
+
         def find_and_select_item(item):
             # Check current item
             note_data = item.data(0, Qt.ItemDataRole.UserRole)
@@ -85,13 +86,13 @@ class NotesTreeWidget(QTreeWidget):
                 self.setCurrentItem(item)
                 self.scrollToItem(item)
                 return True
-                
+
             # Check children
             for i in range(item.childCount()):
                 if find_and_select_item(item.child(i)):
                     return True
             return False
-        
+
         # Search through top-level items
         for i in range(self.topLevelItemCount()):
             if find_and_select_item(self.topLevelItem(i)):
