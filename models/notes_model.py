@@ -22,8 +22,8 @@ class NotesModel(QObject):
 
     def __init__(self, api_url: str):
         super().__init__()
-        self.api = NoteAPI(api_url)
-        self.api.tag_api = TagAPI(api_url)  # Add TagAPI
+        self.note_api: NoteAPI = NoteAPI(api_url)
+        self.tag_api: TagAPI = TagAPI(api_url)
         self.notes: Dict[int, Note] = {}  # id -> Note mapping
         self.root_notes: List[Note] = []  # Top-level notes
 
@@ -31,7 +31,7 @@ class NotesModel(QObject):
         """Load all notes from the API"""
         try:
             # Get the tree structure of notes
-            tree_notes = self.api.get_notes_tree()
+            tree_notes = self.note_api.get_notes_tree()
 
             # Clear existing data
             self.notes.clear()
@@ -75,7 +75,7 @@ class NotesModel(QObject):
     def get_forward_links(self, note_id: int) -> List[Note]:
         """Get all notes that this note links to"""
         try:
-            api_notes = self.api.get_note_forward_links(note_id)
+            api_notes = self.note_api.get_note_forward_links(note_id)
             return [Note.from_api_note(api_note) for api_note in api_notes]
         except Exception as e:
             print(f"Error getting forward links: {e}")
@@ -84,7 +84,7 @@ class NotesModel(QObject):
     def get_backlinks(self, note_id: int) -> List[Note]:
         """Get all notes that link to this note"""
         try:
-            api_notes = self.api.get_note_backlinks(note_id)
+            api_notes = self.note_api.get_note_backlinks(note_id)
             return [Note.from_api_note(api_note) for api_note in api_notes]
         except Exception as e:
             print(f"Error getting backlinks: {e}")
@@ -94,11 +94,11 @@ class NotesModel(QObject):
         """Get all tags for a note"""
         try:
             # Get the note-tag relations
-            relations = self.api.tag_api.get_note_tag_relations()
+            relations = self.tag_api.get_note_tag_relations()
             # Filter relations for this note
             note_tag_ids = [rel.tag_id for rel in relations if rel.note_id == note_id]
             # Get all tags
-            all_tags = self.api.tag_api.get_all_tags()
+            all_tags = self.tag_api.get_all_tags()
             # Filter tags for this note
             return [tag for tag in all_tags if tag.id in note_tag_ids]
         except Exception as e:
@@ -124,7 +124,7 @@ class NotesModel(QObject):
     ) -> Optional[Note]:
         """Create a new note"""
         try:
-            api_response = self.api.note_create(title, content)
+            api_response = self.note_api.note_create(title, content)
             # Convert API response to Note model explicitly
             api_note = APINote.model_validate(api_response)
             note = Note.from_api_note(api_note)
@@ -134,7 +134,7 @@ class NotesModel(QObject):
             if parent_id:
                 parent = self.notes.get(parent_id)
                 if parent:
-                    self.api.attach_note_to_parent(note.id, parent_id)
+                    self.note_api.attach_note_to_parent(note.id, parent_id)
                     parent.add_child(note)
             else:
                 self.root_notes.append(note)
@@ -158,7 +158,7 @@ class NotesModel(QObject):
             # Create update request using the imported type
             update_data = UpdateNoteRequest(title=title, content=content)
 
-            api_response = self.api.update_note(note_id, update_data)
+            api_response = self.note_api.update_note(note_id, update_data)
             note.update_from_api_note(api_response)
 
             self.notes_updated.emit()
@@ -182,7 +182,7 @@ class NotesModel(QObject):
             if not note:
                 return False
 
-            self.api.delete_note(note_id)
+            self.note_api.delete_note(note_id)
 
             # Remove from parent's children
             if note.parent_id and note.parent_id in self.notes:
