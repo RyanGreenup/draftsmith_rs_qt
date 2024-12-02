@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from PySide6.QtWidgets import QMainWindow, QStatusBar
 from api.client import Tag
 from PySide6.QtGui import QKeySequence, QShortcut
@@ -13,7 +13,7 @@ from models.navigation_model import NavigationModel
 
 
 class NoteApp(QMainWindow):
-    def __init__(self, actions):
+    def __init__(self, actions: Dict[str, QAction]):
         super().__init__()
         self.actions = actions
         self.setup_window()

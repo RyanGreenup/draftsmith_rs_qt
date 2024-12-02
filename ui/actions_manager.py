@@ -1,10 +1,11 @@
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtCore import QCoreApplication
-from typing import Dict
+from typing import Dict, Optional
 
 
-def create_actions(parent) -> Dict[str, QAction]:
+
+def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions = {}
     style = QApplication.style()
 

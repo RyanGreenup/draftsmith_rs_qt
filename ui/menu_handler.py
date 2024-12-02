@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import QMenuBar
+from PySide6.QtGui import QAction
 from typing import Dict, Any
 
 
 class MenuHandler:
-    def __init__(self, main_window, actions):
+    def __init__(self, main_window, actions: Dict[str, QAction]):
         self.main_window = main_window
         self.menubar = main_window.menuBar()
         self.actions = actions

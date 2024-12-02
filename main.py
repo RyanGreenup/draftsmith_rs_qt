@@ -11,16 +11,11 @@ from ui.menu_handler import MenuHandler
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     
-    # Create empty window first
-    window = NoteApp(None)  # Temporarily pass None for actions
+    # Create actions first without a parent
+    actions = create_actions()
     
-    # Now create actions using the window
-    actions = create_actions(window)
-    
-    # Update window with the actions
-    window.actions = actions
-    window.menu_handler = MenuHandler(window, actions)
-    window.menu_handler.setup_menus()
+    # Create window with actions
+    window = NoteApp(actions)
 
     # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
