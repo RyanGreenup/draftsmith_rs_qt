@@ -111,7 +111,8 @@ class NoteApp(QMainWindow):
 
     def update_right_sidebar(self, note: Note, forward_links: List[Note]) -> None:
         """Update right sidebar content when a note is selected"""
-        self.main_content.right_sidebar.update_forward_links(forward_links)
+        if note:
+            self.main_content.right_sidebar.update_forward_links(forward_links)
 
     def new_tab(self):
         self.tab_handler.new_tab()

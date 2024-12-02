@@ -77,11 +77,17 @@ class NotesModel(QObject):
             return []
 
     def select_note(self, note_id: int) -> None:
-        """Handle note selection and emit signals"""
+        """Handle note selection and emit signals with all necessary data"""
         note = self.notes.get(note_id)
         if note:
-            forward_links = self.get_forward_links(note_id)
-            self.note_selected.emit(note, forward_links)
+            try:
+                # Get forward links when note is selected
+                forward_links = self.get_forward_links(note_id)
+                # Emit signal with note and its forward links
+                self.note_selected.emit(note, forward_links)
+            except Exception as e:
+                print(f"Error getting forward links for note {note_id}: {e}")
+                self.note_selected.emit(note, [])
 
     def create_note(
         self, title: str, content: str, parent_id: Optional[int] = None

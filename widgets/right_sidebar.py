@@ -37,8 +37,12 @@ class RightSidebar(QSplitter):
     def update_forward_links(self, forward_links: List[Note]) -> None:
         """Update the forward links text area with linked notes"""
         if not forward_links:
-            self.text_top.setText("No forward links")
+            self.text_top.setPlainText("No forward links")
             return
             
-        text = "\n".join(f"- {note.title}" for note in forward_links)
-        self.text_top.setText(text)
+        # Create a formatted list of forward links
+        links_text = "Forward Links:\n\n"
+        for note in forward_links:
+            links_text += f"• {note.title}\n"
+        
+        self.text_top.setPlainText(links_text)
