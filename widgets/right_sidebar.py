@@ -1,6 +1,7 @@
 from typing import List, Optional
 from PySide6.QtWidgets import QSplitter, QTextEdit, QListWidget, QListWidgetItem
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QKeyEvent
 from .notes_tree import NotesTreeWidget
 from models.note import Note
 
@@ -13,9 +14,36 @@ class ForwardLinksWidget(QListWidget):
         self.itemDoubleClicked.connect(self._on_item_double_clicked)
 
     def _on_item_double_clicked(self, item: QListWidgetItem):
-        note_id = item.data(Qt.ItemDataRole.UserRole)
-        if note_id:
-            self.note_selected.emit(note_id)
+        self._select_current_note()
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Handle keyboard navigation"""
+        if event.key() == Qt.Key.Key_J:
+            # Move down
+            current_row = self.currentRow()
+            if current_row < self.count() - 1:
+                self.setCurrentRow(current_row + 1)
+            event.accept()
+        elif event.key() == Qt.Key.Key_K:
+            # Move up
+            current_row = self.currentRow()
+            if current_row > 0:
+                self.setCurrentRow(current_row - 1)
+            event.accept()
+        elif event.key() == Qt.Key.Key_Return:
+            # Select current note
+            self._select_current_note()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
+    def _select_current_note(self) -> None:
+        """Helper method to select the current note"""
+        current_item = self.currentItem()
+        if current_item:
+            note_id = current_item.data(Qt.ItemDataRole.UserRole)
+            if note_id:
+                self.note_selected.emit(note_id)
 
     def update_links(self, forward_links: List[Note]) -> None:
         """Update the list with new forward links"""
