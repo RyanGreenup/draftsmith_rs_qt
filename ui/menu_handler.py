@@ -31,28 +31,28 @@ class MenuHandler:
 
     def _connect_actions(self):
         # Connect tab actions
-        self.tabs_actions["new_tab"].triggered.connect(self.main_window.new_tab)
-        self.tabs_actions["close_tab"].triggered.connect(
+        self.actions["new_tab"].triggered.connect(self.main_window.new_tab)
+        self.actions["close_tab"].triggered.connect(
             self.main_window.close_current_tab
         )
-        self.tabs_actions["next_tab"].triggered.connect(self.main_window.next_tab)
-        self.tabs_actions["prev_tab"].triggered.connect(self.main_window.previous_tab)
+        self.actions["next_tab"].triggered.connect(self.main_window.next_tab)
+        self.actions["prev_tab"].triggered.connect(self.main_window.previous_tab)
 
         # Connect file actions
-        self.file_actions["new"].triggered.connect(
+        self.actions["new"].triggered.connect(
             self.main_window.create_new_note
         )
 
         # Connect view actions 
-        self.view_actions["toggle_left_sidebar"].triggered.connect(
+        self.actions["toggle_left_sidebar"].triggered.connect(
             self.main_window.toggle_left_sidebar
         )
-        self.view_actions["toggle_right_sidebar"].triggered.connect(
+        self.actions["toggle_right_sidebar"].triggered.connect(
             self.main_window.toggle_right_sidebar
         )
-        self.view_actions["focus_next"].triggered.connect(
+        self.actions["focus_next"].triggered.connect(
             self.main_window.focus_next_widget
         )
-        self.view_actions["focus_previous"].triggered.connect(
+        self.actions["focus_previous"].triggered.connect(
             self.main_window.focus_previous_widget
         )
