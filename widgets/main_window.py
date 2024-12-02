@@ -87,6 +87,22 @@ class NoteApp(QMainWindow):
         # Set splitter as central widget
         self.setCentralWidget(self.splitter)
 
+        # Create menubar
+        self.menubar = self.menuBar()
+
+        # Add File menu
+        from ui.menu_manager import create_file_menu, create_view_menu
+        self.file_menu, self.file_actions = create_file_menu(self)
+        self.menubar.addMenu(self.file_menu)
+
+        # Add View menu
+        self.view_menu, self.view_actions = create_view_menu(self)
+        self.menubar.addMenu(self.view_menu)
+
+        # Connect view actions
+        self.view_actions['toggle_left_sidebar'].triggered.connect(self.toggle_left_sidebar)
+        self.view_actions['toggle_right_sidebar'].triggered.connect(self.toggle_right_sidebar)
+
         # Create command palette
         from .command_palette import CommandPalette
         self.command_palette = CommandPalette(self)
@@ -117,6 +133,24 @@ class NoteApp(QMainWindow):
             self.tree.hide()
             self.tags_tree.show()
             self.status_bar.showMessage("Showing Tags Tree")
+
+    def toggle_left_sidebar(self):
+        """Toggle the visibility of the left sidebar"""
+        if self.left_sidebar.isVisible():
+            self.left_sidebar.hide()
+            self.view_actions['toggle_left_sidebar'].setText("Show Left Sidebar")
+        else:
+            self.left_sidebar.show()
+            self.view_actions['toggle_left_sidebar'].setText("Hide Left Sidebar")
+
+    def toggle_right_sidebar(self):
+        """Toggle the visibility of the right sidebar"""
+        if self.right_splitter.isVisible():
+            self.right_splitter.hide()
+            self.view_actions['toggle_right_sidebar'].setText("Show Right Sidebar")
+        else:
+            self.right_splitter.show()
+            self.view_actions['toggle_right_sidebar'].setText("Hide Right Sidebar")
 
     def show_command_palette(self):
         """Show the command palette and populate it with current menu actions"""

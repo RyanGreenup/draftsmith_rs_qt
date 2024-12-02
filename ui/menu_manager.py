@@ -45,3 +45,22 @@ def create_file_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
     actions['exit'].triggered.connect(QCoreApplication.instance().quit)
 
     return file_menu, actions
+
+def create_view_menu(parent) -> Tuple[QMenu, Dict[str, QAction]]:
+    """Create a view menu with actions and return both menu and actions dictionary"""
+    view_menu = QMenu("View", parent)
+    actions = {}
+    
+    # Toggle left sidebar action
+    actions['toggle_left_sidebar'] = QAction("Hide Left Sidebar", parent)
+    actions['toggle_left_sidebar'].setShortcut("Ctrl+\\")
+    actions['toggle_left_sidebar'].setStatusTip("Toggle left sidebar visibility")
+    view_menu.addAction(actions['toggle_left_sidebar'])
+    
+    # Toggle right sidebar action
+    actions['toggle_right_sidebar'] = QAction("Hide Right Sidebar", parent)
+    actions['toggle_right_sidebar'].setShortcut("Ctrl+Shift+\\")
+    actions['toggle_right_sidebar'].setStatusTip("Toggle right sidebar visibility")
+    view_menu.addAction(actions['toggle_right_sidebar'])
+    
+    return view_menu, actions
