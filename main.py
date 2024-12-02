@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QApplication
 import signal
-from PySide6.QtCore import QFile, QTextStream
 import sys
-from ui.menu_manager import create_file_menu, create_view_menu
+from ui.actions_manager import create_actions
+from ui.menu_manager import create_file_menu, create_view_menu, create_tabs_menu
 from ui.toolbar_manager import create_toolbar
 from widgets.main_window import NoteApp
 
@@ -18,12 +18,19 @@ if __name__ == "__main__":
     with open("ui/styles/style.qss", "r") as file:
         app.setStyleSheet(file.read())
 
-    menubar = window.menuBar()
-    actions = dict()
-    actions.update(create_file_menu(menubar)[1])
-    actions.update(create_view_menu(menubar)[1])
+    # Create actions
+    actions = create_actions(window)
 
-    # Add toolbar
+    # Create menus using actions
+    menubar = window.menuBar()
+    file_menu = create_file_menu(menubar, actions)
+    view_menu = create_view_menu(menubar, actions)
+    tabs_menu = create_tabs_menu(menubar, actions)
+    menubar.addMenu(file_menu)
+    menubar.addMenu(view_menu)
+    menubar.addMenu(tabs_menu)
+
+    # Add toolbar using the same actions
     toolbar = create_toolbar(window, actions)
     window.addToolBar(toolbar)
 
