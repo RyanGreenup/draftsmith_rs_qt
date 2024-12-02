@@ -219,9 +219,16 @@ class NoteApp(QMainWindow):
         if current_note:
             note_data = current_note.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
+                # Save the current tree state before saving
+                tree_state = self.main_content.left_sidebar.tree.save_state()
+                
                 content = self.main_content.editor.get_content()
                 success = self.notes_model.update_note(note_data.id, content=content)
+                
                 if success:
+                    # Reload notes and restore tree state
+                    self.notes_model.load_notes()
+                    self.main_content.left_sidebar.tree.restore_state(tree_state)
                     self.status_bar.showMessage("Note saved successfully", 3000)
                 else:
                     self.status_bar.showMessage("Failed to save note", 3000)
