@@ -7,6 +7,7 @@ from models.notes_model import NotesModel
 
 #
 
+
 class NoteApp(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -25,12 +26,12 @@ class NoteApp(QMainWindow):
 
         # Setup markdown view actions
         self.main_content.editor.set_view_actions(
-            self.menu_handler.view_actions['maximize_editor'],
-            self.menu_handler.view_actions['maximize_preview']
+            self.menu_handler.view_actions["maximize_editor"],
+            self.menu_handler.view_actions["maximize_preview"],
         )
 
         # Connect save action
-        self.menu_handler.file_actions['save'].triggered.connect(self.save_current_note)
+        self.menu_handler.file_actions["save"].triggered.connect(self.save_current_note)
         self.main_content.editor.save_requested.connect(self.save_current_note)
 
         self.setup_command_palette()
@@ -46,10 +47,10 @@ class NoteApp(QMainWindow):
 
     def setup_command_palette(self):
         from .command_palette import CommandPalette
+
         self.command_palette = CommandPalette(self)
         self.command_shortcut = QShortcut(QKeySequence("Ctrl+P"), self)
         self.command_shortcut.activated.connect(self.show_command_palette)
-
 
     def on_tree_selection_changed(self, text):
         if text == "Notes":
@@ -65,19 +66,27 @@ class NoteApp(QMainWindow):
         """Toggle the visibility of the left sidebar"""
         if self.main_content.left_sidebar.isVisible():
             self.main_content.left_sidebar.hide()
-            self.menu_handler.view_actions['toggle_left_sidebar'].setText("Show &Left Sidebar")
+            self.menu_handler.view_actions["toggle_left_sidebar"].setText(
+                "Show &Left Sidebar"
+            )
         else:
             self.main_content.left_sidebar.show()
-            self.menu_handler.view_actions['toggle_left_sidebar'].setText("Hide &Left Sidebar")
+            self.menu_handler.view_actions["toggle_left_sidebar"].setText(
+                "Hide &Left Sidebar"
+            )
 
     def toggle_right_sidebar(self):
         """Toggle the visibility of the right sidebar"""
         if self.main_content.right_sidebar.isVisible():
             self.main_content.right_sidebar.hide()
-            self.menu_handler.view_actions['toggle_right_sidebar'].setText("Show &Right Sidebar")
+            self.menu_handler.view_actions["toggle_right_sidebar"].setText(
+                "Show &Right Sidebar"
+            )
         else:
             self.main_content.right_sidebar.show()
-            self.menu_handler.view_actions['toggle_right_sidebar'].setText("Hide &Right Sidebar")
+            self.menu_handler.view_actions["toggle_right_sidebar"].setText(
+                "Hide &Right Sidebar"
+            )
 
     def show_command_palette(self):
         """Show the command palette and populate it with current menu actions"""
@@ -116,4 +125,3 @@ class NoteApp(QMainWindow):
                     self.status_bar.showMessage("Note saved successfully", 3000)
                 else:
                     self.status_bar.showMessage("Failed to save note", 3000)
-

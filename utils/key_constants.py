@@ -2,9 +2,6 @@ from enum import IntEnum
 from PySide6.QtCore import Qt
 
 
-
-
-
 class Key(IntEnum):
     """Define key constants to satisfy type checker"""
 

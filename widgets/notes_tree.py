@@ -5,24 +5,27 @@ from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
 
 
-
-
-
 class NotesTreeWidget(QTreeWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.current_fold_level = -1  # -1 means all collapsed
 
-    def set_fold_level_recursive(self, item: QTreeWidgetItem, current_depth: int, max_depth: int):
+    def set_fold_level_recursive(
+        self, item: QTreeWidgetItem, current_depth: int, max_depth: int
+    ):
         """Recursively set fold level of items."""
         if current_depth <= max_depth:
             item.setExpanded(True)
             for i in range(item.childCount()):
-                self.set_fold_level_recursive(item.child(i), current_depth + 1, max_depth)
+                self.set_fold_level_recursive(
+                    item.child(i), current_depth + 1, max_depth
+                )
         else:
             item.setExpanded(False)
 
-    def get_max_depth(self, item: Optional[QTreeWidgetItem] = None, current_depth: int = 0) -> int:
+    def get_max_depth(
+        self, item: Optional[QTreeWidgetItem] = None, current_depth: int = 0
+    ) -> int:
         """Get the maximum depth of the tree."""
         if item is None:
             max_depth = 0
@@ -30,7 +33,7 @@ class NotesTreeWidget(QTreeWidget):
                 depth = self.get_max_depth(self.topLevelItem(i))
                 max_depth = max(max_depth, depth)
             return max_depth
-        
+
         max_child_depth = current_depth
         for i in range(item.childCount()):
             depth = self.get_max_depth(item.child(i), current_depth + 1)
@@ -43,8 +46,10 @@ class NotesTreeWidget(QTreeWidget):
             return
 
         max_depth = self.get_max_depth()
-        self.current_fold_level = (self.current_fold_level + 1) % (max_depth + 1)  # +1 for all-collapsed state
-        
+        self.current_fold_level = (self.current_fold_level + 1) % (
+            max_depth + 1
+        )  # +1 for all-collapsed state
+
         # When we reach max_depth (fully expanded), next press should collapse all
         if self.current_fold_level == max_depth:
             self.current_fold_level = -1
@@ -52,7 +57,9 @@ class NotesTreeWidget(QTreeWidget):
                 self.set_fold_level_recursive(self.topLevelItem(i), 0, -1)
         else:
             for i in range(self.topLevelItemCount()):
-                self.set_fold_level_recursive(self.topLevelItem(i), 0, self.current_fold_level)
+                self.set_fold_level_recursive(
+                    self.topLevelItem(i), 0, self.current_fold_level
+                )
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Key.Key_J:
@@ -72,10 +79,15 @@ class NotesTreeWidget(QTreeWidget):
                     current.setExpanded(False)
                 elif event.key() == Key.Key_Right:
                     current.setExpanded(True)
-                elif event.key() == Key.Key_Space and not event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+                elif (
+                    event.key() == Key.Key_Space
+                    and not event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+                ):
                     current.setExpanded(not current.isExpanded())
-                elif event.key() == Key.Key_Space and event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+                elif (
+                    event.key() == Key.Key_Space
+                    and event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+                ):
                     self.cycle_fold_level_of_all_items()
         else:
             super().keyPressEvent(event)
-

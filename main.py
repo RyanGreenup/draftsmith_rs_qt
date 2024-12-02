@@ -7,18 +7,11 @@ from ui.toolbar_manager import create_toolbar
 from widgets.main_window import NoteApp
 
 
-
-
-
-
-
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = NoteApp()
 
-     # Allow C-c to kill app
+    # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # Load and apply the stylesheet

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Optional, Set
 from api.client import Note as APINote, TreeNote as APITreeNote, Tag as APITag
 
+
 @dataclass
 class Note:
     id: int
@@ -10,37 +11,45 @@ class Note:
     content: str
     created_at: datetime
     modified_at: datetime
-    
+
     # Relationships
     parent_id: Optional[int] = None
-    children: List['Note'] = field(default_factory=list)
+    children: List["Note"] = field(default_factory=list)
     tags: Set[int] = field(default_factory=set)  # Set of tag IDs
     backlinks: Set[int] = field(default_factory=set)  # Notes that link to this note
     forward_links: Set[int] = field(default_factory=set)  # Notes this note links to
     hierarchy_type: Optional[str] = None  # e.g., "block"
 
     @classmethod
-    def from_api_note(cls, api_note: APINote) -> 'Note':
+    def from_api_note(cls, api_note: APINote) -> "Note":
         """Create a Note instance from an API Note response"""
         # Handle optional datetime fields with defaults
         created_at_val = api_note.created_at or datetime.now()
         modified_at_val = api_note.modified_at or datetime.now()
-        
+
         return cls(
             id=api_note.id,
             title=api_note.title,
             content=api_note.content,
             created_at=created_at_val,  # Now guaranteed to be datetime
-            modified_at=modified_at_val  # Now guaranteed to be datetime
+            modified_at=modified_at_val,  # Now guaranteed to be datetime
         )
 
     @classmethod
-    def from_api_tree_note(cls, api_tree_note: APITreeNote) -> 'Note':
+    def from_api_tree_note(cls, api_tree_note: APITreeNote) -> "Note":
         """Create a Note instance from an API TreeNote response"""
         # Handle optional datetime fields with a default value
-        created_at_val = datetime.now() if api_tree_note.created_at is None else api_tree_note.created_at
-        modified_at_val = datetime.now() if api_tree_note.modified_at is None else api_tree_note.modified_at
-        
+        created_at_val = (
+            datetime.now()
+            if api_tree_note.created_at is None
+            else api_tree_note.created_at
+        )
+        modified_at_val = (
+            datetime.now()
+            if api_tree_note.modified_at is None
+            else api_tree_note.modified_at
+        )
+
         note = cls(
             id=api_tree_note.id,
             title=api_tree_note.title,
@@ -48,29 +57,31 @@ class Note:
             created_at=created_at_val,
             modified_at=modified_at_val,
             hierarchy_type=api_tree_note.hierarchy_type,
-            tags={tag.id for tag in api_tree_note.tags}
+            tags={tag.id for tag in api_tree_note.tags},
         )
-        
+
         # Recursively convert child notes
         note.children = [
             cls.from_api_tree_note(child) for child in api_tree_note.children
         ]
-        
+
         return note
 
     def update_from_api_note(self, api_note: APINote) -> None:
         """Update this note's properties from an API Note response"""
         self.title = api_note.title
         self.content = api_note.content
-        self.modified_at = api_note.modified_at if api_note.modified_at else datetime.now()
+        self.modified_at = (
+            api_note.modified_at if api_note.modified_at else datetime.now()
+        )
 
-    def add_child(self, child: 'Note') -> None:
+    def add_child(self, child: "Note") -> None:
         """Add a child note to this note"""
         child.parent_id = self.id
         if child not in self.children:
             self.children.append(child)
 
-    def remove_child(self, child: 'Note') -> None:
+    def remove_child(self, child: "Note") -> None:
         """Remove a child note from this note"""
         if child in self.children:
             child.parent_id = None

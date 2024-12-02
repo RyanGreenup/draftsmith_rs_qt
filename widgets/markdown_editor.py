@@ -3,9 +3,10 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import Qt, QTimer, Signal
 import markdown
 
+
 class MarkdownEditor(QWidget):
     save_requested = Signal()  # Add save signal
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -42,7 +43,7 @@ class MarkdownEditor(QWidget):
 
     def update_preview(self):
         # Convert markdown to HTML
-        md = markdown.Markdown(extensions=['fenced_code', 'tables'])
+        md = markdown.Markdown(extensions=["fenced_code", "tables"])
         html = md.convert(self.editor.toPlainText())
 
         # Add some basic styling
@@ -89,7 +90,7 @@ class MarkdownEditor(QWidget):
             self._maximize_preview_action.setChecked(False)
         else:
             # Restore previous sizes if stored
-            if hasattr(self, '_stored_sizes'):
+            if hasattr(self, "_stored_sizes"):
                 self.splitter.setSizes(self._stored_sizes)
             else:
                 self.splitter.setSizes([300, 300])
@@ -103,7 +104,7 @@ class MarkdownEditor(QWidget):
             self._maximize_editor_action.setChecked(False)
         else:
             # Restore previous sizes if stored
-            if hasattr(self, '_stored_sizes'):
+            if hasattr(self, "_stored_sizes"):
                 self.splitter.setSizes(self._stored_sizes)
             else:
                 self.splitter.setSizes([300, 300])
@@ -118,7 +119,7 @@ class MarkdownEditor(QWidget):
     def save_content(self):
         """Emit signal to request saving current content"""
         self.save_requested.emit()
-        
+
     def get_content(self) -> str:
         """Get current editor content"""
         return self.editor.toPlainText()

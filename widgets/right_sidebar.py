@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QSplitter, QTextEdit
 from PySide6.QtCore import Qt
 from .notes_tree import NotesTreeWidget
 
+
 class RightSidebar(QSplitter):
     def __init__(self, handle_size=20, parent=None):
         super().__init__(Qt.Orientation.Vertical, parent)
@@ -20,7 +21,9 @@ class RightSidebar(QSplitter):
 
         self.text_top.setPlaceholderText("Forward Links")
         self.text_mid.setPlaceholderText("Tags")
-        self.text_bottom.setPlaceholderText("Similar Pages (Not Yet Implemented, Don't Touch)")
+        self.text_bottom.setPlaceholderText(
+            "Similar Pages (Not Yet Implemented, Don't Touch)"
+        )
 
         self.addWidget(self.additional_tree)
         self.addWidget(self.text_top)

@@ -1,10 +1,16 @@
 from typing import Optional, Any, List
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QLineEdit, QListWidget, 
-    QGraphicsDropShadowEffect, QListWidgetItem, QMainWindow
+    QWidget,
+    QVBoxLayout,
+    QLineEdit,
+    QListWidget,
+    QGraphicsDropShadowEffect,
+    QListWidgetItem,
+    QMainWindow,
 )
 from PySide6.QtCore import Qt, QRect
 from PySide6.QtGui import QKeyEvent, QColor, QPalette, QFont
+
 
 class PopupPalette(QWidget):
     """Base class for popup command palettes"""
