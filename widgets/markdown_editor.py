@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QSplitter, QTextEdit
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtCore import Qt, QTimer
 import markdown
 
 class MarkdownEditor(QWidget):
@@ -28,7 +28,6 @@ class MarkdownEditor(QWidget):
         self.update_timer.timeout.connect(self.update_preview)
         
         # Set up layout
-        from PyQt6.QtWidgets import QVBoxLayout
         layout = QVBoxLayout()
         layout.addWidget(self.splitter)
         layout.setContentsMargins(0, 0, 0, 0)
