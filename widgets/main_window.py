@@ -20,73 +20,12 @@ class NoteApp(QMainWindow):
         self.setWindowTitle("Note Taking App")
         self.setGeometry(100, 100, 1000, 600)
 
-        # Create main splitter
-        self.splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.splitter.setHandleWidth(self.handle_size)
-
-        # Create tree widget for sidebar
-        self.tree = NotesTreeWidget()
-        self.tree.setHeaderLabel("Notes")
-        self.tree.setMinimumWidth(100)
-        self.tree.itemSelectionChanged.connect(self.on_selection_changed)
-
-        # Create tags tree widget for sidebar
-        self.tags_tree = NotesTreeWidget()
-        self.tags_tree.setHeaderLabel("Tags")
-        self.tags_tree.setMinimumWidth(100)
-
-        # Create combo box for tree selection
-        self.tree_selector = QComboBox()
-        self.tree_selector.addItems(["Notes", "Tags"])
-        self.tree_selector.currentTextChanged.connect(self.on_tree_selection_changed)
-
-        # Create a container widget for the combo box and current tree
-        self.left_sidebar = QWidget()
-        self.left_layout = QVBoxLayout(self.left_sidebar)
-        self.left_layout.setContentsMargins(0, 0, 0, 0)
-        self.left_layout.addWidget(self.tree_selector)
-        self.left_layout.addWidget(self.tree)
-        self.left_layout.addWidget(self.tags_tree)
-
-        # Initially hide tags tree
-        self.tags_tree.hide()
-
-        # Create markdown editor for main content
-        self.text_edit = MarkdownEditor()
-
-        # Create widgets for right sidebar
-        self.additional_tree = NotesTreeWidget()
-        self.additional_tree.setHeaderLabel("Additional")
-        self.additional_tree.setMinimumWidth(200)
-
-        self.right_text_top = QTextEdit()
-        self.right_text_top.setPlaceholderText("Top Section")
-
-        self.right_text_bottom = QTextEdit()
-        self.right_text_bottom.setPlaceholderText("Bottom Section")
-
-        self.right_text_mid = QTextEdit()
-        self.right_text_mid.setPlaceholderText("Mid Section")
-
-        # Create a new splitter for the right sidebar
-        self.right_splitter = QSplitter(Qt.Orientation.Vertical)
-        self.right_splitter.setHandleWidth(self.handle_size)
-        self.right_splitter.addWidget(self.additional_tree)
-        self.right_splitter.addWidget(self.right_text_top)
-        self.right_splitter.addWidget(self.right_text_mid)
-        self.right_splitter.addWidget(self.right_text_bottom)
-
-        # Set initial sizes for right splitter sections
-        # right_heights = [200, 200, 200]  # Adjust these values as needed
-        # self.right_splitter.setSizes(right_heights)
-
-        # Add widgets to main splitter
-        self.splitter.addWidget(self.left_sidebar)
-        self.splitter.addWidget(self.text_edit)
-        self.splitter.addWidget(self.right_splitter)
-
-        # Set splitter as central widget
-        self.setCentralWidget(self.splitter)
+        # Create and setup main content
+        self.main_content = MainContent(self.handle_size)
+        self.setCentralWidget(self.main_content)
+        
+        # Connect selection signal
+        self.main_content.left_sidebar.tree.itemSelectionChanged.connect(self.on_selection_changed)
 
         # Create menubar
         self.menubar = self.menuBar()
