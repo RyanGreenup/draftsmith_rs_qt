@@ -15,8 +15,9 @@ class NoteApp(QMainWindow):
         super().__init__()
         self.setup_window()
 
-        # Add notes model
-        self.notes_model = NotesModel("http://eir:37242")  # Add appropriate URL
+        # Add notes model and load data
+        self.notes_model = NotesModel("http://eir:37242")
+        self.notes_model.load_notes()  # Load notes at startup
 
         # Initialize handlers
         self.menu_handler = MenuHandler(self)

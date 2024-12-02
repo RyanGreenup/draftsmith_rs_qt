@@ -31,6 +31,7 @@ class MainContent(QSplitter):
             item = selected_items[0]
             note = item.data(0, Qt.ItemDataRole.UserRole)
             if note:
+                # Update editor content
                 self.editor.set_content(note.content)
             else:
                 self.editor.set_content("")
