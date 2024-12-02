@@ -63,23 +63,23 @@ class NoteApp(QMainWindow):
         self.add_dummy_data()
 
     def on_selection_changed(self):
-        selected_items = self.tree.selectedItems()
+        selected_items = self.main_content.left_sidebar.tree.selectedItems()
         if selected_items:
             item = selected_items[0]
             note = item.data(0, Qt.ItemDataRole.UserRole)
             if note:
-                self.text_edit.set_content(note.content)
+                self.main_content.editor.set_content(note.content)
             else:
-                self.text_edit.set_content("")
+                self.main_content.editor.set_content("")
 
     def on_tree_selection_changed(self, text):
         if text == "Notes":
-            self.tree.show()
-            self.tags_tree.hide()
+            self.main_content.left_sidebar.tree.show()
+            self.main_content.left_sidebar.tags_tree.hide()
             self.status_bar.showMessage("Showing Notes Tree")
         else:  # Tags
-            self.tree.hide()
-            self.tags_tree.show()
+            self.main_content.left_sidebar.tree.hide()
+            self.main_content.left_sidebar.tags_tree.show()
             self.status_bar.showMessage("Showing Tags Tree")
 
     def toggle_left_sidebar(self):
@@ -153,7 +153,7 @@ class NoteApp(QMainWindow):
 
         # Add dummy data to the notes sidebar
         for parent_note, child_notes in notes_hierarchy:
-            parent_item = QTreeWidgetItem(self.tree)
+            parent_item = QTreeWidgetItem(self.main_content.left_sidebar.tree)
             parent_item.setText(0, parent_note.title)
             parent_item.setData(0, Qt.ItemDataRole.UserRole, parent_note)
 
@@ -181,7 +181,7 @@ class NoteApp(QMainWindow):
         }
 
         for parent_tag, child_tags in tags_hierarchy.items():
-            parent_item = QTreeWidgetItem(self.tags_tree)
+            parent_item = QTreeWidgetItem(self.main_content.left_sidebar.tags_tree)
             parent_item.setText(0, parent_tag.title)
             parent_item.setData(0, Qt.ItemDataRole.UserRole, parent_tag)
 
