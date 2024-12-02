@@ -16,8 +16,6 @@ class NotesTreeWidget(QTreeWidget):
     def set_model(self, model: "NotesModel"):
         """Set the notes model for this tree widget"""
         self.notes_model = model
-        self.notes_model.notes_updated.connect(self.refresh_tree)
-        self.refresh_tree()
 
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""
@@ -99,29 +97,6 @@ class NotesTreeWidget(QTreeWidget):
         for i in range(self.topLevelItemCount()):
             if find_and_select_item(self.topLevelItem(i)):
                 break
-
-    def refresh_tree(self) -> None:
-        """Refresh the tree view with current model data"""
-        if not self.notes_model:
-            return
-            
-        self.clear()
-        
-        # Add all root notes
-        for note in self.notes_model.root_notes:
-            self._add_note_item(note, self)
-    
-    def _add_note_item(self, note, parent) -> QTreeWidgetItem:
-        """Add a note and its children to the tree"""
-        item = QTreeWidgetItem(parent)
-        item.setText(0, note.title)
-        item.setData(0, Qt.ItemDataRole.UserRole, note)
-        
-        # Add all children recursively
-        for child in note.children:
-            self._add_note_item(child, item)
-            
-        return item
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Key.Key_J:
