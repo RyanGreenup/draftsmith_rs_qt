@@ -1,8 +1,15 @@
 from typing import List, Optional
-from PySide6.QtWidgets import QSplitter, QTextEdit, QListWidget, QListWidgetItem
+from PySide6.QtWidgets import (
+    QSplitter, 
+    QTextEdit, 
+    QListWidget, 
+    QListWidgetItem,
+    QMessageBox
+)
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent
 from models.note import Note
+from api.client import Tag
 
 class BacklinksWidget(QListWidget):
     note_selected = Signal(int)  # Emitted when a note is selected, passes note_id
@@ -114,12 +121,48 @@ class ForwardLinksWidget(QListWidget):
             self.addItem(item)
 
 
+class TagsWidget(QListWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.itemDoubleClicked.connect(self._show_not_implemented)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Handle keyboard navigation"""
+        if event.key() in (Qt.Key.Key_J, Qt.Key.Key_K, Qt.Key.Key_Return):
+            self._show_not_implemented()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
+    def _show_not_implemented(self, item: Optional[QListWidgetItem] = None) -> None:
+        """Show not implemented message"""
+        QMessageBox.information(
+            self,
+            "Not Implemented",
+            "Tag interaction functionality is not yet implemented.",
+        )
+
+    def update_tags(self, tags: List[Tag]) -> None:
+        """Update the list with new tags"""
+        self.clear()
+        if not tags:
+            item = QListWidgetItem("No tags")
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)  # Make non-clickable
+            self.addItem(item)
+            return
+
+        for tag in tags:
+            item = QListWidgetItem(tag.name)
+            item.setData(Qt.ItemDataRole.UserRole, tag.id)
+            self.addItem(item)
+
+
 class RightSidebar(QSplitter):
     def __init__(self, handle_size=20, parent=None):
         super().__init__(Qt.Orientation.Vertical, parent)
         self.backlinks = BacklinksWidget()
         self.forward_links = ForwardLinksWidget()
-        self.tags = QTextEdit()
+        self.tags = TagsWidget()
         self.text_bottom = QTextEdit()
 
         self._setup_ui(handle_size)
@@ -136,7 +179,7 @@ class RightSidebar(QSplitter):
         # Then set up their properties
         self.backlinks.setMinimumHeight(100)
         self.forward_links.setMinimumHeight(100)
-        self.tags.setPlaceholderText("Tags")
+        self.tags.setMinimumHeight(100)
         self.text_bottom.setPlaceholderText(
             "Similar Pages (Not Yet Implemented, Don't Touch)"
         )
@@ -148,3 +191,7 @@ class RightSidebar(QSplitter):
     def update_forward_links(self, forward_links: List[Note]) -> None:
         """Update the forward links list with linked notes"""
         self.forward_links.update_links(forward_links)
+
+    def update_tags(self, tags: List[Tag]) -> None:
+        """Update the tags list"""
+        self.tags.update_tags(tags)

@@ -130,6 +130,8 @@ class NoteApp(QMainWindow):
         if note:
             self.main_content.right_sidebar.update_forward_links(forward_links)
             self.main_content.right_sidebar.update_backlinks(backlinks)
+            # For now, just show empty tags list
+            self.main_content.right_sidebar.update_tags([])
 
     def new_tab(self):
         self.tab_handler.new_tab()
