@@ -40,7 +40,7 @@ class NoteApp(QMainWindow):
         self.menubar.addMenu(self.view_menu)
 
         # Connect markdown view actions
-        self.text_edit.set_view_actions(
+        self.main_content.editor.set_view_actions(
             self.view_actions['maximize_editor'],
             self.view_actions['maximize_preview']
         )
