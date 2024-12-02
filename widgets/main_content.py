@@ -1,9 +1,11 @@
-from PySide6.QtWidgets import QSplitter, QTreeWidgetItem
+from typing import Union
+from PySide6.QtWidgets import QSplitter, QTreeWidgetItem, QTreeWidget
 from PySide6.QtCore import Qt
 from .markdown_editor import MarkdownEditor
 from .left_sidebar import LeftSidebar
 from .right_sidebar import RightSidebar
 from models.note import Note
+from api.client import TreeNote
 
 class MainContent(QSplitter):
     def __init__(self, handle_size=20, parent=None):
@@ -51,7 +53,7 @@ class MainContent(QSplitter):
         except Exception as e:
             print(f"Error loading notes: {e}")
             
-    def _add_note_to_tree(self, note: Note, parent_item: QTreeWidgetItem):
+    def _add_note_to_tree(self, note: TreeNote, parent_item: Union[QTreeWidget, QTreeWidgetItem]) -> None:
         """Recursively add a note and its children to the tree"""
         if isinstance(parent_item, QTreeWidgetItem):
             item = QTreeWidgetItem(parent_item)
