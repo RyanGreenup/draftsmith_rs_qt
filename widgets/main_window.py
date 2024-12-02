@@ -53,15 +53,27 @@ class NoteApp(QMainWindow):
         # Create text edit for main content
         self.text_edit = QTextEdit()
 
-        # Create additional tree widget for sidebar
+        # Create widgets for right sidebar
         self.additional_tree = NotesTreeWidget()
         self.additional_tree.setHeaderLabel("Additional")
         self.additional_tree.setMinimumWidth(200)
+
+        self.right_text_top = QTextEdit()
+        self.right_text_top.setPlaceholderText("Top Section")
+
+        self.right_text_bottom = QTextEdit()
+        self.right_text_bottom.setPlaceholderText("Bottom Section")
 
         # Create a new splitter for the right sidebar
         self.right_splitter = QSplitter(Qt.Orientation.Vertical)
         self.right_splitter.setHandleWidth(self.handle_size)
         self.right_splitter.addWidget(self.additional_tree)
+        self.right_splitter.addWidget(self.right_text_top)
+        self.right_splitter.addWidget(self.right_text_bottom)
+
+        # Set initial sizes for right splitter sections
+        right_heights = [200, 200, 200]  # Adjust these values as needed
+        self.right_splitter.setSizes(right_heights)
 
         # Add widgets to main splitter
         self.splitter.addWidget(self.left_sidebar)
