@@ -56,19 +56,19 @@ class NoteApp(QMainWindow):
         """Toggle the visibility of the left sidebar"""
         if self.main_content.left_sidebar.isVisible():
             self.main_content.left_sidebar.hide()
-            self.view_actions['toggle_left_sidebar'].setText("Show &Left Sidebar")
+            self.menu_handler.view_actions['toggle_left_sidebar'].setText("Show &Left Sidebar")
         else:
             self.main_content.left_sidebar.show()
-            self.view_actions['toggle_left_sidebar'].setText("Hide &Left Sidebar")
+            self.menu_handler.view_actions['toggle_left_sidebar'].setText("Hide &Left Sidebar")
 
     def toggle_right_sidebar(self):
         """Toggle the visibility of the right sidebar"""
         if self.main_content.right_sidebar.isVisible():
             self.main_content.right_sidebar.hide()
-            self.view_actions['toggle_right_sidebar'].setText("Show &Right Sidebar")
+            self.menu_handler.view_actions['toggle_right_sidebar'].setText("Show &Right Sidebar")
         else:
             self.main_content.right_sidebar.show()
-            self.view_actions['toggle_right_sidebar'].setText("Hide &Right Sidebar")
+            self.menu_handler.view_actions['toggle_right_sidebar'].setText("Hide &Right Sidebar")
 
     def show_command_palette(self):
         """Show the command palette and populate it with current menu actions"""
