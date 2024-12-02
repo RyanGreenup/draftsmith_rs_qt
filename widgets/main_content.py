@@ -34,18 +34,22 @@ class MainContent(QSplitter):
 
     def initialize_notes_model(self, api_url: str):
         """Initialize the notes model and load data"""
-        from models.notes_model import NotesModel
-        self.notes_model = NotesModel(api_url)
-        self.notes_model.notes_updated.connect(self._refresh_notes_tree)
-        self.notes_model.load_notes()
+        from api.client import NoteAPI
+        self.api = NoteAPI(api_url)
+        self._refresh_notes_tree()
         
     def _refresh_notes_tree(self):
-        """Refresh the notes tree with current model data"""
+        """Refresh the notes tree with current API data"""
         self.left_sidebar.tree.clear()
         
-        # Add all root notes
-        for note in self.notes_model.root_notes:
-            self._add_note_to_tree(note, self.left_sidebar.tree)
+        # Get notes tree from API
+        try:
+            notes = self.api.get_notes_tree()
+            # Add all root notes
+            for note in notes:
+                self._add_note_to_tree(note, self.left_sidebar.tree)
+        except Exception as e:
+            print(f"Error loading notes: {e}")
             
     def _add_note_to_tree(self, note: Note, parent_item: QTreeWidgetItem):
         """Recursively add a note and its children to the tree"""

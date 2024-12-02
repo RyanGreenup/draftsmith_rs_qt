@@ -13,8 +13,8 @@ class NotesTabWidget(QTabWidget):
         tab_content = MainContent(handle_size=20)
         index = self.addTab(tab_content, title)
         self.setCurrentIndex(index)
-        tab_content.initialize_dummy_data()
-        # Focus the tree widget in the left sidebar
+        # Initialize with API and focus the tree widget
+        tab_content.initialize_notes_model("http://localhost:8000")
         tab_content.left_sidebar.tree.setFocus()
         return tab_content
         
