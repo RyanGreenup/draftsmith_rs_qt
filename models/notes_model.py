@@ -138,6 +138,13 @@ class NotesModel(QObject):
             print(f"Error updating note: {e}")
             return False
 
+    def handle_forward_link_selected(self, note_id: int) -> None:
+        """Handle when a forward link is selected"""
+        note = self.notes.get(note_id)
+        if note:
+            # Emit signal for tree selection
+            self.note_selected.emit(note, self.get_forward_links(note_id))
+
     def delete_note(self, note_id: int) -> bool:
         """Delete a note"""
         try:

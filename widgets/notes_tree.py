@@ -76,6 +76,27 @@ class NotesTreeWidget(QTreeWidget):
                     self.topLevelItem(i), 0, self.current_fold_level
                 )
 
+    def select_note_by_id(self, note_id: int) -> None:
+        """Select the tree item corresponding to the given note ID"""
+        def find_and_select_item(item):
+            # Check current item
+            note_data = item.data(0, Qt.ItemDataRole.UserRole)
+            if note_data and note_data.id == note_id:
+                self.setCurrentItem(item)
+                self.scrollToItem(item)
+                return True
+                
+            # Check children
+            for i in range(item.childCount()):
+                if find_and_select_item(item.child(i)):
+                    return True
+            return False
+        
+        # Search through top-level items
+        for i in range(self.topLevelItemCount()):
+            if find_and_select_item(self.topLevelItem(i)):
+                break
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Key.Key_J:
             # Create a new QKeyEvent for Down key
