@@ -23,7 +23,7 @@ class CommandPalette(PopupPalette):
             if hasattr(menu, 'menu') and menu.menu():
                 # For each menu, get its actions
                 for action in menu.menu().actions():
-                    if action.text() and not action.menu():  # Skip empty actions and submenus
+                    if action.text().replace('&', '') and not action.menu():  # Skip empty actions and submenus
                         self.actions.append(action)
                 
     def get_all_items(self):
@@ -39,7 +39,7 @@ class CommandPalette(PopupPalette):
         display_text = action.text()
         if action.statusTip():
             # Use a wider space for the action name and add a subtle separator
-            display_text = f"{action.text():<30} • {action.statusTip()}"
+            display_text = f"{action.text().replace('&', ''):<30} • {action.statusTip()}"
             
         item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, action)
