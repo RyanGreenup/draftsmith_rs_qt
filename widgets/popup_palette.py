@@ -1,11 +1,15 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QListWidget, QGraphicsDropShadowEffect
-from PySide6.QtCore import Qt
+from typing import Optional, Any, List
+from PySide6.QtWidgets import (
+    QWidget, QVBoxLayout, QLineEdit, QListWidget, 
+    QGraphicsDropShadowEffect, QListWidgetItem, QMainWindow
+)
+from PySide6.QtCore import Qt, QRect
 from PySide6.QtGui import QKeyEvent, QColor, QPalette, QFont
 
 class PopupPalette(QWidget):
     """Base class for popup command palettes"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent, Qt.WindowType.Popup)
         self.setObjectName("PopupPalette")
         self.setMinimumWidth(500)  # Set minimum width
@@ -17,7 +21,7 @@ class PopupPalette(QWidget):
 
         self.setup_ui()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Initialize the UI components"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
@@ -39,7 +43,7 @@ class PopupPalette(QWidget):
 
         self.setLayout(layout)
 
-    def show_palette(self):
+    def show_palette(self) -> None:
         """Show the palette and focus the search input"""
         # Add drop shadow
         shadow = QGraphicsDropShadowEffect()
@@ -70,17 +74,17 @@ class PopupPalette(QWidget):
         if self.results_list.count() > 0:
             self.results_list.setCurrentRow(0)
 
-    def get_all_items(self):
+    def get_all_items(self) -> List[Any]:
         """Get all items to be shown in the palette.
         To be implemented by subclasses."""
         return []
 
-    def create_list_item(self, data):
+    def create_list_item(self, data: Any) -> Optional[QListWidgetItem]:
         """Create a list widget item from the data.
         To be implemented by subclasses."""
         pass
 
-    def on_search(self, text):
+    def on_search(self, text: str) -> None:
         """Handle search text changes"""
         self.results_list.clear()
 
@@ -96,7 +100,7 @@ class PopupPalette(QWidget):
         if self.results_list.count() > 0:
             self.results_list.setCurrentRow(0)
 
-    def filter_items(self, text):
+    def filter_items(self, text: str) -> None:
         """Filter items based on search text.
         To be implemented by subclasses."""
         pass
@@ -120,7 +124,7 @@ class PopupPalette(QWidget):
 
         super().keyPressEvent(event)
 
-    def on_item_activated(self, item):
+    def on_item_activated(self, item: QListWidgetItem) -> None:
         """Handle item selection"""
         # To be implemented by subclasses
         pass
