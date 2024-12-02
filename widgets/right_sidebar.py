@@ -5,6 +5,9 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMessageBox,
+    QLabel,
+    QWidget,
+    QVBoxLayout,
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent
@@ -172,16 +175,47 @@ class RightSidebar(QSplitter):
     def _setup_ui(self, handle_size):
         self.setHandleWidth(handle_size)
 
-        # First add all widgets to the splitter
-        self.addWidget(self.backlinks)
-        self.addWidget(self.forward_links)
-        self.addWidget(self.tags)
-        self.addWidget(self.text_bottom)
+        # Create containers for each section
+        backlinks_container = QWidget()
+        forward_links_container = QWidget()
+        tags_container = QWidget()
+        similar_container = QWidget()
 
-        # Then set up their properties
-        self.backlinks.setMinimumHeight(100)
-        self.forward_links.setMinimumHeight(100)
-        self.tags.setMinimumHeight(100)
+        # Create layouts for each container
+        backlinks_layout = QVBoxLayout(backlinks_container)
+        forward_links_layout = QVBoxLayout(forward_links_container)
+        tags_layout = QVBoxLayout(tags_container)
+        similar_layout = QVBoxLayout(similar_container)
+
+        # Create and add labels
+        backlinks_layout.addWidget(QLabel("Backlinks"))
+        backlinks_layout.addWidget(self.backlinks)
+        
+        forward_links_layout.addWidget(QLabel("Forward Links"))
+        forward_links_layout.addWidget(self.forward_links)
+        
+        tags_layout.addWidget(QLabel("Tags"))
+        tags_layout.addWidget(self.tags)
+        
+        similar_layout.addWidget(QLabel("Similar Pages"))
+        similar_layout.addWidget(self.text_bottom)
+
+        # Remove margins to make it more compact
+        for layout in (backlinks_layout, forward_links_layout, tags_layout, similar_layout):
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(2)
+
+        # Add containers to splitter
+        self.addWidget(backlinks_container)
+        self.addWidget(forward_links_container)
+        self.addWidget(tags_container)
+        self.addWidget(similar_container)
+
+        # Set minimum heights
+        backlinks_container.setMinimumHeight(100)
+        forward_links_container.setMinimumHeight(100)
+        tags_container.setMinimumHeight(100)
+
         self.text_bottom.setPlaceholderText(
             "Similar Pages (Not Yet Implemented, Don't Touch)"
         )
