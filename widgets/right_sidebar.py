@@ -11,15 +11,11 @@ from PySide6.QtGui import QKeyEvent
 from models.note import Note
 from api.client import Tag
 
-class BacklinksWidget(QListWidget):
-    note_selected = Signal(int)  # Emitted when a note is selected, passes note_id
-
+class NavigableListWidget(QListWidget):
+    """Base class for list widgets with keyboard navigation"""
+    
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.itemDoubleClicked.connect(self._on_item_double_clicked)
-
-    def _on_item_double_clicked(self, item: QListWidgetItem):
-        self._select_current_note()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard navigation"""
@@ -35,7 +31,25 @@ class BacklinksWidget(QListWidget):
             if current_row > 0:
                 self.setCurrentRow(current_row - 1)
             event.accept()
-        elif event.key() == Qt.Key.Key_Return:
+        else:
+            super().keyPressEvent(event)
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QKeyEvent
+from models.note import Note
+from api.client import Tag
+
+class BacklinksWidget(NavigableListWidget):
+    note_selected = Signal(int)  # Emitted when a note is selected, passes note_id
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.itemDoubleClicked.connect(self._on_item_double_clicked)
+
+    def _on_item_double_clicked(self, item: QListWidgetItem):
+        self._select_current_note()
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key.Key_Return:
             # Select current note
             self._select_current_note()
             event.accept()
@@ -65,7 +79,7 @@ class BacklinksWidget(QListWidget):
             self.addItem(item)
 
 
-class ForwardLinksWidget(QListWidget):
+class ForwardLinksWidget(NavigableListWidget):
     note_selected = Signal(int)  # Emitted when a note is selected, passes note_id
 
     def __init__(self, parent=None):
@@ -76,20 +90,7 @@ class ForwardLinksWidget(QListWidget):
         self._select_current_note()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        """Handle keyboard navigation"""
-        if event.key() == Qt.Key.Key_J:
-            # Move down
-            current_row = self.currentRow()
-            if current_row < self.count() - 1:
-                self.setCurrentRow(current_row + 1)
-            event.accept()
-        elif event.key() == Qt.Key.Key_K:
-            # Move up
-            current_row = self.currentRow()
-            if current_row > 0:
-                self.setCurrentRow(current_row - 1)
-            event.accept()
-        elif event.key() == Qt.Key.Key_Return:
+        if event.key() == Qt.Key.Key_Return:
             # Select current note
             self._select_current_note()
             event.accept()
@@ -121,14 +122,13 @@ class ForwardLinksWidget(QListWidget):
             self.addItem(item)
 
 
-class TagsWidget(QListWidget):
+class TagsWidget(NavigableListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.itemDoubleClicked.connect(self._show_not_implemented)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        """Handle keyboard navigation"""
-        if event.key() in (Qt.Key.Key_J, Qt.Key.Key_K, Qt.Key.Key_Return):
+        if event.key() == Qt.Key.Key_Return:
             self._show_not_implemented()
             event.accept()
         else:
