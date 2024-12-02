@@ -1,5 +1,6 @@
 from typing import List, Dict
 from PySide6.QtWidgets import QMainWindow, QStatusBar
+from PySide6.QtGui import QAction
 from api.client import Tag
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtCore import Qt
