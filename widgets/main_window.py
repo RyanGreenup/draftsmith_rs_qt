@@ -11,39 +11,39 @@ class NoteApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setup_window()
-        
+
         # Add notes model
-        self.notes_model = NotesModel("http://localhost:8000")  # Add appropriate URL
-        
+        self.notes_model = NotesModel("http://eir:37242")  # Add appropriate URL
+
         # Initialize handlers
         self.menu_handler = MenuHandler(self)
         self.tab_handler = TabHandler(self)
-        
+
         # Setup components
         self.main_content = self.tab_handler.setup_tabs()
         self.menu_handler.setup_menus()
-        
+
         # Setup markdown view actions
         self.main_content.editor.set_view_actions(
             self.menu_handler.view_actions['maximize_editor'],
             self.menu_handler.view_actions['maximize_preview']
         )
-        
+
         # Connect save action
         self.menu_handler.file_actions['save'].triggered.connect(self.save_current_note)
         self.main_content.editor.save_requested.connect(self.save_current_note)
-        
+
         self.setup_command_palette()
-        
+
     def setup_window(self):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("Ready")
-        
+
         self.handle_size = 20
         self.setWindowTitle("Note Taking App")
         self.setGeometry(100, 100, 1000, 600)
-        
+
     def setup_command_palette(self):
         from .command_palette import CommandPalette
         self.command_palette = CommandPalette(self)
@@ -92,16 +92,16 @@ class NoteApp(QMainWindow):
         """Simulate Shift+Tab key press to move focus to previous widget"""
         self.focusPreviousChild()
 
-    def new_tab(self): 
+    def new_tab(self):
         self.tab_handler.new_tab()
-        
-    def close_current_tab(self): 
+
+    def close_current_tab(self):
         self.tab_handler.close_current_tab()
-        
-    def next_tab(self): 
+
+    def next_tab(self):
         self.tab_handler.next_tab()
-        
-    def previous_tab(self): 
+
+    def previous_tab(self):
         self.tab_handler.previous_tab()
 
     def save_current_note(self):
