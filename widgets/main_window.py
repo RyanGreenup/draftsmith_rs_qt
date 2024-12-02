@@ -93,11 +93,11 @@ class NoteApp(QMainWindow):
 
     def toggle_right_sidebar(self):
         """Toggle the visibility of the right sidebar"""
-        if self.right_splitter.isVisible():
-            self.right_splitter.hide()
+        if self.main_content.right_sidebar.isVisible():
+            self.main_content.right_sidebar.hide()
             self.view_actions['toggle_right_sidebar'].setText("Show &Right Sidebar")
         else:
-            self.right_splitter.show()
+            self.main_content.right_sidebar.show()
             self.view_actions['toggle_right_sidebar'].setText("Hide &Right Sidebar")
 
     def show_command_palette(self):
