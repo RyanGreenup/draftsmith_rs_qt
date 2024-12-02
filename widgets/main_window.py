@@ -61,7 +61,6 @@ class NoteApp(QMainWindow):
         # Create a new splitter for the right sidebar
         self.right_splitter = QSplitter(Qt.Orientation.Vertical)
         self.right_splitter.setHandleWidth(self.handle_size)
-        self.right_splitter.addWidget(self.tags_tree)
         self.right_splitter.addWidget(self.additional_tree)
 
         # Add widgets to main splitter
@@ -97,9 +96,11 @@ class NoteApp(QMainWindow):
         if text == "Notes":
             self.tree.show()
             self.tags_tree.hide()
+            self.status_bar.showMessage("Showing Notes Tree")
         else:  # Tags
             self.tree.hide()
             self.tags_tree.show()
+            self.status_bar.showMessage("Showing Tags Tree")
 
     def show_command_palette(self):
         """Show the command palette and populate it with current menu actions"""
