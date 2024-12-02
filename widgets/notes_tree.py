@@ -9,6 +9,20 @@ class NotesTreeWidget(QTreeWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.current_fold_level = -1  # -1 means all collapsed
+        self.notes_model = None
+        self.itemSelectionChanged.connect(self._on_selection_changed)
+
+    def set_model(self, model: 'NotesModel'):
+        """Set the notes model for this tree widget"""
+        self.notes_model = model
+
+    def _on_selection_changed(self):
+        """Handle selection changes and notify model"""
+        current = self.currentItem()
+        if current and self.notes_model:
+            note_data = current.data(0, Qt.ItemDataRole.UserRole)
+            if note_data:
+                self.notes_model.select_note(note_data.id)
 
     def set_fold_level_recursive(
         self, item: QTreeWidgetItem, current_depth: int, max_depth: int

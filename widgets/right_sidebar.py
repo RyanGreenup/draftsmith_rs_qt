@@ -20,6 +20,15 @@ class RightSidebar(QSplitter):
         self.additional_tree.setMinimumWidth(200)
 
         self.text_top.setPlaceholderText("Forward Links")
+        
+    def update_forward_links(self, forward_links: List[Note]) -> None:
+        """Update the forward links text area with linked notes"""
+        if not forward_links:
+            self.text_top.setText("No forward links")
+            return
+            
+        text = "\n".join(f"- {note.title}" for note in forward_links)
+        self.text_top.setText(text)
         self.text_mid.setPlaceholderText("Tags")
         self.text_bottom.setPlaceholderText(
             "Similar Pages (Not Yet Implemented, Don't Touch)"

@@ -14,7 +14,7 @@ class NotesModel(QObject):
     """Model class to handle notes data and API interactions"""
 
     notes_updated = Signal()  # Emitted when notes data changes
-    note_selected = Signal(Note)  # Emitted when a note is selected
+    note_selected = Signal(Note, list)  # Emitted when a note is selected, includes forward links
 
     def __init__(self, api_url: str):
         super().__init__()
@@ -66,6 +66,22 @@ class NotesModel(QObject):
     def get_note(self, note_id: int) -> Optional[Note]:
         """Get a note by its ID"""
         return self.notes.get(note_id)
+
+    def get_forward_links(self, note_id: int) -> List[Note]:
+        """Get all notes that this note links to"""
+        try:
+            api_notes = self.api.get_note_forward_links(note_id)
+            return [Note.from_api_note(api_note) for api_note in api_notes]
+        except Exception as e:
+            print(f"Error getting forward links: {e}")
+            return []
+
+    def select_note(self, note_id: int) -> None:
+        """Handle note selection and emit signals"""
+        note = self.notes.get(note_id)
+        if note:
+            forward_links = self.get_forward_links(note_id)
+            self.note_selected.emit(note, forward_links)
 
     def create_note(
         self, title: str, content: str, parent_id: Optional[int] = None

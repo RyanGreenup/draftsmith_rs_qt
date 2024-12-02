@@ -24,6 +24,12 @@ class NoteApp(QMainWindow):
         self.main_content = self.tab_handler.setup_tabs()
         self.menu_handler.setup_menus()
 
+        # Connect the model to the trees
+        self.main_content.left_sidebar.tree.set_model(self.notes_model)
+        
+        # Connect note selection to right sidebar updates
+        self.notes_model.note_selected.connect(self.update_right_sidebar)
+
         # Setup markdown view actions
         self.main_content.editor.set_view_actions(
             self.menu_handler.view_actions["maximize_editor"],
@@ -100,6 +106,10 @@ class NoteApp(QMainWindow):
     def focus_previous_widget(self):
         """Simulate Shift+Tab key press to move focus to previous widget"""
         self.focusPreviousChild()
+
+    def update_right_sidebar(self, note: Note, forward_links: List[Note]) -> None:
+        """Update right sidebar content when a note is selected"""
+        self.main_content.right_sidebar.update_forward_links(forward_links)
 
     def new_tab(self):
         self.tab_handler.new_tab()
