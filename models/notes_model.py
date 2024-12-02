@@ -89,7 +89,14 @@ class NotesModel(QObject):
             if not note:
                 return False
                 
-            api_response = self.api.update_note(note_id, {"title": title, "content": content})
+            # Only include fields that are being updated
+            update_data = {}
+            if title is not None:
+                update_data["title"] = title
+            if content is not None:
+                update_data["content"] = content
+                
+            api_response = self.api.update_note(note_id, update_data)
             note.update_from_api_note(api_response)
             
             self.notes_updated.emit()

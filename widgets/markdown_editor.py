@@ -1,9 +1,11 @@
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Signal
 import markdown
 
 class MarkdownEditor(QWidget):
+    save_requested = Signal()  # Add save signal
+    
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -112,3 +114,11 @@ class MarkdownEditor(QWidget):
         self._maximize_preview_action = maximize_preview_action
         maximize_editor_action.triggered.connect(self.maximize_editor)
         maximize_preview_action.triggered.connect(self.maximize_preview)
+
+    def save_content(self):
+        """Emit signal to request saving current content"""
+        self.save_requested.emit()
+        
+    def get_content(self) -> str:
+        """Get current editor content"""
+        return self.editor.toPlainText()

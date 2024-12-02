@@ -10,6 +10,9 @@ class NoteApp(QMainWindow):
         super().__init__()
         self.setup_window()
         
+        # Add notes model
+        self.notes_model = NotesModel("http://localhost:8000")  # Add appropriate URL
+        
         # Initialize handlers
         self.menu_handler = MenuHandler(self)
         self.tab_handler = TabHandler(self)
@@ -23,6 +26,10 @@ class NoteApp(QMainWindow):
             self.menu_handler.view_actions['maximize_editor'],
             self.menu_handler.view_actions['maximize_preview']
         )
+        
+        # Connect save action
+        self.menu_handler.file_actions['save'].triggered.connect(self.save_current_note)
+        self.main_content.editor.save_requested.connect(self.save_current_note)
         
         self.setup_command_palette()
         
@@ -94,4 +101,17 @@ class NoteApp(QMainWindow):
         
     def previous_tab(self): 
         self.tab_handler.previous_tab()
+
+    def save_current_note(self):
+        """Save the current note's content"""
+        current_note = self.main_content.left_sidebar.tree.currentItem()
+        if current_note:
+            note_data = current_note.data(0, Qt.ItemDataRole.UserRole)
+            if note_data:
+                content = self.main_content.editor.get_content()
+                success = self.notes_model.update_note(note_data.id, content=content)
+                if success:
+                    self.status_bar.showMessage("Note saved successfully", 3000)
+                else:
+                    self.status_bar.showMessage("Failed to save note", 3000)
 
