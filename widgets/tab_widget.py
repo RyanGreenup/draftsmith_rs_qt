@@ -14,6 +14,8 @@ class NotesTabWidget(QTabWidget):
         index = self.addTab(tab_content, title)
         self.setCurrentIndex(index)
         tab_content.initialize_dummy_data()
+        # Focus the tree widget in the left sidebar
+        tab_content.left_sidebar.tree.setFocus()
         return tab_content
         
     def close_tab(self, index):
