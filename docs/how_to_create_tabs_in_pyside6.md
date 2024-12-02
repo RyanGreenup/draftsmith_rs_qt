@@ -24,14 +24,14 @@ class NotesTabWidget(QTabWidget):
         self.setTabsClosable(True)  # Allow tabs to be closed
         self.setMovable(True)       # Allow tabs to be reordered
         self.tabCloseRequested.connect(self.close_tab)
-        
+
     def add_new_tab(self, title="New Tab"):
         """Create a new tab with content"""
         tab_content = YourContentWidget()  # Your main content widget
         index = self.addTab(tab_content, title)
         self.setCurrentIndex(index)
         return tab_content
-        
+
     def close_tab(self, index):
         """Close the tab at given index"""
         if self.count() > 1:  # Keep at least one tab open
@@ -46,11 +46,11 @@ Modify your main window to use the tab widget:
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        
+
         # Create and setup tab widget
         self.tab_widget = NotesTabWidget(self)
         self.setCentralWidget(self.tab_widget)
-        
+
         # Create initial tab
         self.main_content = self.tab_widget.add_new_tab("Main")
 ```
@@ -63,23 +63,23 @@ Create menu items for tab operations:
 def create_tabs_menu(parent):
     tabs_menu = QMenu("&Tabs", parent)
     actions = {}
-    
+
     # New tab action
     actions['new_tab'] = QAction("&New Tab", parent)
     actions['new_tab'].setShortcut("Ctrl+T")
     tabs_menu.addAction(actions['new_tab'])
-    
+
     # Close tab action
     actions['close_tab'] = QAction("&Close Tab", parent)
     actions['close_tab'].setShortcut("Ctrl+W")
     tabs_menu.addAction(actions['close_tab'])
-    
+
     # Tab navigation
     actions['next_tab'] = QAction("Next Tab", parent)
     actions['next_tab'].setShortcut("Ctrl+Tab")
     actions['prev_tab'] = QAction("Previous Tab", parent)
     actions['prev_tab'].setShortcut("Ctrl+Shift+Tab")
-    
+
     return tabs_menu, actions
 ```
 
@@ -150,25 +150,30 @@ self.tabs_actions['prev_tab'].triggered.connect(self.previous_tab)
 Here's a complete example of creating a tabbed interface:
 
 ```python
-from PySide6.QtWidgets import QApplication, QMainWindow, QTabWidget
+from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QTabWidget
 import sys
+
+class YourContentWidget(QLabel):
+    def __init__(self):
+        super().__init__()
+        self.setText("This is your content widget")
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Tabbed Application")
-        
+
         # Create tab widget
         self.tabs = QTabWidget()
         self.tabs.setTabsClosable(True)
         self.tabs.setMovable(True)
-        
+
         # Set as central widget
         self.setCentralWidget(self.tabs)
-        
+
         # Add initial tab
         self.add_new_tab()
-        
+
     def add_new_tab(self):
         new_tab = YourContentWidget()
         self.tabs.addTab(new_tab, f"Tab {self.tabs.count() + 1}")
@@ -179,6 +184,106 @@ if __name__ == '__main__':
     window.show()
     sys.exit(app.exec())
 ```
+
+Here is a fleshed out example:
+
+```python
+
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QTabWidget, QToolBar, QVBoxLayout, QWidget
+import sys
+
+class YourContentWidget(QLabel):
+    def __init__(self, num: int):
+        super().__init__()
+        self.setText(f"Tab {num}: This is your content widget")
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Tabbed Application")
+
+        # Create tab widget
+        self.tabs = QTabWidget()
+        self.tabs.setTabsClosable(True)
+        self.tabs.setMovable(True)
+        self.tabs.tabCloseRequested.connect(self.close_tab)
+
+        # Set as central widget
+        central_widget = QWidget()
+        layout = QVBoxLayout()
+        layout.addWidget(self.tabs)
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        # Add initial tab
+        self.add_new_tab()
+
+        # Create actions
+        self.create_actions()
+
+        # Create menu
+        self.create_menu()
+
+        # Create toolbar
+        self.create_toolbar()
+
+    def create_actions(self):
+        # Action for adding a new tab
+        self.new_tab_action = QAction("New Tab", self)
+        self.new_tab_action.setShortcut("Ctrl+T")
+        self.new_tab_action.triggered.connect(self.add_new_tab)
+
+        # Action for closing the current tab
+        self.close_tab_action = QAction("Close Tab", self)
+        self.close_tab_action.setShortcut("Ctrl+W")
+        self.close_tab_action.triggered.connect(self.close_current_tab)
+
+    def create_menu(self):
+        # Menu bar
+        menu_bar = self.menuBar()
+
+        # Tabs menu
+        tabs_menu = menu_bar.addMenu("Tabs")
+        tabs_menu.addAction(self.new_tab_action)
+        tabs_menu.addAction(self.close_tab_action)
+
+    def create_toolbar(self):
+        # Tool bar
+        toolbar = QToolBar("Main Toolbar")
+        self.addToolBar(toolbar)
+
+        # Add actions to tool bar
+        toolbar.addAction(self.new_tab_action)
+        toolbar.addAction(self.close_tab_action)
+
+    def add_new_tab(self):
+        """Add a new tab to the tab widget."""
+        tab_count = self.tabs.count()
+        new_tab = YourContentWidget(tab_count)
+        self.tabs.addTab(new_tab, f"Tab {tab_count + 1}")
+
+    def close_current_tab(self):
+        """Close the currently selected tab."""
+        current_index = self.tabs.currentIndex()
+        if current_index != -1:
+            self.tabs.removeTab(current_index)
+
+    def close_tab(self, index):
+        """Close the tab at the specified index."""
+        self.tabs.removeTab(index)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
+
+```
+
+
+
+
 
 ## Conclusion
 
