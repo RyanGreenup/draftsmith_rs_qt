@@ -1,9 +1,5 @@
-from typing import Optional, List, Dict, Set, TypedDict
-
-class UpdateNoteRequest(TypedDict, total=False):
-    title: str 
-    content: str
-from api.client import NoteAPI, Note as APINote, TreeNote as APITreeNote
+from typing import Optional, List, Dict, Set
+from api.client import NoteAPI, Note as APINote, TreeNote as APITreeNote, UpdateNoteRequest
 from models.note import Note
 from datetime import datetime
 from PySide6.QtCore import QObject, Signal
@@ -93,12 +89,11 @@ class NotesModel(QObject):
             if not note:
                 return False
                 
-            # Create properly typed update data
-            update_data: UpdateNoteRequest = {}
-            if title is not None:
-                update_data["title"] = title
-            if content is not None:
-                update_data["content"] = content
+            # Create update request using the imported type
+            update_data = UpdateNoteRequest(
+                title=title,
+                content=content
+            )
                 
             api_response = self.api.update_note(note_id, update_data)
             note.update_from_api_note(api_response)

@@ -34,15 +34,15 @@ class Note:
     def from_api_tree_note(cls, api_tree_note: APITreeNote) -> 'Note':
         """Create a Note instance from an API TreeNote response"""
         # Handle optional datetime fields with a default value
-        created_at = api_tree_note.created_at if api_tree_note.created_at else datetime.now()
-        modified_at = api_tree_note.modified_at if api_tree_note.modified_at else datetime.now()
+        created_at_val = datetime.now() if api_tree_note.created_at is None else api_tree_note.created_at
+        modified_at_val = datetime.now() if api_tree_note.modified_at is None else api_tree_note.modified_at
         
         note = cls(
             id=api_tree_note.id,
             title=api_tree_note.title,
             content=api_tree_note.content or "",
-            created_at=created_at,
-            modified_at=modified_at,
+            created_at=created_at_val,
+            modified_at=modified_at_val,
             hierarchy_type=api_tree_note.hierarchy_type,
             tags={tag.id for tag in api_tree_note.tags}
         )
