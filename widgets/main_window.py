@@ -69,9 +69,6 @@ class NoteApp(QMainWindow):
         self.command_shortcut = QShortcut(QKeySequence("Ctrl+P"), self)
         self.command_shortcut.activated.connect(self.show_command_palette)
 
-        # Add dummy data
-        self.add_dummy_data()
-
 
     def on_tree_selection_changed(self, text):
         if text == "Notes":
