@@ -64,7 +64,8 @@ class NotesModel(QObject):
         try:
             api_response = self.api.note_create(title, content)
             # Convert API response to Note model explicitly
-            note = Note.from_api_note(api_response)
+            api_note = APINote.model_validate(api_response)
+            note = Note.from_api_note(api_note)
             
             self.notes[note.id] = note
             
