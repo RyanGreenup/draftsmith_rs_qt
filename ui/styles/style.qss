@@ -140,6 +140,62 @@ QToolBar {
     padding: 4px;
 }
 
+/* Popup Palette */
+.PopupPalette {
+    background-color: #ffffff;
+    border: 1px solid #E5E5EA;
+    border-radius: 6px;
+}
+
+/* Popup Search Input */
+.PopupPalette QLineEdit {
+    background-color: #ffffff;
+    border: 1px solid #E5E5EA;
+    border-radius: 6px;
+    padding: 8px;
+    margin: 4px;
+    font-size: 12pt;
+    selection-background-color: #007AFF;
+    selection-color: white;
+}
+
+/* Popup Results List */
+.PopupPalette QListWidget {
+    background-color: #ffffff;
+    border: 1px solid #E5E5EA;
+    border-radius: 6px;
+    margin: 4px;
+}
+
+.PopupPalette QListWidget::item {
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.PopupPalette QListWidget::item:selected {
+    background-color: #007AFF;
+    color: white;
+}
+
+.PopupPalette QListWidget::item:hover:!selected {
+    background-color: #E5E5EA;
+}
+
+/* Popup Scrollbar - inherits from global scrollbar styles */
+.PopupPalette QScrollBar:vertical {
+    border: none;
+    background-color: #f5f5f7;
+    width: 12px;
+    margin: 0px;
+}
+
+.PopupPalette QScrollBar::handle:vertical {
+    background-color: #8E8E93;
+    border-radius: 6px;
+    min-height: 20px;
+    margin: 2px;
+}
+
 QToolButton {
     background-color: transparent;
     border: none;

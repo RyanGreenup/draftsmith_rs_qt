@@ -7,6 +7,7 @@ class PopupPalette(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowType.Popup)
+        self.setObjectName("PopupPalette")
         self.setMinimumWidth(500)  # Set minimum width
         self.setMaximumHeight(400)  # Set maximum height
 
