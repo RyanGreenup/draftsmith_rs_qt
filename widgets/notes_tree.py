@@ -47,15 +47,17 @@ class NotesTreeWidget(NavigableTree):
                 self.notes_model.select_note(note_data.id)
 
 
-    def select_note_by_id(self, note_id: int) -> None:
+    def select_note_by_id(self, note_id: int, emit_signal: bool = True) -> None:
         """Select the tree item corresponding to the given note ID"""
 
         def find_and_select_item(item):
             # Check current item
             note_data = item.data(0, Qt.ItemDataRole.UserRole)
             if note_data and note_data.id == note_id:
+                self.blockSignals(not emit_signal)
                 self.setCurrentItem(item)
                 self.scrollToItem(item)
+                self.blockSignals(False)
                 return True
 
             # Check children

@@ -49,16 +49,22 @@ class TabContent(QWidget):
         # Editor signals
         self.editor.save_requested.connect(self._handle_save_request)
 
-        # Right sidebar signals
-        self.right_sidebar.forward_links.note_selected.connect(self._handle_note_selection)
-        self.right_sidebar.forward_links.note_selected_with_focus.connect(self._handle_note_selection_with_focus)
-        self.right_sidebar.backlinks.note_selected.connect(self._handle_note_selection)
-        self.right_sidebar.backlinks.note_selected_with_focus.connect(self._handle_note_selection_with_focus)
-        self.right_sidebar.tags.note_selected.connect(self._handle_note_selection)
+        # Connect view update signals directly to model
+        self.right_sidebar.forward_links.note_selected.connect(self._handle_view_request)
+        self.right_sidebar.forward_links.note_selected_with_focus.connect(
+            self._handle_view_request_with_focus
+        )
+        self.right_sidebar.backlinks.note_selected.connect(self._handle_view_request)
+        self.right_sidebar.backlinks.note_selected_with_focus.connect(
+            self._handle_view_request_with_focus
+        )
+        self.right_sidebar.tags.note_selected.connect(self._handle_view_request)
 
         # Left sidebar signals
-        self.left_sidebar.search_sidebar.note_selected.connect(self._handle_note_selection)
-        self.left_sidebar.search_sidebar.note_selected_with_focus.connect(self._handle_note_selection_with_focus)
+        self.left_sidebar.search_sidebar.note_selected.connect(self._handle_view_request)
+        self.left_sidebar.search_sidebar.note_selected_with_focus.connect(
+            self._handle_view_request_with_focus
+        )
 
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
@@ -67,15 +73,17 @@ class TabContent(QWidget):
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
 
-    def _handle_note_selection(self, note_id: int) -> None:
-        """Handle note selection from any source within the tab"""
+    def _handle_view_request(self, note_id: int) -> None:
+        """Handle direct view update request"""
         if self.notes_model and note_id is not None:
-            # Use the tree's selection method which will trigger the model's note_selected signal
-            self.left_sidebar.tree.select_note_by_id(note_id)
+            # Update tree selection without triggering signals
+            self.left_sidebar.tree.select_note_by_id(note_id, emit_signal=False)
+            # Request view update directly from model
+            self.notes_model.select_note(note_id)
 
-    def _handle_note_selection_with_focus(self, note_id: int) -> None:
-        """Handle note selection and focus the editor"""
-        self._handle_note_selection(note_id)
+    def _handle_view_request_with_focus(self, note_id: int) -> None:
+        """Handle view update request with editor focus"""
+        self._handle_view_request(note_id)
         self.editor.editor.setFocus()
 
     def _update_view(self, selection_data):
