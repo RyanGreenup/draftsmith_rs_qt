@@ -16,21 +16,26 @@ class NotesTreeWidget(QTreeWidget):
 
     def set_model(self, model: "NotesModel"):
         """Set the notes model for this tree widget"""
-        self.notes_model = model
-        # Disconnect any existing connections first
-        try:
-            self.notes_model.notes_updated.disconnect()
-        except:
-            pass
-        # Connect to the model's update signal
+        # First disconnect from old model if it exists
         if self.notes_model is not None:
-            self.notes_model.notes_updated.connect(
-                lambda: (
-                    self.update_tree(self.notes_model.root_notes)
-                    if self.notes_model is not None
-                    else None
-                )
-            )
+            try:
+                self.notes_model.notes_updated.disconnect(self.update_tree_from_model)
+            except TypeError:  # Signal wasn't connected
+                pass
+
+        # Set new model
+        self.notes_model = model
+
+        # Connect to new model if it exists
+        if self.notes_model is not None:
+            self.notes_model.notes_updated.connect(self.update_tree_from_model)
+            # Initial update
+            self.update_tree(self.notes_model.root_notes)
+
+    def update_tree_from_model(self):
+        """Callback for model updates to refresh the tree"""
+        if self.notes_model is not None:
+            self.update_tree(self.notes_model.root_notes)
 
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""
