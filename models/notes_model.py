@@ -52,13 +52,11 @@ class NotesModel(QObject):
         """Load all notes from the API"""
         self.refresh_notes()
 
-    def _process_tree_note(
-        self, api_tree_note: APITreeNote, parent: Optional[Note] = None
-    ) -> Note:
-        """Process a tree note and its children"""
-        # Convert API note to our Note model
+    def _process_tree_note(self, api_tree_note: APITreeNote, parent: Optional[Note] = None) -> Note:
+        """Process a tree note and its children, maintaining the single source of truth"""
+        # Create note without processing children
         note = Note.from_api_tree_note(api_tree_note)
-
+        
         # Store in our lookup dictionary
         self.notes[note.id] = note
 

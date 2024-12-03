@@ -200,28 +200,33 @@ class NotesTreeWidget(QTreeWidget):
         return None
 
     def update_tree(self, root_notes: List[Note]) -> None:
-        """Update the tree widget with the given root notes while preserving state"""
+        """Update the tree widget to reflect the model's state"""
         # Save current state before update
         state = self.save_state()
         
         # Clear and rebuild tree
         self.clear()
+        
+        # Add all root notes
         for note in root_notes:
-            item = self._create_tree_item(note)
-            self.addTopLevelItem(item)
-            self._add_children_recursive(item, note)
+            self._add_note_to_tree(note, self)
         
         # Restore state after update
         self.restore_state(state)
 
-    def _create_tree_item(self, note: Note) -> QTreeWidgetItem:
+    def _add_note_to_tree(self, note: Note, parent: Union[QTreeWidget, QTreeWidgetItem]) -> None:
+        """Add a note and its children to the tree, reflecting model structure"""
+        # Create item for current note
         item = QTreeWidgetItem()
         item.setText(0, note.title)
         item.setData(0, Qt.ItemDataRole.UserRole, note)
-        return item
-
-    def _add_children_recursive(self, parent_item: QTreeWidgetItem, note: Note):
-        for child_note in note.children:
-            child_item = self._create_tree_item(child_note)
-            parent_item.addChild(child_item)
-            self._add_children_recursive(child_item, child_note)
+        
+        # Add to parent
+        if isinstance(parent, QTreeWidget):
+            parent.addTopLevelItem(item)
+        else:
+            parent.addChild(item)
+        
+        # Add children, following model's structure
+        for child in note.children:
+            self._add_note_to_tree(child, item)

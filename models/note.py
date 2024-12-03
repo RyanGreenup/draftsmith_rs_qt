@@ -37,7 +37,7 @@ class Note:
 
     @classmethod
     def from_api_tree_note(cls, api_tree_note: APITreeNote) -> "Note":
-        """Create a Note instance from an API TreeNote response"""
+        """Create a Note instance from an API TreeNote response without processing children"""
         # Handle optional datetime fields with a default value
         created_at_val = (
             datetime.now()
@@ -50,7 +50,7 @@ class Note:
             else api_tree_note.modified_at
         )
 
-        note = cls(
+        return cls(
             id=api_tree_note.id,
             title=api_tree_note.title,
             content=api_tree_note.content or "",
@@ -59,13 +59,6 @@ class Note:
             hierarchy_type=api_tree_note.hierarchy_type,
             tags={tag.id for tag in api_tree_note.tags},
         )
-
-        # Recursively convert child notes
-        note.children = [
-            cls.from_api_tree_note(child) for child in api_tree_note.children
-        ]
-
-        return note
 
     def update_from_api_note(self, api_note: APINote) -> None:
         """Update this note's properties from an API Note response"""
