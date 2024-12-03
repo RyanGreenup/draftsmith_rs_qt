@@ -91,6 +91,21 @@ class SearchSidebar(QWidget):
 
     def _on_result_selected(self, item):
         """Handle result selection"""
-        note_id = item.data(Qt.ItemDataRole.UserRole)
-        if note_id is not None and note_id != -1:  # Ignore placeholder items
-            self.note_selected.emit(note_id)
+        self._select_current_note(item)
+
+    def _select_current_note(self, item=None):
+        """Helper method to select the current note"""
+        if item is None:
+            item = self.results_list.currentItem()
+        if item:
+            note_id = item.data(Qt.ItemDataRole.UserRole)
+            if note_id is not None and note_id != -1:  # Ignore placeholder items
+                self.note_selected.emit(note_id)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Handle keyboard events"""
+        if event.key() == Qt.Key.Key_Return:
+            self._select_current_note()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
