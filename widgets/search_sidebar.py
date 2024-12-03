@@ -1,16 +1,17 @@
 from PySide6.QtWidgets import (
-    QWidget, 
-    QVBoxLayout, 
+    QWidget,
+    QVBoxLayout,
     QLineEdit,
     QListWidget,
     QListWidgetItem
 )
 from PySide6.QtCore import Qt, Signal, QTimer
 
+SEARCH_DELAY = 200 # Delay in milliseconds for search debounce
 
 class SearchSidebar(QWidget):
     """Widget for searching notes and displaying results"""
-    
+
     note_selected = Signal(int)  # Emitted when search result is selected
 
     def __init__(self, parent=None):
@@ -26,7 +27,7 @@ class SearchSidebar(QWidget):
         # Search input with placeholder
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search notes...")
-        
+
         # Results list
         self.results_list = QListWidget()
         self.results_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -39,7 +40,7 @@ class SearchSidebar(QWidget):
         # Debounce timer to avoid searching on every keystroke
         self.search_timer = QTimer()
         self.search_timer.setSingleShot(True)
-        self.search_timer.setInterval(300)  # 300ms delay
+        self.search_timer.setInterval(SEARCH_DELAY)  # 300ms delay
 
     def _connect_signals(self):
         self.search_input.textChanged.connect(self._on_search_text_changed)
@@ -54,16 +55,16 @@ class SearchSidebar(QWidget):
     def _perform_search(self):
         """Placeholder for search implementation"""
         search_text = self.search_input.text()
-        
+
         # TODO: Implement actual search logic
         # TODO: Search should include:
         #       - Note titles
         #       - Note content
         #       - Tags
         #       - Consider fuzzy matching
-        
+
         self.results_list.clear()
-        
+
         # Dummy implementation for UI testing
         if search_text:
             dummy_item = QListWidgetItem(f"Search results for: {search_text}")
