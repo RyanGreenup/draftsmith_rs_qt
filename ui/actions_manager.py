@@ -95,11 +95,11 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["close_tab"].setStatusTip("Close current tab")
 
     actions["next_tab"] = QAction("Next Tab", parent)
-    actions["next_tab"].setShortcut("Ctrl+Tab")
+    actions["next_tab"].setShortcut("Ctrl+L")
     actions["next_tab"].setStatusTip("Switch to next tab")
 
     actions["prev_tab"] = QAction("Previous Tab", parent)
-    actions["prev_tab"].setShortcut("Ctrl+Shift+Tab")
+    actions["prev_tab"].setShortcut("Ctrl+H")
     actions["prev_tab"].setStatusTip("Switch to previous tab")
 
     # Add refresh action
