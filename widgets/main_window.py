@@ -69,9 +69,8 @@ class NoteApp(QMainWindow):
         self.menu_handler.actions["forward"].triggered.connect(self.navigate_forward)
         self.navigation_model.navigation_changed.connect(self.update_navigation_actions)
 
-        # Connect save action
-        self.menu_handler.actions["save"].triggered.connect(self.save_current_note)
-        self.main_content.editor.save_requested.connect(self.save_current_note)
+        # Connect save action to current tab
+        self.menu_handler.actions["save"].triggered.connect(self._trigger_save_current_tab)
 
         self.setup_command_palette()
 
@@ -252,3 +251,8 @@ class NoteApp(QMainWindow):
         self.notes_model.refresh_notes()
         self._reload_with_preserved_state()
         self.status_bar.showMessage("Notes refreshed from server", 3000)
+    def _trigger_save_current_tab(self):
+        """Trigger save on the currently active tab"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            current_tab.editor.save_requested.emit()
