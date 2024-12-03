@@ -123,3 +123,13 @@ class MarkdownEditor(QWidget):
     def get_content(self) -> str:
         """Get current editor content"""
         return self.editor.toPlainText()
+
+    def get_cursor_position(self) -> int:
+        """Get current cursor position in the editor"""
+        return self.editor.textCursor().position()
+
+    def set_cursor_position(self, position: int):
+        """Set cursor position in the editor"""
+        cursor = self.editor.textCursor()
+        cursor.setPosition(position)
+        self.editor.setTextCursor(cursor)

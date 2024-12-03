@@ -236,6 +236,23 @@ class NoteApp(QMainWindow):
 
     def refresh_model(self):
         """Refresh the notes model from the server"""
+        # Store cursor position before refresh
+        cursor_pos = self.main_content.editor.get_cursor_position()
+        
+        # Store current note ID
+        current_item = self.main_content.left_sidebar.tree.currentItem()
+        current_note_id = None
+        if current_item:
+            note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
+            if note_data:
+                current_note_id = note_data.id
+        
         # The model handles the refresh operation
         self.notes_model.refresh_notes()
+        
+        # If there was a selected note, reselect it and restore cursor
+        if current_note_id:
+            self.main_content.left_sidebar.tree.select_note_by_id(current_note_id)
+            self.main_content.editor.set_cursor_position(cursor_pos)
+        
         self.status_bar.showMessage("Notes refreshed from server", 3000)
