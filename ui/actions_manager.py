@@ -4,7 +4,6 @@ from PySide6.QtCore import QCoreApplication
 from typing import Dict, Optional
 
 
-
 def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions = {}
     style = QApplication.style()

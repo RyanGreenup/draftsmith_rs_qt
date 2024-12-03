@@ -11,6 +11,7 @@ from ui.tab_handler import TabHandler
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
 
+
 class NoteApp(QMainWindow):
     def __init__(self, actions: Dict[str, QAction]):
         super().__init__()
@@ -27,8 +28,12 @@ class NoteApp(QMainWindow):
         self.menu_handler = MenuHandler(self, self._actions)
 
         # Initialize view actions in menu handler
-        self.menu_handler.view_actions["toggle_left_sidebar"] = self._actions["toggle_left_sidebar"]
-        self.menu_handler.view_actions["toggle_right_sidebar"] = self._actions["toggle_right_sidebar"]
+        self.menu_handler.view_actions["toggle_left_sidebar"] = self._actions[
+            "toggle_left_sidebar"
+        ]
+        self.menu_handler.view_actions["toggle_right_sidebar"] = self._actions[
+            "toggle_right_sidebar"
+        ]
         self.tab_handler = TabHandler(self)
 
         # Setup components
@@ -37,7 +42,7 @@ class NoteApp(QMainWindow):
 
         # Connect the model to the tree - do this before loading notes
         self.main_content.left_sidebar.tree.set_model(self.notes_model)
-        
+
         # Now load the notes
         self.notes_model.load_notes()  # Load notes at startup
 
@@ -61,9 +66,7 @@ class NoteApp(QMainWindow):
 
         # Connect navigation actions
         self.menu_handler.actions["back"].triggered.connect(self.navigate_back)
-        self.menu_handler.actions["forward"].triggered.connect(
-            self.navigate_forward
-        )
+        self.menu_handler.actions["forward"].triggered.connect(self.navigate_forward)
         self.navigation_model.navigation_changed.connect(self.update_navigation_actions)
 
         # Connect save action
@@ -154,13 +157,15 @@ class NoteApp(QMainWindow):
             self.navigation_model.can_go_forward()
         )
 
-    def update_right_sidebar(self, selection_data: 'NoteSelectionData') -> None:
+    def update_right_sidebar(self, selection_data: "NoteSelectionData") -> None:
         """Update right sidebar content when a note is selected"""
         if selection_data.note:
             # Add note to navigation history
             self.navigation_model.add_to_history(selection_data.note.id)
 
-            self.main_content.right_sidebar.update_forward_links(selection_data.forward_links)
+            self.main_content.right_sidebar.update_forward_links(
+                selection_data.forward_links
+            )
             self.main_content.right_sidebar.update_backlinks(selection_data.backlinks)
             self.main_content.right_sidebar.update_tags(selection_data.tags)
 
@@ -188,11 +193,9 @@ class NoteApp(QMainWindow):
 
         # Create new note
         new_note = self.notes_model.create_note(
-            title="New Note",
-            content="",
-            parent_id=parent_id
+            title="New Note", content="", parent_id=parent_id
         )
-        
+
         if new_note:
             # Select the new note in tree
             self.main_content.left_sidebar.tree.select_note_by_id(new_note.id)
@@ -210,7 +213,7 @@ class NoteApp(QMainWindow):
             if note_data:
                 content = self.main_content.editor.get_content()
                 success = self.notes_model.update_note(note_data.id, content=content)
-                
+
                 if success:
                     self._reload_with_preserved_state()
                     self.status_bar.showMessage("Note saved successfully", 3000)
@@ -221,7 +224,7 @@ class NoteApp(QMainWindow):
         """Helper method to reload notes while preserving UI state"""
         # Store cursor position before refresh
         cursor_pos = self.main_content.editor.get_cursor_position()
-        
+
         # Store current note ID and tree state
         current_item = self.main_content.left_sidebar.tree.currentItem()
         current_note_id = None
@@ -229,16 +232,16 @@ class NoteApp(QMainWindow):
             note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
                 current_note_id = note_data.id
-        
+
         # Save the tree state
         tree_state = self.main_content.left_sidebar.tree.save_state()
-        
+
         # Reload notes
         self.notes_model.load_notes()
-        
+
         # Restore tree state
         self.main_content.left_sidebar.tree.restore_state(tree_state)
-        
+
         # If there was a selected note, reselect it and restore cursor
         if current_note_id:
             self.main_content.left_sidebar.tree.select_note_by_id(current_note_id)

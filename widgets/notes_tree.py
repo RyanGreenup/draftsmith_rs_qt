@@ -25,7 +25,11 @@ class NotesTreeWidget(QTreeWidget):
         # Connect to the model's update signal
         if self.notes_model is not None:
             self.notes_model.notes_updated.connect(
-                lambda: self.update_tree(self.notes_model.root_notes) if self.notes_model is not None else None
+                lambda: (
+                    self.update_tree(self.notes_model.root_notes)
+                    if self.notes_model is not None
+                    else None
+                )
             )
 
     def _on_selection_changed(self):
@@ -155,7 +159,7 @@ class NotesTreeWidget(QTreeWidget):
         """
         if "expanded_items" in state:
             self._set_expanded_items_by_id(state["expanded_items"])
-        
+
         if "selected_item_id" in state and state["selected_item_id"] is not None:
             self.select_note_by_id(state["selected_item_id"])
 
@@ -177,6 +181,7 @@ class NotesTreeWidget(QTreeWidget):
 
     def _set_expanded_items_by_id(self, expanded_ids: Set[int]) -> None:
         """Set expansion state only for items that exist in the tree"""
+
         def recurse(item):
             note_data = item.data(0, Qt.ItemDataRole.UserRole)
             if note_data and note_data.id in expanded_ids:
@@ -204,30 +209,32 @@ class NotesTreeWidget(QTreeWidget):
         """Update the tree widget to reflect the model's state"""
         # Save current state before update
         state = self.save_state()
-        
+
         # Clear and rebuild tree
         self.clear()
-        
+
         # Add all root notes
         for note in root_notes:
             self._add_note_to_tree(note, self)
-        
+
         # Restore state after update
         self.restore_state(state)
 
-    def _add_note_to_tree(self, note: Note, parent: Union[QTreeWidget, QTreeWidgetItem]) -> None:
+    def _add_note_to_tree(
+        self, note: Note, parent: Union[QTreeWidget, QTreeWidgetItem]
+    ) -> None:
         """Add a note and its children to the tree, reflecting model structure"""
         # Create item for current note
         item = QTreeWidgetItem()
         item.setText(0, note.title)
         item.setData(0, Qt.ItemDataRole.UserRole, note)
-        
+
         # Add to parent
         if isinstance(parent, QTreeWidget):
             parent.addTopLevelItem(item)
         else:
             parent.addChild(item)
-        
+
         # Add children, following model's structure
         for child in note.children:
             self._add_note_to_tree(child, item)

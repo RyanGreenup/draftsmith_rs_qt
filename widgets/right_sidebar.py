@@ -190,18 +190,23 @@ class RightSidebar(QSplitter):
         # Create and add labels
         backlinks_layout.addWidget(QLabel("Backlinks"))
         backlinks_layout.addWidget(self.backlinks)
-        
+
         forward_links_layout.addWidget(QLabel("Forward Links"))
         forward_links_layout.addWidget(self.forward_links)
-        
+
         tags_layout.addWidget(QLabel("Tags"))
         tags_layout.addWidget(self.tags)
-        
+
         similar_layout.addWidget(QLabel("Similar Pages"))
         similar_layout.addWidget(self.text_bottom)
 
         # Remove margins to make it more compact
-        for layout in (backlinks_layout, forward_links_layout, tags_layout, similar_layout):
+        for layout in (
+            backlinks_layout,
+            forward_links_layout,
+            tags_layout,
+            similar_layout,
+        ):
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(2)
 

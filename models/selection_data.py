@@ -3,6 +3,7 @@ from typing import List
 from api.client import Tag
 from models.note import Note
 
+
 @dataclass
 class NoteSelectionData:
     note: Note

@@ -10,10 +10,10 @@ from ui.menu_handler import MenuHandler
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    
+
     # Create actions first without a parent
     actions = create_actions()
-    
+
     # Create window with actions
     window = NoteApp(actions)
 

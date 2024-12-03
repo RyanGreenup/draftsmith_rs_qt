@@ -17,7 +17,9 @@ class NotesModel(QObject):
 
     # TODO should this include tags etc? What if user adds backlink / tag etc.?
     notes_updated = Signal()  # Emitted when notes data changes
-    note_selected = Signal(object)  # Emitted when a note is selected with NoteSelectionData
+    note_selected = Signal(
+        object
+    )  # Emitted when a note is selected with NoteSelectionData
 
     def __init__(self, api_url: str):
         super().__init__()
@@ -50,11 +52,13 @@ class NotesModel(QObject):
         """Load all notes from the API"""
         self.refresh_notes()
 
-    def _process_tree_note(self, api_tree_note: APITreeNote, parent: Optional[Note] = None) -> Note:
+    def _process_tree_note(
+        self, api_tree_note: APITreeNote, parent: Optional[Note] = None
+    ) -> Note:
         """Process a tree note and its children, maintaining the single source of truth"""
         # Create note without processing children
         note = Note.from_api_tree_note(api_tree_note)
-        
+
         # Store in our lookup dictionary
         self.notes[note.id] = note
 
@@ -110,7 +114,7 @@ class NotesModel(QObject):
     def select_note(self, note_id: int) -> None:
         """Handle note selection and emit signals with all necessary data"""
         from models.selection_data import NoteSelectionData
-        
+
         note = self.notes.get(note_id)
         if note:
             try:
@@ -118,17 +122,16 @@ class NotesModel(QObject):
                     note=note,
                     forward_links=self.get_forward_links(note_id),
                     backlinks=self.get_backlinks(note_id),
-                    tags=self.get_note_tags(note_id)
+                    tags=self.get_note_tags(note_id),
                 )
                 self.note_selected.emit(selection_data)
             except Exception as e:
                 print(f"Error getting data for note {note_id}: {e}")
-                self.note_selected.emit(NoteSelectionData(
-                    note=note,
-                    forward_links=[],
-                    backlinks=[],
-                    tags=[]
-                ))
+                self.note_selected.emit(
+                    NoteSelectionData(
+                        note=note, forward_links=[], backlinks=[], tags=[]
+                    )
+                )
 
     def create_note(
         self, title: str, content: str, parent_id: Optional[int] = None
