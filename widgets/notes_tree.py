@@ -9,6 +9,9 @@ from widgets.navigable_tree import NavigableTree
 
 
 class NotesTreeWidget(NavigableTree):
+    note_selected = Signal(int)  # Signal emitted when a note is selected
+    note_selected_with_focus = Signal(int)  # Signal emitted when note should be selected and focused
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.notes_model: Optional[NotesModel] = None
@@ -75,22 +78,15 @@ class NotesTreeWidget(NavigableTree):
                 break
 
     def _handle_return(self, event: QKeyEvent) -> bool:
-        """Handle return key press by updating view through model"""
+        """Handle return key press"""
         current = self.currentItem()
-        if current and self.notes_model:
+        if current:
             note_data = current.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
-                # Always update view on explicit Return press
-                self.notes_model.select_note(note_data.id)
                 if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-                    # Focus editor if Ctrl is pressed
-                    main_window = self.window()
-                    if main_window:
-                        tab_widget = main_window.findChild(QTabWidget)
-                        if tab_widget:
-                            current_tab = tab_widget.currentWidget()
-                            if current_tab and hasattr(current_tab, 'editor'):
-                                current_tab.editor.editor.setFocus()
+                    self.note_selected_with_focus.emit(note_data.id)
+                else:
+                    self.note_selected.emit(note_data.id)
                 return True
         return False
 

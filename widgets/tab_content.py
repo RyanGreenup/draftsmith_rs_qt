@@ -61,6 +61,10 @@ class TabContent(QWidget):
         self.right_sidebar.tags.note_selected.connect(self._handle_view_request)
 
         # Left sidebar signals
+        self.left_sidebar.tree.note_selected.connect(self._handle_view_request)
+        self.left_sidebar.tree.note_selected_with_focus.connect(
+            self._handle_view_request_with_focus
+        )
         self.left_sidebar.search_sidebar.note_selected.connect(self._handle_view_request)
         self.left_sidebar.search_sidebar.note_selected_with_focus.connect(
             self._handle_view_request_with_focus
