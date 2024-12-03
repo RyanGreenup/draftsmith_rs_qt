@@ -17,9 +17,24 @@ from api.client import Tag
 
 class NavigableListWidget(QListWidget):
     """Base class for list widgets with keyboard navigation"""
+    
+    note_selected = Signal(int)  # Signal emitted when a note is selected
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.itemDoubleClicked.connect(self._on_item_double_clicked)
+
+    def _on_item_double_clicked(self, item):
+        """Handle double click on item"""
+        self._select_current_note()
+
+    def _select_current_note(self):
+        """Helper method to select the current note"""
+        current_item = self.currentItem()
+        if current_item:
+            note_id = current_item.data(Qt.ItemDataRole.UserRole)
+            if note_id is not None and note_id != -1:  # Ignore placeholder items
+                self.note_selected.emit(note_id)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard navigation"""

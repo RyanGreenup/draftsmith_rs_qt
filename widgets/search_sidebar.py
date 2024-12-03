@@ -33,7 +33,7 @@ class SearchSidebar(QWidget):
         self.results_list = NavigableListWidget()
         self.results_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.results_list.setWordWrap(True)
-        self.results_list.itemDoubleClicked.connect(self._on_result_selected)
+        self.results_list.note_selected.connect(self.note_selected)
 
         layout.addWidget(self.search_input)
         layout.addWidget(self.results_list)
@@ -47,10 +47,6 @@ class SearchSidebar(QWidget):
     def _connect_signals(self):
         self.search_input.textChanged.connect(self._on_search_text_changed)
         self.search_timer.timeout.connect(self._perform_search)
-        self.results_list.itemClicked.connect(self._on_result_selected)
-        
-        # Connect the results list's note_selected signal to our own
-        self.results_list.note_selected.connect(self.note_selected)
 
     def _on_search_text_changed(self, text):
         """Restart timer on each keystroke"""
@@ -92,23 +88,13 @@ class SearchSidebar(QWidget):
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
             self.results_list.addItem(item)
 
-    def _on_result_selected(self, item):
-        """Handle result selection"""
-        self._select_current_note(item)
-
-    def _select_current_note(self, item=None):
-        """Helper method to select the current note"""
-        if item is None:
-            item = self.results_list.currentItem()
-        if item:
-            note_id = item.data(Qt.ItemDataRole.UserRole)
-            if note_id is not None and note_id != -1:  # Ignore placeholder items
-                self.note_selected.emit(note_id)
-
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard events"""
-        if event.key() == Qt.Key.Key_Return:
-            self._select_current_note()
+        if event.key() == Qt.Key.Key_Return and self.search_input.hasFocus():
+            # When Enter is pressed in search input, focus the results list
+            self.results_list.setFocus()
+            if self.results_list.count() > 0:
+                self.results_list.setCurrentRow(0)
             event.accept()
         else:
             super().keyPressEvent(event)
