@@ -58,8 +58,21 @@ class NavigableTree(QTreeWidget):
         # When we reach max_depth (fully expanded), next press should collapse all
         if self.current_fold_level == max_depth:
             self.current_fold_level = -1
-            for i in range(self.topLevelItemCount()):
-                self.set_fold_level_recursive(self.topLevelItem(i), 0, -1)
+            # Explicitly collapse all items at every level
+            def collapse_all(item: Optional[QTreeWidgetItem] = None):
+                items = []
+                if item is None:
+                    for i in range(self.topLevelItemCount()):
+                        items.append(self.topLevelItem(i))
+                else:
+                    items = [item]
+
+                for current in items:
+                    current.setExpanded(False)
+                    for i in range(current.childCount()):
+                        collapse_all(current.child(i))
+
+            collapse_all()
         else:
             for i in range(self.topLevelItemCount()):
                 self.set_fold_level_recursive(
