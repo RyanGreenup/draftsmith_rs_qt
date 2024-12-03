@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QListWidget
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent
+from utils.key_constants import Key
 
 
 class NavigableListWidget(QListWidget):
@@ -58,13 +59,13 @@ class NavigableListWidget(QListWidget):
             if self._handle_return(event):
                 event.accept()
                 return
-        elif event.key() == Qt.Key.Key_J:
+        elif event.key() == Key.Vim_Down:
             # Move down
             current_row = self.currentRow()
             if current_row < self.count() - 1:
                 self.setCurrentRow(current_row + 1)
             event.accept()
-        elif event.key() == Qt.Key.Key_K:
+        elif event.key() == Key.Vim_Up:
             # Move up
             current_row = self.currentRow()
             if current_row > 0:

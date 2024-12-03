@@ -7,10 +7,10 @@ from utils.key_constants import Key
 
 class NavigableTree(QTreeWidget):
     """Base class for tree widgets with keyboard navigation"""
-    
+
     note_selected = Signal(int)  # Emitted when a note is selected
     note_selected_with_focus = Signal(int)  # Emitted when a note is selected with focus request
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.current_fold_level: int = -1  # -1 means all collapsed
@@ -94,11 +94,11 @@ class NavigableTree(QTreeWidget):
 
     def _handle_navigation_key(self, event: QKeyEvent) -> bool:
         """Handle J/K navigation keys"""
-        if event.key() == Key.Key_J:
+        if event.key() == Key.Vim_Down:
             new_event = QKeyEvent(QEvent.Type.KeyPress, Key.Key_Down, event.modifiers())
             super().keyPressEvent(new_event)
             return True
-        elif event.key() == Key.Key_K:
+        elif event.key() == Key.Vim_Up:
             new_event = QKeyEvent(QEvent.Type.KeyPress, Key.Key_Up, event.modifiers())
             super().keyPressEvent(new_event)
             return True
