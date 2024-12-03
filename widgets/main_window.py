@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Dict
 from models.selection_data import NoteSelectionData
 from PySide6.QtWidgets import QMainWindow, QStatusBar
 from PySide6.QtGui import QAction
@@ -10,13 +10,6 @@ from ui.menu_handler import MenuHandler
 from ui.tab_handler import TabHandler
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
-
-#
-
-
-from typing import Dict, Any
-from PySide6.QtWidgets import QMainWindow, QStatusBar
-from PySide6.QtGui import QAction
 
 class NoteApp(QMainWindow):
     def __init__(self, actions: Dict[str, QAction]):
@@ -34,8 +27,8 @@ class NoteApp(QMainWindow):
         self.menu_handler = MenuHandler(self, self.actions)
 
         # Initialize view actions in menu handler
-        self.menu_handler.view_actions["toggle_left_sidebar"] = self.actions["toggle_left_sidebar"]
-        self.menu_handler.view_actions["toggle_right_sidebar"] = self.actions["toggle_right_sidebar"]
+        self.menu_handler.view_actions["toggle_left_sidebar"] = actions["toggle_left_sidebar"]
+        self.menu_handler.view_actions["toggle_right_sidebar"] = actions["toggle_right_sidebar"]
         self.tab_handler = TabHandler(self)
 
         # Setup components
@@ -88,7 +81,7 @@ class NoteApp(QMainWindow):
         self.setWindowTitle("Note Taking App")
         self.setGeometry(100, 100, 1000, 600)
 
-    def setup_command_palette(self):
+    def setup_command_palette(self) -> None:
         from .command_palette import CommandPalette
 
         self.command_palette = CommandPalette(self)
@@ -142,17 +135,17 @@ class NoteApp(QMainWindow):
         self.main_content.left_sidebar.tree.select_note_by_id(note_id)
         # This will trigger the tree's selection changed signal, which will update everything else
 
-    def navigate_back(self):
+    def navigate_back(self) -> None:
         note_id = self.navigation_model.go_back()
         if note_id != -1:
             self.main_content.left_sidebar.tree.select_note_by_id(note_id)
 
-    def navigate_forward(self):
+    def navigate_forward(self) -> None:
         note_id = self.navigation_model.go_forward()
         if note_id != -1:
             self.main_content.left_sidebar.tree.select_note_by_id(note_id)
 
-    def update_navigation_actions(self):
+    def update_navigation_actions(self) -> None:
         """Update the enabled state of navigation actions"""
         self.menu_handler.actions["back"].setEnabled(
             self.navigation_model.can_go_back()
@@ -171,19 +164,19 @@ class NoteApp(QMainWindow):
             self.main_content.right_sidebar.update_backlinks(selection_data.backlinks)
             self.main_content.right_sidebar.update_tags(selection_data.tags)
 
-    def new_tab(self):
+    def new_tab(self) -> None:
         self.tab_handler.new_tab()
 
-    def close_current_tab(self):
+    def close_current_tab(self) -> None:
         self.tab_handler.close_current_tab()
 
-    def next_tab(self):
+    def next_tab(self) -> None:
         self.tab_handler.next_tab()
 
-    def previous_tab(self):
+    def previous_tab(self) -> None:
         self.tab_handler.previous_tab()
 
-    def create_new_note(self):
+    def create_new_note(self) -> None:
         """Create a new note and select it in the tree"""
         # Get currently selected note as parent
         current_item = self.main_content.left_sidebar.tree.currentItem()
@@ -209,7 +202,7 @@ class NoteApp(QMainWindow):
         else:
             self.status_bar.showMessage("Failed to create note", 3000)
 
-    def save_current_note(self):
+    def save_current_note(self) -> None:
         """Save the current note's content"""
         current_note = self.main_content.left_sidebar.tree.currentItem()
         if current_note:
@@ -224,7 +217,7 @@ class NoteApp(QMainWindow):
                 else:
                     self.status_bar.showMessage("Failed to save note", 3000)
 
-    def _reload_with_preserved_state(self):
+    def _reload_with_preserved_state(self) -> None:
         """Helper method to reload notes while preserving UI state"""
         # Store cursor position before refresh
         cursor_pos = self.main_content.editor.get_cursor_position()
@@ -251,7 +244,7 @@ class NoteApp(QMainWindow):
             self.main_content.left_sidebar.tree.select_note_by_id(current_note_id)
             self.main_content.editor.set_cursor_position(cursor_pos)
 
-    def refresh_model(self):
+    def refresh_model(self) -> None:
         """Refresh the notes model from the server"""
         self.notes_model.refresh_notes()
         self._reload_with_preserved_state()
