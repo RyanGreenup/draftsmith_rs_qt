@@ -252,6 +252,11 @@ class NoteApp(QMainWindow):
         self.notes_model.refresh_notes()
         self._reload_with_preserved_state()
         self.status_bar.showMessage("Notes refreshed from server", 3000)
+
+    def focus_search(self) -> None:
+        """Focus the search input in the left sidebar"""
+        self.main_content.left_sidebar.focus_search()
+        
     def _trigger_save_current_tab(self):
         """Trigger save on the currently active tab"""
         current_tab = self.tab_handler.tab_widget.currentWidget()
