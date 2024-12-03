@@ -82,6 +82,16 @@ class TabContent(QWidget):
     def set_navigation_model(self, navigation_model: NavigationModel):
         """Set the navigation model for this tab"""
         self.navigation_model = navigation_model
+        # Connect navigation model signals
+        self.navigation_model.note_changed.connect(self._handle_navigation_change)
+
+    def _handle_navigation_change(self, note_id: int) -> None:
+        """Handle note changes from navigation"""
+        if self.notes_model and note_id is not None:
+            # Update tree selection without triggering signals
+            self.left_sidebar.tree.select_note_by_id(note_id, emit_signal=False)
+            # Request view update directly from model
+            self.notes_model.select_note(note_id)
 
     def _handle_view_request(self, note_id: int) -> None:
         """Handle direct view update request"""
