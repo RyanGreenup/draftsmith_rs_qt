@@ -28,8 +28,8 @@ class NotesModel(QObject):
         self.notes: Dict[int, Note] = {}  # id -> Note mapping
         self.root_notes: List[Note] = []  # Top-level notes
 
-    def load_notes(self) -> None:
-        """Load all notes from the API"""
+    def refresh_notes(self) -> None:
+        """Refresh notes from the server"""
         try:
             # Get the tree structure of notes
             tree_notes = self.note_api.get_notes_tree()
@@ -42,10 +42,15 @@ class NotesModel(QObject):
             for tree_note in tree_notes:
                 self._process_tree_note(tree_note)
 
+            # Emit single update signal after all processing is complete
             self.notes_updated.emit()
 
         except Exception as e:
-            print(f"Error loading notes: {e}")
+            print(f"Error refreshing notes: {e}")
+
+    def load_notes(self) -> None:
+        """Load all notes from the API"""
+        self.refresh_notes()
 
     def _process_tree_note(
         self, api_tree_note: APITreeNote, parent: Optional[Note] = None

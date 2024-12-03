@@ -234,14 +234,7 @@ class NoteApp(QMainWindow):
                     self.status_bar.showMessage("Failed to save note", 3000)
 
     def refresh_model(self):
-        """Refresh the notes model from the server while preserving tree state"""
-        # Save the current tree state
-        tree_state = self.main_content.left_sidebar.tree.save_state()
-        
-        # Reload the notes from server
-        self.notes_model.load_notes()
-        
-        # Restore the tree state
-        self.main_content.left_sidebar.tree.restore_state(tree_state)
-        
+        """Refresh the notes model from the server"""
+        # The model handles the refresh operation
+        self.notes_model.refresh_notes()
         self.status_bar.showMessage("Notes refreshed from server", 3000)

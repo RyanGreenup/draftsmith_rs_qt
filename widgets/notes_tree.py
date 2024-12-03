@@ -191,12 +191,19 @@ class NotesTreeWidget(QTreeWidget):
         return None
 
     def update_tree(self, root_notes: List[Note]) -> None:
-        """Update the tree widget with the given root notes."""
+        """Update the tree widget with the given root notes while preserving state"""
+        # Save current state before update
+        state = self.save_state()
+        
+        # Clear and rebuild tree
         self.clear()
         for note in root_notes:
             item = self._create_tree_item(note)
             self.addTopLevelItem(item)
             self._add_children_recursive(item, note)
+        
+        # Restore state after update
+        self.restore_state(state)
 
     def _create_tree_item(self, note: Note) -> QTreeWidgetItem:
         item = QTreeWidgetItem()
