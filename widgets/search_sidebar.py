@@ -14,6 +14,7 @@ class SearchSidebar(QWidget):
     """Widget for searching notes and displaying results"""
 
     note_selected = Signal(int)  # Emitted when search result is selected
+    note_selected_with_focus = Signal(int)  # Emitted when search result is selected with focus
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -35,8 +36,9 @@ class SearchSidebar(QWidget):
         self.results_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.results_list.setWordWrap(True)
         
-        # Forward the note_selected signal
+        # Forward the note selection signals
         self.results_list.note_selected.connect(self.note_selected.emit)
+        self.results_list.note_selected_with_focus.connect(self.note_selected_with_focus.emit)
 
         layout.addWidget(self.search_input)
         layout.addWidget(self.results_list)

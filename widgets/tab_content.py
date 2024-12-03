@@ -58,6 +58,7 @@ class TabContent(QWidget):
 
         # Left sidebar signals
         self.left_sidebar.search_sidebar.note_selected.connect(self._handle_note_selection)
+        self.left_sidebar.search_sidebar.note_selected_with_focus.connect(self._handle_note_selection_with_focus)
 
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""

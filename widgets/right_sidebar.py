@@ -42,9 +42,26 @@ class NavigableListWidget(QListWidget):
             if note_id is not None and note_id != -1:  # Ignore placeholder items
                 self.note_selected.emit(note_id)
 
+    def _handle_return(self, event: QKeyEvent) -> bool:
+        """Handle return key press, returns True if handled"""
+        current_item = self.currentItem()
+        if current_item:
+            note_id = current_item.data(Qt.ItemDataRole.UserRole)
+            if note_id:
+                if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                    self.note_selected_with_focus.emit(note_id)
+                else:
+                    self.note_selected.emit(note_id)
+                return True
+        return False
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard navigation"""
-        if event.key() == Qt.Key.Key_J:
+        if event.key() == Qt.Key.Key_Return:
+            if self._handle_return(event):
+                event.accept()
+                return
+        elif event.key() == Qt.Key.Key_J:
             # Move down
             current_row = self.currentRow()
             if current_row < self.count() - 1:
@@ -69,19 +86,6 @@ class BacklinksWidget(NavigableListWidget):
     def _on_item_double_clicked(self, item: QListWidgetItem):
         self._select_current_note()
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() == Qt.Key.Key_Return:
-            current_item = self.currentItem()
-            if current_item:
-                note_id = current_item.data(Qt.ItemDataRole.UserRole)
-                if note_id:
-                    if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-                        self.note_selected_with_focus.emit(note_id)
-                    else:
-                        self.note_selected.emit(note_id)
-            event.accept()
-        else:
-            super().keyPressEvent(event)
 
     def _select_current_note(self) -> None:
         """Helper method to select the current note"""
@@ -117,19 +121,6 @@ class ForwardLinksWidget(NavigableListWidget):
     def _on_item_double_clicked(self, item: QListWidgetItem):
         self._select_current_note()
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() == Qt.Key.Key_Return:
-            current_item = self.currentItem()
-            if current_item:
-                note_id = current_item.data(Qt.ItemDataRole.UserRole)
-                if note_id:
-                    if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-                        self.note_selected_with_focus.emit(note_id)
-                    else:
-                        self.note_selected.emit(note_id)
-            event.accept()
-        else:
-            super().keyPressEvent(event)
 
     def _select_current_note(self) -> None:
         """Helper method to select the current note"""
