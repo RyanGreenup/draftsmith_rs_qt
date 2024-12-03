@@ -1,5 +1,5 @@
 from typing import List, Optional, Any
-from PySide6.QtWidgets import QListWidgetItem, QMainWindow, QMenuBar
+from PySide6.QtWidgets import QListWidgetItem, QMainWindow, QMenuBar, QMenu
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QFont, QKeyEvent
 from .popup_palette import PopupPalette
