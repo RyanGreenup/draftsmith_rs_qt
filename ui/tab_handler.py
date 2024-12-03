@@ -23,8 +23,10 @@ class TabHandler:
             if isinstance(current_tab, TabContent):
                 self._last_tree_state = current_tab.left_sidebar.tree.save_state()
         
-        # Create and return new tab
-        return self.create_new_tab()
+        # Create new tab and set focus
+        new_tab = self.create_new_tab()
+        self.tab_widget.setCurrentWidget(new_tab)
+        return new_tab
 
     def create_new_tab(self, title: str = "New Tab") -> TabContent:
         """Create a new tab with its own view implementation"""
