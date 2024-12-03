@@ -14,6 +14,7 @@ class TabContent(QWidget):
         super().__init__(parent)
         self.current_note_id: Optional[int] = None
         self.notes_model: Optional[NotesModel] = None
+        self.navigation_model: Optional[NavigationModel] = None
 
         # Create components
         self.left_sidebar = LeftSidebar()
@@ -77,11 +78,18 @@ class TabContent(QWidget):
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
 
+    def set_navigation_model(self, navigation_model: NavigationModel):
+        """Set the navigation model for this tab"""
+        self.navigation_model = navigation_model
+
     def _handle_view_request(self, note_id: int) -> None:
         """Handle direct view update request"""
         if self.notes_model and note_id is not None:
             # Update tree selection without triggering signals
             self.left_sidebar.tree.select_note_by_id(note_id, emit_signal=False)
+            # Update navigation history
+            if self.navigation_model:
+                self.navigation_model.add_to_history(note_id)
             # Request view update directly from model
             self.notes_model.select_note(note_id)
 
