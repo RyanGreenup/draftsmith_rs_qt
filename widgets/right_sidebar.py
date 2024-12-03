@@ -27,19 +27,28 @@ class NavigableListWidget(QListWidget):
         self.itemDoubleClicked.connect(self._on_item_double_clicked)
         self.itemActivated.connect(self._on_item_activated)
 
+    def mouseReleaseEvent(self, event):
+        """Handle mouse button releases"""
+        if event.button() == Qt.MouseButton.MiddleButton:
+            item = self.itemAt(event.pos())
+            if item:
+                note_id = item.data(Qt.ItemDataRole.UserRole)
+                if note_id is not None and note_id != -1:
+                    self.note_selected.emit(note_id)
+        super().mouseReleaseEvent(event)
+
     def _on_item_double_clicked(self, item):
         """Handle double click on item"""
-        self._emit_note_selected(item)
+        if item:
+            note_id = item.data(Qt.ItemDataRole.UserRole)
+            if note_id is not None and note_id != -1:
+                self.note_selected_with_focus.emit(note_id)
 
     def _on_item_activated(self, item):
         """Handle item activation (Enter key)"""
-        self._emit_note_selected(item)
-
-    def _emit_note_selected(self, item):
-        """Emit note_selected signal if item has valid note_id"""
         if item:
             note_id = item.data(Qt.ItemDataRole.UserRole)
-            if note_id is not None and note_id != -1:  # Ignore placeholder items
+            if note_id is not None and note_id != -1:
                 self.note_selected.emit(note_id)
 
     def _handle_return(self, event: QKeyEvent) -> bool:
@@ -83,18 +92,6 @@ class BacklinksWidget(NavigableListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def _on_item_double_clicked(self, item: QListWidgetItem):
-        self._select_current_note()
-
-
-    def _select_current_note(self) -> None:
-        """Helper method to select the current note"""
-        current_item = self.currentItem()
-        if current_item:
-            note_id = current_item.data(Qt.ItemDataRole.UserRole)
-            if note_id:
-                self.note_selected.emit(note_id)
-
     def update_links(self, backlinks: List[Note]) -> None:
         """Update the list with new backlinks"""
         self.clear()
@@ -117,18 +114,6 @@ class ForwardLinksWidget(NavigableListWidget):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    def _on_item_double_clicked(self, item: QListWidgetItem):
-        self._select_current_note()
-
-
-    def _select_current_note(self) -> None:
-        """Helper method to select the current note"""
-        current_item = self.currentItem()
-        if current_item:
-            note_id = current_item.data(Qt.ItemDataRole.UserRole)
-            if note_id:
-                self.note_selected.emit(note_id)
 
     def update_links(self, forward_links: List[Note]) -> None:
         """Update the list with new forward links"""
