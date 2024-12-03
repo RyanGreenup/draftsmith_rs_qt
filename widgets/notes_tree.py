@@ -10,8 +10,8 @@ from utils.key_constants import Key
 class NotesTreeWidget(QTreeWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.current_fold_level = -1  # -1 means all collapsed
-        self.notes_model = None
+        self.current_fold_level: int = -1  # -1 means all collapsed
+        self.notes_model: Optional[NotesModel] = None
         self.itemSelectionChanged.connect(self._on_selection_changed)
 
     def set_model(self, model: "NotesModel"):
@@ -23,9 +23,10 @@ class NotesTreeWidget(QTreeWidget):
         except:
             pass
         # Connect to the model's update signal
-        self.notes_model.notes_updated.connect(
-            lambda: self.update_tree(self.notes_model.root_notes)
-        )
+        if self.notes_model:
+            self.notes_model.notes_updated.connect(
+                lambda: self.update_tree(self.notes_model.root_notes)
+            )
 
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""
