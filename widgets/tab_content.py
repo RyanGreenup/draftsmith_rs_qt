@@ -48,8 +48,17 @@ class TabContent(QWidget):
         """Connect this view to the model"""
         self.notes_model = notes_model
         self.left_sidebar.tree.set_model(notes_model)
-        # Connect note selection to right sidebar updates
-        self.notes_model.note_selected.connect(self._update_right_sidebar)
+        # Connect note selection to view updates
+        self.notes_model.note_selected.connect(self._update_view)
+
+    def _update_view(self, selection_data):
+        """Update entire view when note selection changes"""
+        if selection_data.note:
+            self.current_note_id = selection_data.note.id
+            # Update editor content
+            self.editor.set_content(selection_data.note.content)
+            # Update right sidebar
+            self._update_right_sidebar(selection_data)
 
     def _handle_save_request(self):
         """Internal handler for save requests"""
