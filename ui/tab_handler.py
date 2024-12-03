@@ -58,8 +58,10 @@ class TabHandler:
         current = self.tab_widget.currentIndex()
         next_index = (current + 1) % self.tab_widget.count()
         self.tab_widget.setCurrentIndex(next_index)
+        self.main_window.refresh_model()
 
     def previous_tab(self):
         current = self.tab_widget.currentIndex()
         prev_index = (current - 1) % self.tab_widget.count()
         self.tab_widget.setCurrentIndex(prev_index)
+        self.main_window.refresh_model()
