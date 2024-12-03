@@ -118,7 +118,8 @@ class Note:
         while current.parent_id is not None:
             ancestors.append(current.parent_id)
             # Note: This requires the parent note to be accessible
-            # You might need to modify this based on how you maintain the note hierarchy
+            # may modify this based on how we maintain the note hierarchy
+            # TODO consider using API breadcrumbs
         return ancestors
 
     def get_all_descendants(self) -> List[int]:
