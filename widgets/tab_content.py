@@ -5,6 +5,7 @@ from widgets.left_sidebar import LeftSidebar
 from widgets.markdown_editor import MarkdownEditor
 from widgets.right_sidebar import RightSidebar
 from models.notes_model import NotesModel
+from models.navigation_model import NavigationModel
 
 class TabContent(QWidget):
     """A complete view implementation for a note"""
