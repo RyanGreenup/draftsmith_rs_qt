@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox
 from PySide6.QtCore import Qt
 from .notes_tree import NotesTreeWidget
+from .search_sidebar import SearchSidebar
 
 
 class LeftSidebar(QWidget):
@@ -8,6 +9,7 @@ class LeftSidebar(QWidget):
         super().__init__(parent)
         self.tree = NotesTreeWidget()
         self.tags_tree = NotesTreeWidget()
+        self.search_sidebar = SearchSidebar()
         self.tree_selector = QComboBox()
 
         self._setup_ui()
@@ -21,13 +23,16 @@ class LeftSidebar(QWidget):
         self.tags_tree.setMinimumWidth(100)
         self.tags_tree.hide()  # Initially hidden
 
-        self.tree_selector.addItems(["Notes", "Tags"])
+        self.search_sidebar.hide()  # Initially hidden
+
+        self.tree_selector.addItems(["Notes", "Tags", "Search"])
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.tree_selector)
         layout.addWidget(self.tree)
         layout.addWidget(self.tags_tree)
+        layout.addWidget(self.search_sidebar)
 
     def _connect_signals(self):
         self.tree_selector.currentTextChanged.connect(self._on_tree_selection_changed)
@@ -36,6 +41,12 @@ class LeftSidebar(QWidget):
         if text == "Notes":
             self.tree.show()
             self.tags_tree.hide()
-        else:  # Tags
+            self.search_sidebar.hide()
+        elif text == "Tags":
             self.tree.hide()
             self.tags_tree.show()
+            self.search_sidebar.hide()
+        else:  # Search
+            self.tree.hide()
+            self.tags_tree.hide()
+            self.search_sidebar.show()
