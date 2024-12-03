@@ -242,6 +242,20 @@ class NoteApp(QMainWindow):
     def focus_search(self) -> None:
         """Focus the search input in the left sidebar"""
         self.main_content.left_sidebar.focus_search()
+
+    def toggle_follow_mode(self) -> None:
+        """Toggle follow mode for tree and search widgets"""
+        # Get current state from tree widget
+        current_state = self.main_content.left_sidebar.tree.follow_mode
+        new_state = not current_state
+        
+        # Update widgets
+        self.main_content.left_sidebar.tree.follow_mode = new_state
+        self.main_content.left_sidebar.search_sidebar.follow_mode = new_state
+        
+        # Update status bar
+        mode_status = "enabled" if new_state else "disabled"
+        self.status_bar.showMessage(f"Follow mode {mode_status}", 3000)
         
     def _trigger_save_current_tab(self):
         """Trigger save on the currently active tab"""

@@ -53,6 +53,9 @@ def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     view_menu.addAction(actions["maximize_editor"])
     view_menu.addAction(actions["maximize_preview"])
 
+    view_menu.addSeparator()
+    view_menu.addAction(actions["toggle_follow_mode"])
+
     # Add the Refresh action
     view_menu.addSeparator()
     view_menu.addAction(actions["refresh"])

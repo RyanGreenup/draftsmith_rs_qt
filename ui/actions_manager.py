@@ -79,6 +79,11 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["focus_search"].setShortcut("Ctrl+Shift+F")
     actions["focus_search"].setStatusTip("Focus the search input")
 
+    actions["toggle_follow_mode"] = QAction("Toggle &Follow Mode", parent)
+    actions["toggle_follow_mode"].setShortcut("Ctrl+F")
+    actions["toggle_follow_mode"].setStatusTip("Toggle automatic note preview when navigating")
+    actions["toggle_follow_mode"].setCheckable(True)
+
     actions["maximize_editor"] = QAction("Ma&ximize Editor", parent)
     actions["maximize_editor"].setShortcut("Ctrl+Shift+E")
     actions["maximize_editor"].setStatusTip("Toggle maximize editor view")

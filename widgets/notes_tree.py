@@ -12,6 +12,7 @@ class NotesTreeWidget(NavigableTree):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.notes_model: Optional[NotesModel] = None
+        self.follow_mode: bool = True  # Default to true for backward compatibility
         self.itemSelectionChanged.connect(self._on_selection_changed)
 
     def set_model(self, model: "NotesModel"):
@@ -40,7 +41,7 @@ class NotesTreeWidget(NavigableTree):
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""
         current = self.currentItem()
-        if current and self.notes_model:
+        if current and self.notes_model and self.follow_mode:
             note_data = current.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
                 self.notes_model.select_note(note_data.id)

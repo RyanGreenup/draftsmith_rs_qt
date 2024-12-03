@@ -18,6 +18,7 @@ class SearchSidebar(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.follow_mode: bool = True  # Default to true for backward compatibility
         self._setup_ui()
         self._setup_search_timer()
         self._connect_signals()
@@ -52,6 +53,18 @@ class SearchSidebar(QWidget):
     def _connect_signals(self):
         self.search_input.textChanged.connect(self._on_search_text_changed)
         self.search_timer.timeout.connect(self._perform_search)
+        self.results_list.itemSelectionChanged.connect(self._on_selection_changed)
+
+    def _on_selection_changed(self):
+        """Handle selection changes in results list"""
+        if not self.follow_mode:
+            return
+            
+        current = self.results_list.currentItem()
+        if current:
+            note_id = current.data(Qt.ItemDataRole.UserRole)
+            if note_id:
+                self.note_selected.emit(note_id)
 
     def _on_search_text_changed(self, text):
         """Restart timer on each keystroke"""
