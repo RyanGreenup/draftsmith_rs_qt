@@ -22,7 +22,7 @@ class TabHandler:
             current_tab = self.tab_widget.currentWidget()
             if isinstance(current_tab, TabContent):
                 self._last_tree_state = current_tab.left_sidebar.tree.save_state()
-        
+
         # Create new tab and set focus
         new_tab = self.create_new_tab()
         self.tab_widget.setCurrentWidget(new_tab)
@@ -32,20 +32,20 @@ class TabHandler:
         """Create a new tab with its own view implementation"""
         # Create new tab content
         tab_content = TabContent()
-        
+
         # Connect to model
         tab_content.set_model(self.main_window.notes_model)
-        
+
         # Connect save signal to status updates
         tab_content.note_saved.connect(self._handle_note_saved)
-        
+
         # Add to tab widget
         self.tab_widget.addTab(tab_content, title)
-        
+
         # Restore tree state if available
         if self._last_tree_state is not None:
             tab_content.left_sidebar.tree.restore_state(self._last_tree_state)
-        
+
         return tab_content
 
     def _handle_note_saved(self, note_id: int):
@@ -60,10 +60,12 @@ class TabHandler:
         current = self.tab_widget.currentIndex()
         next_index = (current + 1) % self.tab_widget.count()
         self.tab_widget.setCurrentIndex(next_index)
-        self.main_window.refresh_model()
+        # NOTE uncomment to refresh the model when switching tabs
+        # self.main_window.refresh_model()
 
     def previous_tab(self):
         current = self.tab_widget.currentIndex()
         prev_index = (current - 1) % self.tab_widget.count()
         self.tab_widget.setCurrentIndex(prev_index)
-        self.main_window.refresh_model()
+        # NOTE uncomment to refresh the model when switching tabs
+        # self.main_window.refresh_model()
