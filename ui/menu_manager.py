@@ -46,6 +46,7 @@ def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
 
     view_menu.addAction(actions["focus_next"])
     view_menu.addAction(actions["focus_previous"])
+    view_menu.addAction(actions["focus_search"])
 
     view_menu.addSeparator()
 
