@@ -2,10 +2,11 @@ from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QLineEdit,
-    QListWidget,
     QListWidgetItem
 )
 from PySide6.QtCore import Qt, Signal, QTimer
+from PySide6.QtGui import QKeyEvent
+from widgets.right_sidebar import NavigableListWidget
 
 SEARCH_DELAY = 200 # Delay in milliseconds for search debounce
 
@@ -29,9 +30,10 @@ class SearchSidebar(QWidget):
         self.search_input.setPlaceholderText("Search notes...")
 
         # Results list
-        self.results_list = QListWidget()
+        self.results_list = NavigableListWidget()
         self.results_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.results_list.setWordWrap(True)
+        self.results_list.itemDoubleClicked.connect(self._on_result_selected)
 
         layout.addWidget(self.search_input)
         layout.addWidget(self.results_list)
@@ -53,27 +55,42 @@ class SearchSidebar(QWidget):
         self.search_timer.start()
 
     def _perform_search(self):
-        """Placeholder for search implementation"""
+        """Perform the search using the notes model"""
         search_text = self.search_input.text()
-
-        # TODO: Implement actual search logic
-        # TODO: Search should include:
-        #       - Note titles
-        #       - Note content
-        #       - Tags
-        #       - Consider fuzzy matching
-
         self.results_list.clear()
 
-        # Dummy implementation for UI testing
-        if search_text:
-            dummy_item = QListWidgetItem(f"Search results for: {search_text}")
-            dummy_item.setData(Qt.ItemDataRole.UserRole, -1)  # Placeholder note ID
-            self.results_list.addItem(dummy_item)
+        if not search_text:
+            item = QListWidgetItem("Type to search...")
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)  # Make non-clickable
+            self.results_list.addItem(item)
+            return
+
+        # Get notes model from parent widget hierarchy
+        main_window = self.window()
+        if not main_window or not hasattr(main_window, 'notes_model'):
+            return
+
+        try:
+            results = main_window.notes_model.note_api.search_notes(search_text)
+            if not results:
+                item = QListWidgetItem("No results found")
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                self.results_list.addItem(item)
+                return
+
+            for note in results:
+                item = QListWidgetItem(note.title)
+                item.setData(Qt.ItemDataRole.UserRole, note.id)
+                self.results_list.addItem(item)
+
+        except Exception as e:
+            print(f"Error performing search: {e}")
+            item = QListWidgetItem("Error performing search")
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+            self.results_list.addItem(item)
 
     def _on_result_selected(self, item):
         """Handle result selection"""
-        # TODO: Implement proper note selection
         note_id = item.data(Qt.ItemDataRole.UserRole)
-        if note_id is not None:
+        if note_id is not None and note_id != -1:  # Ignore placeholder items
             self.note_selected.emit(note_id)
