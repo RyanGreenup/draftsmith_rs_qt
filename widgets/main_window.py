@@ -220,26 +220,21 @@ class NoteApp(QMainWindow):
         if current_note:
             note_data = current_note.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
-                # Save the current tree state before saving
-                tree_state = self.main_content.left_sidebar.tree.save_state()
-                
                 content = self.main_content.editor.get_content()
                 success = self.notes_model.update_note(note_data.id, content=content)
                 
                 if success:
-                    # Reload notes and restore tree state
-                    self.notes_model.load_notes()
-                    self.main_content.left_sidebar.tree.restore_state(tree_state)
+                    self._reload_with_preserved_state()
                     self.status_bar.showMessage("Note saved successfully", 3000)
                 else:
                     self.status_bar.showMessage("Failed to save note", 3000)
 
-    def refresh_model(self):
-        """Refresh the notes model from the server"""
+    def _reload_with_preserved_state(self):
+        """Helper method to reload notes while preserving UI state"""
         # Store cursor position before refresh
         cursor_pos = self.main_content.editor.get_cursor_position()
         
-        # Store current note ID
+        # Store current note ID and tree state
         current_item = self.main_content.left_sidebar.tree.currentItem()
         current_note_id = None
         if current_item:
@@ -247,12 +242,22 @@ class NoteApp(QMainWindow):
             if note_data:
                 current_note_id = note_data.id
         
-        # The model handles the refresh operation
-        self.notes_model.refresh_notes()
+        # Save the tree state
+        tree_state = self.main_content.left_sidebar.tree.save_state()
+        
+        # Reload notes
+        self.notes_model.load_notes()
+        
+        # Restore tree state
+        self.main_content.left_sidebar.tree.restore_state(tree_state)
         
         # If there was a selected note, reselect it and restore cursor
         if current_note_id:
             self.main_content.left_sidebar.tree.select_note_by_id(current_note_id)
             self.main_content.editor.set_cursor_position(cursor_pos)
-        
+
+    def refresh_model(self):
+        """Refresh the notes model from the server"""
+        self.notes_model.refresh_notes()
+        self._reload_with_preserved_state()
         self.status_bar.showMessage("Notes refreshed from server", 3000)
