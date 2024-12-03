@@ -164,8 +164,6 @@ class NotesModel(QObject):
 
             api_response = self.note_api.update_note(note_id, update_data)
             note.update_from_api_note(api_response)
-
-            self.notes_updated.emit()
             return True
 
         except Exception as e:
