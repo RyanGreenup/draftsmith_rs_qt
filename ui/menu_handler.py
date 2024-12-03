@@ -11,6 +11,7 @@ class MenuHandler:
         self.file_menu = None
         self.view_menu = None
         self.tabs_menu = None
+        self.view_actions = {}  # Initialize view_actions dictionary
 
     def setup_menus(self):
         from ui.menu_manager import create_file_menu, create_view_menu, create_tabs_menu
