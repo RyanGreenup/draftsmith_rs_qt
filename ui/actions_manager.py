@@ -75,6 +75,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
         "Move focus to previous widget (like Shift+Tab)"
     )
 
+    actions["focus_search"] = QAction("Focus &Search", parent)
+    actions["focus_search"].setShortcut("Ctrl+Shift+F")
+    actions["focus_search"].setStatusTip("Focus the search input")
+
     actions["maximize_editor"] = QAction("Ma&ximize Editor", parent)
     actions["maximize_editor"].setShortcut("Ctrl+Shift+E")
     actions["maximize_editor"].setStatusTip("Toggle maximize editor view")
