@@ -19,6 +19,7 @@ class NavigableListWidget(QListWidget):
     """Base class for list widgets with keyboard navigation"""
     
     note_selected = Signal(int)  # Signal emitted when a note is selected
+    note_selected_with_focus = Signal(int)  # Signal emitted when a note should be selected and focused
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -70,8 +71,14 @@ class BacklinksWidget(NavigableListWidget):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key.Key_Return:
-            # Select current note
-            self._select_current_note()
+            current_item = self.currentItem()
+            if current_item:
+                note_id = current_item.data(Qt.ItemDataRole.UserRole)
+                if note_id:
+                    if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                        self.note_selected_with_focus.emit(note_id)
+                    else:
+                        self.note_selected.emit(note_id)
             event.accept()
         else:
             super().keyPressEvent(event)
@@ -112,8 +119,14 @@ class ForwardLinksWidget(NavigableListWidget):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key.Key_Return:
-            # Select current note
-            self._select_current_note()
+            current_item = self.currentItem()
+            if current_item:
+                note_id = current_item.data(Qt.ItemDataRole.UserRole)
+                if note_id:
+                    if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                        self.note_selected_with_focus.emit(note_id)
+                    else:
+                        self.note_selected.emit(note_id)
             event.accept()
         else:
             super().keyPressEvent(event)

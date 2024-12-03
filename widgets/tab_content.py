@@ -47,7 +47,9 @@ class TabContent(QWidget):
         
         # Right sidebar signals
         self.right_sidebar.forward_links.note_selected.connect(self._handle_note_selection)
+        self.right_sidebar.forward_links.note_selected_with_focus.connect(self._handle_note_selection_with_focus)
         self.right_sidebar.backlinks.note_selected.connect(self._handle_note_selection)
+        self.right_sidebar.backlinks.note_selected_with_focus.connect(self._handle_note_selection_with_focus)
         self.right_sidebar.tags.note_selected.connect(self._handle_note_selection)
         
         # Left sidebar signals
@@ -65,6 +67,11 @@ class TabContent(QWidget):
         if self.notes_model and note_id is not None:
             # Use the tree's selection method which will trigger the model's note_selected signal
             self.left_sidebar.tree.select_note_by_id(note_id)
+            
+    def _handle_note_selection_with_focus(self, note_id: int) -> None:
+        """Handle note selection and focus the editor"""
+        self._handle_note_selection(note_id)
+        self.editor.setFocus()
 
     def _update_view(self, selection_data):
         """Update entire view when note selection changes"""
