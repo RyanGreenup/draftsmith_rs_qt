@@ -1,24 +1,23 @@
-from abc import ABC, abstractmethod
+from typing import Protocol
 from PySide6.QtWidgets import QListWidget
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
 
 
-class ReturnKeyHandler(ABC):
-    """Abstract base class for handling return key press behavior"""
+class ReturnKeyHandler(Protocol):
+    """Protocol for handling return key press behavior"""
     
-    @abstractmethod
     def handle_return(self, event: QKeyEvent) -> bool:
         """Handle return key press
         
         Returns:
             bool: True if the event was handled, False otherwise
         """
-        pass
+        ...
 
 
-class NavigableListWidget(QListWidget, ReturnKeyHandler):
+class NavigableListWidget(QListWidget):
     """Base class for list widgets with keyboard navigation"""
 
     note_selected = Signal(int)  # Signal emitted when a note is selected
