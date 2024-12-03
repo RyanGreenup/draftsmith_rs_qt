@@ -1,4 +1,5 @@
 from typing import List, Dict
+from models.selection_data import NoteSelectionData
 from PySide6.QtWidgets import QMainWindow, QStatusBar
 from PySide6.QtGui import QAction
 from api.client import Tag
@@ -160,21 +161,15 @@ class NoteApp(QMainWindow):
             self.navigation_model.can_go_forward()
         )
 
-    def update_right_sidebar(
-        self,
-        note: Note,
-        forward_links: List[Note],
-        backlinks: List[Note],
-        tags: List[Tag],
-    ) -> None:
+    def update_right_sidebar(self, selection_data: 'NoteSelectionData') -> None:
         """Update right sidebar content when a note is selected"""
-        if note:
+        if selection_data.note:
             # Add note to navigation history
-            self.navigation_model.add_to_history(note.id)
+            self.navigation_model.add_to_history(selection_data.note.id)
 
-            self.main_content.right_sidebar.update_forward_links(forward_links)
-            self.main_content.right_sidebar.update_backlinks(backlinks)
-            self.main_content.right_sidebar.update_tags(tags)
+            self.main_content.right_sidebar.update_forward_links(selection_data.forward_links)
+            self.main_content.right_sidebar.update_backlinks(selection_data.backlinks)
+            self.main_content.right_sidebar.update_tags(selection_data.tags)
 
     def new_tab(self):
         self.tab_handler.new_tab()

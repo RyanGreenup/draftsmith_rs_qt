@@ -17,9 +17,7 @@ class NotesModel(QObject):
 
     # TODO should this include tags etc? What if user adds backlink / tag etc.?
     notes_updated = Signal()  # Emitted when notes data changes
-    note_selected = Signal(
-        object, list, list, list
-    )  # Emitted when a note is selected, includes forward links, backlinks, and tags
+    note_selected = Signal(object)  # Emitted when a note is selected with NoteSelectionData
 
     def __init__(self, api_url: str):
         super().__init__()
@@ -111,17 +109,26 @@ class NotesModel(QObject):
 
     def select_note(self, note_id: int) -> None:
         """Handle note selection and emit signals with all necessary data"""
+        from models.selection_data import NoteSelectionData
+        
         note = self.notes.get(note_id)
         if note:
             try:
-                forward_links = self.get_forward_links(note_id)
-                backlinks = self.get_backlinks(note_id)
-                tags = self.get_note_tags(note_id)  # Get tags for the note
-                # Update signal to include tags
-                self.note_selected.emit(note, forward_links, backlinks, tags)
+                selection_data = NoteSelectionData(
+                    note=note,
+                    forward_links=self.get_forward_links(note_id),
+                    backlinks=self.get_backlinks(note_id),
+                    tags=self.get_note_tags(note_id)
+                )
+                self.note_selected.emit(selection_data)
             except Exception as e:
                 print(f"Error getting data for note {note_id}: {e}")
-                self.note_selected.emit(note, [], [], [])
+                self.note_selected.emit(NoteSelectionData(
+                    note=note,
+                    forward_links=[],
+                    backlinks=[],
+                    tags=[]
+                ))
 
     def create_note(
         self, title: str, content: str, parent_id: Optional[int] = None
