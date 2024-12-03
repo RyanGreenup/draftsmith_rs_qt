@@ -23,9 +23,9 @@ class NotesTreeWidget(QTreeWidget):
         except:
             pass
         # Connect to the model's update signal
-        if self.notes_model:
+        if self.notes_model is not None:
             self.notes_model.notes_updated.connect(
-                lambda: self.update_tree(self.notes_model.root_notes)
+                lambda: self.update_tree(self.notes_model.root_notes) if self.notes_model is not None else None
             )
 
     def _on_selection_changed(self):
