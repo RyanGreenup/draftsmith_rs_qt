@@ -1,6 +1,6 @@
 from typing import Optional
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QEvent
 from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
 

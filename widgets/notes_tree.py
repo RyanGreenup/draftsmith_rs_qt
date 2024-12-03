@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, Set, List, Union
-from PySide6.QtWidgets import QTreeWidgetItem
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import Qt
 from models.note import Note
 from models.notes_model import NotesModel
