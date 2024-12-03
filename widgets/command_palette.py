@@ -20,15 +20,25 @@ class CommandPalette(PopupPalette):
     def populate_actions(self, menubar: QMenuBar) -> None:
         """Collect all actions from the menubar's menus"""
         self._actions.clear()
-        # Get all top-level menus
-        for menu in menubar.findChildren(QAction):
-            if hasattr(menu, "menu") and menu.menu():
-                # For each menu, get its actions
-                for action in menu.menu().actions():
-                    if (
-                        action.text().replace("&", "") and not action.menu()
-                    ):  # Skip empty actions and submenus
-                        self._actions.append(action)
+        # Iterate through all top-level menus
+        for menu in menubar.findChildren(QMenu):
+            # For each menu, get its actions recursively
+            self._collect_actions_from_menu(menu)
+        
+        # Clear and repopulate the results list
+        self.results_list.clear()
+        for action in self._actions:
+            item = self.create_list_item(action)
+            if item:
+                self.results_list.addItem(item)
+
+    def _collect_actions_from_menu(self, menu: QMenu) -> None:
+        """Recursively collect actions from a menu and its submenus"""
+        for action in menu.actions():
+            if action.menu():  # If action has submenu, recurse into it
+                self._collect_actions_from_menu(action.menu())
+            elif action.text() and action.isEnabled():  # Only add enabled actions with text
+                self._actions.append(action)
 
     def get_all_items(self) -> List[QAction]:
         """Get all actions"""
