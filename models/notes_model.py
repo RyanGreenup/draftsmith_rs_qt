@@ -18,7 +18,7 @@ class NotesModel(QObject):
     # TODO should this include tags etc? What if user adds backlink / tag etc.?
     notes_updated = Signal()  # Emitted when notes data changes
     note_selected = Signal(
-        Note, List[Note], List[Note], List[Tag]
+        object, list, list, list
     )  # Emitted when a note is selected, includes forward links, backlinks, and tags
 
     def __init__(self, api_url: str):

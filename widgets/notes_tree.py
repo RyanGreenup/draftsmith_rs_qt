@@ -17,6 +17,15 @@ class NotesTreeWidget(QTreeWidget):
     def set_model(self, model: "NotesModel"):
         """Set the notes model for this tree widget"""
         self.notes_model = model
+        # Disconnect any existing connections first
+        try:
+            self.notes_model.notes_updated.disconnect()
+        except:
+            pass
+        # Connect to the model's update signal
+        self.notes_model.notes_updated.connect(
+            lambda: self.update_tree(self.notes_model.root_notes)
+        )
 
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""

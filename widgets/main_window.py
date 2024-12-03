@@ -21,7 +21,6 @@ class NoteApp(QMainWindow):
 
         # Add notes model and load data
         self.notes_model = NotesModel("http://eir:37242")
-        self.notes_model.load_notes()  # Load notes at startup
 
         # Initialize navigation model
         self.navigation_model = NavigationModel()
@@ -34,9 +33,11 @@ class NoteApp(QMainWindow):
         self.main_content = self.tab_handler.setup_tabs()
         self.menu_handler.setup_menus()
 
-        # Connect the model to the trees
+        # Connect the model to the tree - do this before loading notes
         self.main_content.left_sidebar.tree.set_model(self.notes_model)
-        self.notes_model.notes_updated.connect(lambda: self.main_content.left_sidebar.tree.update_tree(self.notes_model.root_notes))
+        
+        # Now load the notes
+        self.notes_model.load_notes()  # Load notes at startup
 
         # Connect note selection to right sidebar updates
         self.notes_model.note_selected.connect(self.update_right_sidebar)
