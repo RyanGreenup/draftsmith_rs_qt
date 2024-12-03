@@ -48,6 +48,9 @@ class SearchSidebar(QWidget):
         self.search_input.textChanged.connect(self._on_search_text_changed)
         self.search_timer.timeout.connect(self._perform_search)
         self.results_list.itemClicked.connect(self._on_result_selected)
+        
+        # Connect the results list's note_selected signal to our own
+        self.results_list.note_selected.connect(self.note_selected)
 
     def _on_search_text_changed(self, text):
         """Restart timer on each keystroke"""
