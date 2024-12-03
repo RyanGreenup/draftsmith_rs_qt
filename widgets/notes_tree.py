@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, Set, List
+from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidget, QApplication, QTreeWidgetItem
 from PySide6.QtCore import QEvent, Qt
 from models.note import Note
