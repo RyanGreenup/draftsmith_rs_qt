@@ -14,12 +14,16 @@ class TabContent(QWidget):
         super().__init__(parent)
         self.current_note_id: Optional[int] = None
         self.notes_model: Optional[NotesModel] = None
-        
+
         # Create components
         self.left_sidebar = LeftSidebar()
-        self.editor = MarkdownEditor()
         self.right_sidebar = RightSidebar()
-        
+        # Create the MarkdownEditor Region
+        self.editor = MarkdownEditor()
+        # NOTE this has:
+        # .editor: QTextEdit
+        # .preview: QWebEngineView
+
         self._setup_ui()
         self._connect_signals()
 
@@ -29,10 +33,10 @@ class TabContent(QWidget):
         main_splitter.addWidget(self.left_sidebar)
         main_splitter.addWidget(self.editor)
         main_splitter.addWidget(self.right_sidebar)
-        
+
         # Set default sizes
         main_splitter.setSizes([200, 600, 200])
-        
+
         # Add to layout
         from PySide6.QtWidgets import QVBoxLayout
         layout = QVBoxLayout()
@@ -44,34 +48,34 @@ class TabContent(QWidget):
         """Connect internal signals"""
         # Editor signals
         self.editor.save_requested.connect(self._handle_save_request)
-        
+
         # Right sidebar signals
         self.right_sidebar.forward_links.note_selected.connect(self._handle_note_selection)
         self.right_sidebar.forward_links.note_selected_with_focus.connect(self._handle_note_selection_with_focus)
         self.right_sidebar.backlinks.note_selected.connect(self._handle_note_selection)
         self.right_sidebar.backlinks.note_selected_with_focus.connect(self._handle_note_selection_with_focus)
         self.right_sidebar.tags.note_selected.connect(self._handle_note_selection)
-        
+
         # Left sidebar signals
         self.left_sidebar.search_sidebar.note_selected.connect(self._handle_note_selection)
-        
+
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
         self.notes_model = notes_model
         self.left_sidebar.tree.set_model(notes_model)
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
-        
+
     def _handle_note_selection(self, note_id: int) -> None:
         """Handle note selection from any source within the tab"""
         if self.notes_model and note_id is not None:
             # Use the tree's selection method which will trigger the model's note_selected signal
             self.left_sidebar.tree.select_note_by_id(note_id)
-            
+
     def _handle_note_selection_with_focus(self, note_id: int) -> None:
         """Handle note selection and focus the editor"""
         self._handle_note_selection(note_id)
-        self.editor.setFocus()
+        self.editor.editor.setFocus()
 
     def _update_view(self, selection_data):
         """Update entire view when note selection changes"""
