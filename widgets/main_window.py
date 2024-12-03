@@ -10,6 +10,7 @@ from ui.menu_handler import MenuHandler
 from ui.tab_handler import TabHandler
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
+from widgets.tab_content import TabContent
 
 
 class NoteApp(QMainWindow):
