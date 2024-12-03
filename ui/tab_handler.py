@@ -9,11 +9,15 @@ class TabHandler:
         self._last_tree_state: Optional[Dict[str, Any]] = None
 
     def setup_tabs(self):
+        """Initialize the first tab and set up central widget"""
         self.main_window.setCentralWidget(self.tab_widget)
         main_tab = self.tab_widget.add_new_tab("Main")
+        # Connect the main tab's editor save signal
+        main_tab.editor.save_requested.connect(self.main_window.save_current_note)
         return main_tab
 
     def new_tab(self):
+        """Create a new tab with proper signal connections"""
         # Store current tree state before creating new tab
         if self.tab_widget.count() > 0:
             current_tree = self.main_window.main_content.left_sidebar.tree
@@ -21,6 +25,9 @@ class TabHandler:
         
         # Create new tab
         new_tab = self.tab_widget.add_new_tab()
+        
+        # Connect the new tab's editor save signal
+        new_tab.editor.save_requested.connect(self.main_window.save_current_note)
         
         # Restore tree state in new tab if available
         if self._last_tree_state is not None:
