@@ -93,11 +93,13 @@ class SearchSidebar(QWidget):
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
             self.results_list.addItem(item)
 
-    def _handle_search_return(self):
+    def handle_return(self, event: QKeyEvent) -> bool:
         """Handle return/enter press in search input"""
         if self.results_list.count() > 0:
             self.results_list.setCurrentRow(0)
             self.results_list.setFocus()
+            return True
+        return False
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard events"""

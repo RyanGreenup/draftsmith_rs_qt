@@ -22,6 +22,10 @@ class BacklinksWidget(NavigableListWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        
+    def handle_return(self, event: QKeyEvent) -> bool:
+        """Use default return key behavior"""
+        return super().handle_return(event)
 
     def update_links(self, backlinks: List[Note]) -> None:
         """Update the list with new backlinks"""
@@ -45,6 +49,10 @@ class ForwardLinksWidget(NavigableListWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        
+    def handle_return(self, event: QKeyEvent) -> bool:
+        """Use default return key behavior"""
+        return super().handle_return(event)
 
     def update_links(self, forward_links: List[Note]) -> None:
         """Update the list with new forward links"""
@@ -68,12 +76,16 @@ class TagsWidget(NavigableListWidget):
         super().__init__(parent)
         self.itemDoubleClicked.connect(self._show_not_implemented)
 
+    def handle_return(self, event: QKeyEvent) -> bool:
+        self._show_not_implemented()
+        return True
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key.Key_Return:
-            self._show_not_implemented()
-            event.accept()
-        else:
-            super().keyPressEvent(event)
+            if self.handle_return(event):
+                event.accept()
+                return
+        super().keyPressEvent(event)
 
     def _show_not_implemented(self, item: Optional[QListWidgetItem] = None) -> None:
         """Show not implemented message"""

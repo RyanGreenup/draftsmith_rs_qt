@@ -1,10 +1,24 @@
+from abc import ABC, abstractmethod
 from PySide6.QtWidgets import QListWidget
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
 
 
-class NavigableListWidget(QListWidget):
+class ReturnKeyHandler(ABC):
+    """Abstract base class for handling return key press behavior"""
+    
+    @abstractmethod
+    def handle_return(self, event: QKeyEvent) -> bool:
+        """Handle return key press
+        
+        Returns:
+            bool: True if the event was handled, False otherwise
+        """
+        pass
+
+
+class NavigableListWidget(QListWidget, ReturnKeyHandler):
     """Base class for list widgets with keyboard navigation"""
 
     note_selected = Signal(int)  # Signal emitted when a note is selected
@@ -40,8 +54,8 @@ class NavigableListWidget(QListWidget):
             if note_id is not None and note_id != -1:
                 self.note_selected.emit(note_id)
 
-    def _handle_return(self, event: QKeyEvent) -> bool:
-        """Handle return key press, returns True if handled"""
+    def handle_return(self, event: QKeyEvent) -> bool:
+        """Default return key handler that emits note selection signals"""
         current_item = self.currentItem()
         if current_item:
             note_id = current_item.data(Qt.ItemDataRole.UserRole)
@@ -56,7 +70,7 @@ class NavigableListWidget(QListWidget):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard navigation"""
         if event.key() == Qt.Key.Key_Return:
-            if self._handle_return(event):
+            if self.handle_return(event):
                 event.accept()
                 return
         elif event.key() == Key.Vim_Down:
