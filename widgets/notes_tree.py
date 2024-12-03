@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from models.note import Note
 from models.notes_model import NotesModel
 from PySide6.QtGui import QKeyEvent
