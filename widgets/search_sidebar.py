@@ -28,12 +28,15 @@ class SearchSidebar(QWidget):
         # Search input with placeholder
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search notes...")
+        self.search_input.returnPressed.connect(self._handle_search_return)
 
         # Results list
         self.results_list = NavigableListWidget()
         self.results_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.results_list.setWordWrap(True)
-        self.results_list.note_selected.connect(self.note_selected)
+        
+        # Forward the note_selected signal
+        self.results_list.note_selected.connect(self.note_selected.emit)
 
         layout.addWidget(self.search_input)
         layout.addWidget(self.results_list)
@@ -88,13 +91,17 @@ class SearchSidebar(QWidget):
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
             self.results_list.addItem(item)
 
+    def _handle_search_return(self):
+        """Handle return/enter press in search input"""
+        if self.results_list.count() > 0:
+            self.results_list.setCurrentRow(0)
+            self.results_list.setFocus()
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard events"""
-        if event.key() == Qt.Key.Key_Return and self.search_input.hasFocus():
-            # When Enter is pressed in search input, focus the results list
-            self.results_list.setFocus()
-            if self.results_list.count() > 0:
-                self.results_list.setCurrentRow(0)
+        if event.key() == Qt.Key.Key_Escape:
+            self.search_input.clear()
+            self.search_input.setFocus()
             event.accept()
         else:
             super().keyPressEvent(event)

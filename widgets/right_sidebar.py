@@ -22,17 +22,22 @@ class NavigableListWidget(QListWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
         self.itemDoubleClicked.connect(self._on_item_double_clicked)
+        self.itemActivated.connect(self._on_item_activated)
 
     def _on_item_double_clicked(self, item):
         """Handle double click on item"""
-        self._select_current_note()
+        self._emit_note_selected(item)
 
-    def _select_current_note(self):
-        """Helper method to select the current note"""
-        current_item = self.currentItem()
-        if current_item:
-            note_id = current_item.data(Qt.ItemDataRole.UserRole)
+    def _on_item_activated(self, item):
+        """Handle item activation (Enter key)"""
+        self._emit_note_selected(item)
+
+    def _emit_note_selected(self, item):
+        """Emit note_selected signal if item has valid note_id"""
+        if item:
+            note_id = item.data(Qt.ItemDataRole.UserRole)
             if note_id is not None and note_id != -1:  # Ignore placeholder items
                 self.note_selected.emit(note_id)
 
@@ -55,11 +60,10 @@ class NavigableListWidget(QListWidget):
 
 
 class BacklinksWidget(NavigableListWidget):
-    note_selected = Signal(int)  # Emitted when a note is selected, passes note_id
-
+    """Widget for displaying backlinks to the current note"""
+    
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.itemDoubleClicked.connect(self._on_item_double_clicked)
 
     def _on_item_double_clicked(self, item: QListWidgetItem):
         self._select_current_note()
@@ -98,11 +102,10 @@ class BacklinksWidget(NavigableListWidget):
 
 
 class ForwardLinksWidget(NavigableListWidget):
-    note_selected = Signal(int)  # Emitted when a note is selected, passes note_id
-
+    """Widget for displaying forward links from the current note"""
+    
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.itemDoubleClicked.connect(self._on_item_double_clicked)
 
     def _on_item_double_clicked(self, item: QListWidgetItem):
         self._select_current_note()
