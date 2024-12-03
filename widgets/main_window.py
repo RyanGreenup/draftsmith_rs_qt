@@ -50,15 +50,6 @@ class NoteApp(QMainWindow):
         # Connect note selection to right sidebar updates
         self.notes_model.note_selected.connect(self.update_right_sidebar)
 
-        # Connect forward link selection
-        self.main_content.right_sidebar.forward_links.note_selected.connect(
-            self.handle_forward_link_selection
-        )
-        # Connect backlink selection
-        self.main_content.right_sidebar.backlinks.note_selected.connect(
-            self.handle_forward_link_selection  # We can reuse this as it does the same thing
-        )
-
         # Setup markdown view actions
         self.main_content.editor.set_view_actions(
             self.menu_handler.actions["maximize_editor"],
@@ -132,11 +123,6 @@ class NoteApp(QMainWindow):
         """Simulate Shift+Tab key press to move focus to previous widget"""
         self.focusPreviousChild()
 
-    def handle_forward_link_selection(self, note_id: int) -> None:
-        """Handle when a forward link is selected"""
-        # Update tree selection
-        self.main_content.left_sidebar.tree.select_note_by_id(note_id)
-        # This will trigger the tree's selection changed signal, which will update everything else
 
     def navigate_back(self) -> None:
         note_id = self.navigation_model.go_back()

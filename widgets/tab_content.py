@@ -42,7 +42,16 @@ class TabContent(QWidget):
 
     def _connect_signals(self):
         """Connect internal signals"""
+        # Editor signals
         self.editor.save_requested.connect(self._handle_save_request)
+        
+        # Right sidebar signals
+        self.right_sidebar.forward_links.note_selected.connect(self._handle_note_selection)
+        self.right_sidebar.backlinks.note_selected.connect(self._handle_note_selection)
+        self.right_sidebar.tags.note_selected.connect(self._handle_note_selection)
+        
+        # Left sidebar signals
+        self.left_sidebar.search_sidebar.note_selected.connect(self._handle_note_selection)
         
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
@@ -50,6 +59,12 @@ class TabContent(QWidget):
         self.left_sidebar.tree.set_model(notes_model)
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
+        
+    def _handle_note_selection(self, note_id: int) -> None:
+        """Handle note selection from any source within the tab"""
+        if self.notes_model and note_id is not None:
+            # Use the tree's selection method which will trigger the model's note_selected signal
+            self.left_sidebar.tree.select_note_by_id(note_id)
 
     def _update_view(self, selection_data):
         """Update entire view when note selection changes"""
