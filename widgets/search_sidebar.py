@@ -29,7 +29,7 @@ class SearchSidebar(QWidget):
         # Search input with placeholder
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search notes...")
-        self.search_input.returnPressed.connect(self._handle_search_return)
+        self.search_input.returnPressed.connect(self.handle_return)
 
         # Results list
         self.results_list = NavigableListWidget()
