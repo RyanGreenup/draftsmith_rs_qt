@@ -1,5 +1,7 @@
 from widgets.tab_widget import NotesTabWidget
-from typing import Dict, Any, Optional
+import json
+from pathlib import Path
+from typing import Dict, Any, Optional, List
 
 
 from widgets.tab_content import TabContent
@@ -10,12 +12,18 @@ class TabHandler:
         self.tab_widget = NotesTabWidget(main_window)
         self._last_tree_state: Optional[Dict[str, Any]] = None
         self._tab_note_ids: Dict[int, int] = {}  # Map tab index to note ID
+        self.state_file = Path.home() / ".config" / "eir" / "tab_state.json"
 
     def setup_tabs(self):
-        """Initialize the first tab and set up central widget"""
+        """Initialize tabs and set up central widget"""
         self.main_window.setCentralWidget(self.tab_widget)
-        first_tab = self.create_new_tab("Main")
-        return first_tab
+        
+        # Try to restore saved state, if fails create default tab
+        if not self.restore_tabs_state():
+            first_tab = self.create_new_tab("Main")
+            return first_tab
+        
+        return self.tab_widget.currentWidget()
 
     def new_tab(self):
         """Create a new tab with proper signal connections"""
@@ -111,3 +119,70 @@ class TabHandler:
             tab_content = self.tab_widget.widget(index)
             if isinstance(tab_content, TabContent):
                 tab_content.set_current_note(self._tab_note_ids[index])
+
+    def save_tabs_state(self) -> None:
+        """Save the state of all tabs to a file"""
+        # Create state directory if it doesn't exist
+        self.state_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        tabs_state = []
+        for i in range(self.tab_widget.count()):
+            tab = self.tab_widget.widget(i)
+            if isinstance(tab, TabContent):
+                tab_state = {
+                    "title": self.tab_widget.tabText(i),
+                    "note_id": tab.get_current_note_id(),
+                    "tree_state": tab.left_sidebar.tree.save_state()
+                }
+                tabs_state.append(tab_state)
+        
+        state = {
+            "current_tab": self.tab_widget.currentIndex(),
+            "tabs": tabs_state
+        }
+        
+        try:
+            with open(self.state_file, 'w') as f:
+                json.dump(state, f)
+        except Exception as e:
+            print(f"Error saving tab state: {e}")
+
+    def restore_tabs_state(self) -> bool:
+        """Restore tabs from saved state file"""
+        if not self.state_file.exists():
+            return False
+            
+        try:
+            with open(self.state_file, 'r') as f:
+                state = json.load(f)
+                
+            # Close all existing tabs except one
+            while self.tab_widget.count() > 1:
+                self.tab_widget.removeTab(self.tab_widget.count() - 1)
+                
+            # Restore tabs
+            for i, tab_state in enumerate(state["tabs"]):
+                if i == 0:
+                    # Update first tab
+                    tab = self.tab_widget.widget(0)
+                else:
+                    # Create new tabs for the rest
+                    tab = self.create_new_tab(tab_state["title"])
+                    
+                if isinstance(tab, TabContent):
+                    # Restore tree state
+                    tab.left_sidebar.tree.restore_state(tab_state["tree_state"])
+                    # Restore note selection
+                    if tab_state["note_id"] is not None:
+                        tab.set_current_note(tab_state["note_id"])
+                        self._tab_note_ids[i] = tab_state["note_id"]
+                    
+            # Restore current tab
+            if "current_tab" in state:
+                self.tab_widget.setCurrentIndex(state["current_tab"])
+                
+            return True
+                
+        except Exception as e:
+            print(f"Error restoring tab state: {e}")
+            return False
