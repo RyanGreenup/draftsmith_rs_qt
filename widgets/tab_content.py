@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QSplitter
 from PySide6.QtCore import Signal, Qt
-from typing import Optional
+from PySide6.QtGui import QAction
+from typing import Optional, Dict
 from widgets.left_sidebar import LeftSidebar
 from widgets.markdown_editor import MarkdownEditor
 from widgets.right_sidebar import RightSidebar
