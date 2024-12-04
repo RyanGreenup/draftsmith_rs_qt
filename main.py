@@ -6,6 +6,7 @@ from ui.menu_manager import create_file_menu, create_view_menu, create_tabs_menu
 from ui.toolbar_manager import create_toolbar
 from widgets.main_window import NoteApp
 from ui.menu_handler import MenuHandler
+from qt_material import apply_stylesheet
 
 
 if __name__ == "__main__":
@@ -19,6 +20,11 @@ if __name__ == "__main__":
 
     # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+
+    # setup stylesheet
+    # apply_stylesheet(app, theme='dark_teal.xml')
+    # apply_stylesheet(app, theme='light_blue.xml')
 
     # Load and apply the stylesheet
     with open("ui/styles/style.qss", "r") as file:
