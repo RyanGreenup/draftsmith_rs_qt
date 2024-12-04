@@ -38,7 +38,10 @@ class TabHandler:
 
         # Connect to models
         tab_content.set_model(self.main_window.notes_model)
-        tab_content.set_navigation_model(self.main_window.navigation_model)
+        tab_content.set_navigation_model(
+            self.main_window.navigation_model,
+            self.main_window._actions
+        )
 
         # Connect save signal to status updates
         tab_content.note_saved.connect(self._handle_note_saved)

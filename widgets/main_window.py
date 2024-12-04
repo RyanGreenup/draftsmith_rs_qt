@@ -25,10 +25,7 @@ class NoteApp(QMainWindow):
         # Initialize navigation model
         self.navigation_model = NavigationModel()
         
-        # Connect navigation model signals
-        self.navigation_model.navigation_changed.connect(self.update_navigation_actions)
-        
-        # Connect navigation actions  
+        # Connect navigation actions directly
         self._actions["back"].triggered.connect(self.navigation_model.go_back)
         self._actions["forward"].triggered.connect(self.navigation_model.go_forward)
 
@@ -128,14 +125,6 @@ class NoteApp(QMainWindow):
 
 
 
-    def update_navigation_actions(self) -> None:
-        """Update the enabled state of navigation actions"""
-        self.menu_handler.actions["back"].setEnabled(
-            self.navigation_model.can_go_back()
-        )
-        self.menu_handler.actions["forward"].setEnabled(
-            self.navigation_model.can_go_forward()
-        )
 
     def update_right_sidebar(self, selection_data: "NoteSelectionData") -> None:
         """Update right sidebar content when a note is selected"""
