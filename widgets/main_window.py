@@ -24,6 +24,13 @@ class NoteApp(QMainWindow):
 
         # Initialize navigation model
         self.navigation_model = NavigationModel()
+        
+        # Connect navigation model signals
+        self.navigation_model.navigation_changed.connect(self.update_navigation_actions)
+        
+        # Connect navigation actions  
+        self._actions["back"].triggered.connect(self.navigation_model.go_back)
+        self._actions["forward"].triggered.connect(self.navigation_model.go_forward)
 
         # Initialize handlers
         self.menu_handler = MenuHandler(self, self._actions)

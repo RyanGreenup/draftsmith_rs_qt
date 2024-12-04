@@ -13,7 +13,10 @@ class TabHandler:
     def setup_tabs(self):
         """Initialize the first tab and set up central widget"""
         self.main_window.setCentralWidget(self.tab_widget)
-        return self.create_new_tab("Main")
+        first_tab = self.create_new_tab("Main")
+        # Connect the first tab to navigation model
+        first_tab.set_navigation_model(self.main_window.navigation_model)
+        return first_tab
 
     def new_tab(self):
         """Create a new tab with proper signal connections"""
@@ -33,8 +36,9 @@ class TabHandler:
         # Create new tab content
         tab_content = TabContent()
 
-        # Connect to model
+        # Connect to models
         tab_content.set_model(self.main_window.notes_model)
+        tab_content.set_navigation_model(self.main_window.navigation_model)
 
         # Connect save signal to status updates
         tab_content.note_saved.connect(self._handle_note_saved)
