@@ -226,3 +226,14 @@ class NotesTreeWidget(NavigableTree):
         # Add children, following model's structure
         for child in note.children:
             self._add_note_to_tree(child, item)
+
+    def mouseDoubleClickEvent(self, event):
+        """Handle double click events to focus the selected note"""
+        current = self.currentItem()
+        if current:
+            note_data = current.data(0, Qt.ItemDataRole.UserRole)
+            if note_data:
+                self.note_selected_with_focus.emit(note_data.id)
+                event.accept()
+                return
+        super().mouseDoubleClickEvent(event)
