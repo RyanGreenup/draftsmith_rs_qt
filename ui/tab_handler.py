@@ -14,8 +14,6 @@ class TabHandler:
         """Initialize the first tab and set up central widget"""
         self.main_window.setCentralWidget(self.tab_widget)
         first_tab = self.create_new_tab("Main")
-        # Connect the first tab to navigation model
-        first_tab.set_navigation_model(self.main_window.navigation_model)
         return first_tab
 
     def new_tab(self):
