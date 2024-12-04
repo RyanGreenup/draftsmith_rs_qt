@@ -129,10 +129,16 @@ class TabHandler:
         for i in range(self.tab_widget.count()):
             tab = self.tab_widget.widget(i)
             if isinstance(tab, TabContent):
+                tree_state = tab.left_sidebar.tree.save_state()
+                # Convert any sets in tree_state to lists
+                for key, value in tree_state.items():
+                    if isinstance(value, set):
+                        tree_state[key] = list(value)
+                        
                 tab_state = {
                     "title": self.tab_widget.tabText(i),
                     "note_id": tab.get_current_note_id(),
-                    "tree_state": tab.left_sidebar.tree.save_state()
+                    "tree_state": tree_state
                 }
                 tabs_state.append(tab_state)
         
