@@ -111,6 +111,17 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["prev_tab"].setShortcut("Ctrl+H")
     actions["prev_tab"].setStatusTip("Switch to previous tab")
 
+    # Add tab state actions
+    actions["save_tabs_state"] = QAction("&Save Tabs State", parent)
+    actions["save_tabs_state"].setShortcut("Ctrl+Alt+S")
+    actions["save_tabs_state"].setStatusTip("Save the current arrangement of tabs")
+    actions["save_tabs_state"].setToolTip("Save the current arrangement of tabs")
+
+    actions["restore_tabs_state"] = QAction("&Restore Tabs State", parent)
+    actions["restore_tabs_state"].setShortcut("Ctrl+Alt+R") 
+    actions["restore_tabs_state"].setStatusTip("Restore previously saved tab arrangement")
+    actions["restore_tabs_state"].setToolTip("Restore previously saved tab arrangement")
+
     # Add refresh action
     actions["refresh"] = QAction("&Refresh", parent)
     actions["refresh"].setShortcut("F5")  # Common shortcut for refresh

@@ -63,3 +63,11 @@ class MenuHandler:
         self.actions["start_neovim"].triggered.connect(
             self.main_window.start_neovim_server
         )
+
+        # Connect tab state actions
+        self.actions["save_tabs_state"].triggered.connect(
+            self.main_window.tab_handler.save_tabs_state
+        )
+        self.actions["restore_tabs_state"].triggered.connect(
+            self.main_window.tab_handler.restore_tabs_state
+        )

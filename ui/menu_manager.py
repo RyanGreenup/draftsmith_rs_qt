@@ -15,6 +15,11 @@ def create_tabs_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     tabs_menu.addAction(actions["next_tab"])
     tabs_menu.addAction(actions["prev_tab"])
 
+    # Add new separator and state actions
+    tabs_menu.addSeparator()
+    tabs_menu.addAction(actions["save_tabs_state"])
+    tabs_menu.addAction(actions["restore_tabs_state"])
+
     return tabs_menu
 
 
