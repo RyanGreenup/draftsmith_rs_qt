@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "draftsmith-qt"
+version = "0.1.0"
+description = "A QT client for the Draftsmith notetaking server"
+authors = ["Ryan Greenup"]
+license = "GPL"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.14"
+qt-material = "^2.14"
+pydantic = "^2.10.3"
+pyside6 = "^6.8.1"
+markdown = "^3.7"
+requests = "^2.32.3"
+qdarkstyle = "^3.2.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
