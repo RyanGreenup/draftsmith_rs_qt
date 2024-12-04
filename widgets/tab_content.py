@@ -108,6 +108,8 @@ class TabContent(QWidget):
             self.left_sidebar.tree.select_note_by_id(note_id, emit_signal=False)
             # Request view update directly from model
             self.notes_model.select_note(note_id)
+            # Update navigation state
+            self._update_navigation_state()
 
     def _handle_view_request(self, note_id: int) -> None:
         """Handle direct view update request"""
