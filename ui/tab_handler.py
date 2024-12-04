@@ -9,6 +9,7 @@ class TabHandler:
         self.main_window = main_window
         self.tab_widget = NotesTabWidget(main_window)
         self._last_tree_state: Optional[Dict[str, Any]] = None
+        self._tab_note_ids: Dict[int, int] = {}  # Map tab index to note ID
 
     def setup_tabs(self):
         """Initialize the first tab and set up central widget"""
@@ -45,7 +46,17 @@ class TabHandler:
         tab_content.note_saved.connect(self._handle_note_saved)
 
         # Add to tab widget
-        self.tab_widget.addTab(tab_content, title)
+        index = self.tab_widget.addTab(tab_content, title)
+        
+        # Store current note ID for this tab
+        if self.tab_widget.count() > 1:
+            # Copy the current note ID from the active tab
+            current_tab = self.tab_widget.currentWidget()
+            if isinstance(current_tab, TabContent):
+                current_note_id = current_tab.get_current_note_id()
+                if current_note_id is not None:
+                    self._tab_note_ids[index] = current_note_id
+                    tab_content.set_current_note(current_note_id)
 
         # Restore tree state if available
         if self._last_tree_state is not None:
@@ -59,18 +70,44 @@ class TabHandler:
 
     def close_current_tab(self):
         current_index = self.tab_widget.currentIndex()
+        # Remove the note ID mapping when closing the tab
+        self._tab_note_ids.pop(current_index, None)
         self.tab_widget.close_tab(current_index)
+        # Adjust remaining tab indices in the mapping
+        new_mapping = {}
+        for idx, note_id in self._tab_note_ids.items():
+            if idx > current_index:
+                new_mapping[idx - 1] = note_id
+            else:
+                new_mapping[idx] = note_id
+        self._tab_note_ids = new_mapping
 
     def next_tab(self):
+        self._store_current_tab_state()
         current = self.tab_widget.currentIndex()
         next_index = (current + 1) % self.tab_widget.count()
         self.tab_widget.setCurrentIndex(next_index)
-        # NOTE uncomment to refresh the model when switching tabs
-        # self.main_window.refresh_model()
+        self._restore_tab_state(next_index)
 
     def previous_tab(self):
+        self._store_current_tab_state()
         current = self.tab_widget.currentIndex()
         prev_index = (current - 1) % self.tab_widget.count()
         self.tab_widget.setCurrentIndex(prev_index)
-        # NOTE uncomment to refresh the model when switching tabs
-        # self.main_window.refresh_model()
+        self._restore_tab_state(prev_index)
+
+    def _store_current_tab_state(self):
+        """Store the current tab's note ID"""
+        current_tab = self.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            current_index = self.tab_widget.currentIndex()
+            note_id = current_tab.get_current_note_id()
+            if note_id is not None:
+                self._tab_note_ids[current_index] = note_id
+
+    def _restore_tab_state(self, index: int):
+        """Restore the note ID for the given tab index"""
+        if index in self._tab_note_ids:
+            tab_content = self.tab_widget.widget(index)
+            if isinstance(tab_content, TabContent):
+                tab_content.set_current_note(self._tab_note_ids[index])

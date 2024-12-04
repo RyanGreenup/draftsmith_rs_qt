@@ -153,3 +153,12 @@ class TabContent(QWidget):
             self.right_sidebar.update_forward_links(selection_data.forward_links)
             self.right_sidebar.update_backlinks(selection_data.backlinks)
             self.right_sidebar.update_tags(selection_data.tags)
+
+    def get_current_note_id(self) -> Optional[int]:
+        """Get the currently displayed note ID"""
+        return self.current_note_id
+
+    def set_current_note(self, note_id: int) -> None:
+        """Set the current note to display"""
+        if self.notes_model and note_id is not None:
+            self._handle_view_request(note_id)
