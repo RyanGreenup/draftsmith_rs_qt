@@ -7,9 +7,11 @@ from widgets.text_edit.neovim_integration import EditorWidget
 
 class MarkdownEditor(QWidget):
     save_requested = Signal()  # Add save signal
+    preview_requested = Signal()  # Signal to request preview update
 
     def __init__(self, parent=None, use_remote_api_html=True):
         super().__init__(parent)
+        self.use_remote_api_html = use_remote_api_html
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -44,12 +46,13 @@ class MarkdownEditor(QWidget):
 
     def update_preview(self):
         if self.use_remote_api_html:
-            self.update_preview_remote_api()
+            self.preview_requested.emit()  # Request preview from controller
         else:
             self.update_preview_local()
 
-    def update_preview_remote_api(self):
-        raise NotImplementedError("Remote API not implemented yet")
+    def set_preview_content(self, html: str):
+        """Update preview with provided HTML content"""
+        self.preview.setHtml(html)
 
 
     def update_preview_local(self):

@@ -29,6 +29,7 @@ class TabContent(QWidget):
 
         self._setup_ui()
         self._connect_signals()
+        self.editor.preview_requested.connect(self._handle_preview_request)
 
     def _setup_ui(self):
         """Setup the UI layout"""
@@ -153,6 +154,20 @@ class TabContent(QWidget):
             self.right_sidebar.update_forward_links(selection_data.forward_links)
             self.right_sidebar.update_backlinks(selection_data.backlinks)
             self.right_sidebar.update_tags(selection_data.tags)
+
+    def _handle_preview_request(self):
+        """Handle request to update preview using current note"""
+        if self.notes_model and self.current_note_id is not None:
+            try:
+                html = self.notes_model.api.get_rendered_note(
+                    self.current_note_id,
+                    format="html"
+                )
+                self.editor.set_preview_content(html)
+            except Exception as e:
+                print(f"Error getting rendered note: {e}")
+                # Fall back to local preview
+                self.editor.update_preview_local()
 
     def get_current_note_id(self) -> Optional[int]:
         """Get the currently displayed note ID"""
