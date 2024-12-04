@@ -24,7 +24,7 @@ class NoteApp(QMainWindow):
 
         # Initialize navigation model
         self.navigation_model = NavigationModel()
-        
+
         # Connect navigation actions directly
         self._actions["back"].triggered.connect(self.navigation_model.go_back)
         self._actions["forward"].triggered.connect(self.navigation_model.go_forward)
@@ -231,15 +231,22 @@ class NoteApp(QMainWindow):
         # Get current state from tree widget
         current_state = self.main_content.left_sidebar.tree.follow_mode
         new_state = not current_state
-        
+
         # Update widgets
         self.main_content.left_sidebar.tree.follow_mode = new_state
         self.main_content.left_sidebar.search_sidebar.follow_mode = new_state
-        
+
         # Update status bar
         mode_status = "enabled" if new_state else "disabled"
         self.status_bar.showMessage(f"Follow mode {mode_status}", 3000)
-        
+
+    def start_neovim_server(self) -> None:
+        """Start the Neovim server for the current tab's editor"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            current_tab.editor.editor.start_nvim_session()
+            self.status_bar.showMessage("Neovim server started", 3000)
+
     def _trigger_save_current_tab(self):
         """Trigger save on the currently active tab"""
         current_tab = self.tab_handler.tab_widget.currentWidget()

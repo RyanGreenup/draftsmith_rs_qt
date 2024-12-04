@@ -56,6 +56,10 @@ def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     view_menu.addSeparator()
     view_menu.addAction(actions["toggle_follow_mode"])
 
+    # Add Neovim action before the final separator and refresh
+    view_menu.addSeparator()
+    view_menu.addAction(actions["start_neovim"])
+    
     # Add the Refresh action
     view_menu.addSeparator()
     view_menu.addAction(actions["refresh"])

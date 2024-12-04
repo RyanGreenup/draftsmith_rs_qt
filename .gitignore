@@ -7,3 +7,4 @@ utils/__pycache__
 widgets/__pycache__
 .sass-cache
 api
+widgets/text_edit/__pycache__

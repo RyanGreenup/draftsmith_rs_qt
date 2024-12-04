@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import Qt, QTimer, Signal
 import markdown
+from widgets.text_edit.neovim_integration import EditorWidget
 
 
 class MarkdownEditor(QWidget):
@@ -14,7 +15,7 @@ class MarkdownEditor(QWidget):
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
 
         # Create editor
-        self.editor = QTextEdit()
+        self.editor = EditorWidget()
         self.editor.textChanged.connect(self.on_text_changed)
 
         # Create preview

@@ -117,4 +117,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["refresh"].setStatusTip("Refresh notes from server")
     actions["refresh"].setToolTip("Refresh notes from server")
 
+    # Add Neovim action
+    actions["start_neovim"] = QAction("Start &Neovim Server", parent)
+    actions["start_neovim"].setShortcut("Ctrl+Alt+N")
+    actions["start_neovim"].setStatusTip("Start Neovim server for text editing")
+    actions["start_neovim"].setToolTip("Start Neovim server for text editing")
+
     return actions

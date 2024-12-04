@@ -58,3 +58,8 @@ class MenuHandler:
             self.main_window.toggle_follow_mode
         )
         self.actions["refresh"].triggered.connect(self.main_window.refresh_model)
+        
+        # Connect neovim action
+        self.actions["start_neovim"].triggered.connect(
+            self.main_window.start_neovim_server
+        )
