@@ -7,6 +7,7 @@ from widgets.markdown_editor import MarkdownEditor
 from widgets.right_sidebar import RightSidebar
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
+import api
 
 class TabContent(QWidget):
     """A complete view implementation for a note"""
@@ -84,11 +85,11 @@ class TabContent(QWidget):
     def set_navigation_model(self, navigation_model: NavigationModel, actions: Dict[str, QAction]):
         """Set the navigation model for this tab"""
         self.navigation_model = navigation_model
-        
+
         # Connect navigation model signals
         self.navigation_model.navigation_changed.connect(self._update_navigation_state)
         self.navigation_model.note_changed.connect(self._handle_navigation_change)
-        
+
         # Store actions reference
         self.navigation_actions = actions
 
@@ -157,9 +158,10 @@ class TabContent(QWidget):
 
     def _handle_preview_request(self):
         """Handle request to update preview using current note"""
+        notes_api = api.client.NoteAPI('http://eir:37242')
         if self.notes_model and self.current_note_id is not None:
             try:
-                html = self.notes_model.api.get_rendered_note(
+                html = notes_api.get_rendered_note(
                     self.current_note_id,
                     format="html"
                 )
