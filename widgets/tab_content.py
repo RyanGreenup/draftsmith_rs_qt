@@ -82,8 +82,24 @@ class TabContent(QWidget):
     def set_navigation_model(self, navigation_model: NavigationModel):
         """Set the navigation model for this tab"""
         self.navigation_model = navigation_model
+        
         # Connect navigation model signals
+        self.navigation_model.navigation_changed.connect(self._update_navigation_state)
         self.navigation_model.note_changed.connect(self._handle_navigation_change)
+        
+        # Connect navigation actions
+        main_window = self.parent().parent()  # Get reference to main window
+        main_window.menu_handler.actions["back"].triggered.connect(
+            self.navigation_model.go_back
+        )
+        main_window.menu_handler.actions["forward"].triggered.connect(
+            self.navigation_model.go_forward
+        )
+
+    def _update_navigation_state(self) -> None:
+        """Update navigation button states"""
+        main_window = self.parent().parent()  # Get reference to main window
+        main_window.update_navigation_actions()
 
     def _handle_navigation_change(self, note_id: int) -> None:
         """Handle note changes from navigation"""

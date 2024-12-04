@@ -20,14 +20,14 @@ class NavigationModel(QObject):
         return self._current_index < len(self._history) - 1
 
     def go_back(self) -> None:
-        """Move back in history and emit signal for new note"""
+        """Move back in history"""
         if self.can_go_back():
             self._current_index -= 1
             self.navigation_changed.emit()
             self.note_changed.emit(self._history[self._current_index])
 
     def go_forward(self) -> None:
-        """Move forward in history and emit signal for new note"""
+        """Move forward in history"""
         if self.can_go_forward():
             self._current_index += 1
             self.navigation_changed.emit()

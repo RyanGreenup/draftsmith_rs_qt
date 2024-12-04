@@ -56,10 +56,6 @@ class NoteApp(QMainWindow):
             self.menu_handler.actions["maximize_preview"],
         )
 
-        # Connect navigation actions
-        self.menu_handler.actions["back"].triggered.connect(self.navigate_back)
-        self.menu_handler.actions["forward"].triggered.connect(self.navigate_forward)
-        self.navigation_model.navigation_changed.connect(self.update_navigation_actions)
 
         # Connect save action to current tab
         self.menu_handler.actions["save"].triggered.connect(self._trigger_save_current_tab)
@@ -124,15 +120,6 @@ class NoteApp(QMainWindow):
         self.focusPreviousChild()
 
 
-    def navigate_back(self) -> None:
-        note_id = self.navigation_model.go_back()
-        if note_id != -1:
-            self.main_content.left_sidebar.tree.select_note_by_id(note_id)
-
-    def navigate_forward(self) -> None:
-        note_id = self.navigation_model.go_forward()
-        if note_id != -1:
-            self.main_content.left_sidebar.tree.select_note_by_id(note_id)
 
     def update_navigation_actions(self) -> None:
         """Update the enabled state of navigation actions"""
