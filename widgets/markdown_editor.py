@@ -1,9 +1,26 @@
-from PySide6.QtWebEngineCore import QWebEnginePage
+from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineUrlRequestInterceptor
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import Qt, QTimer, Signal
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
+
+
+class LinkInterceptor(QWebEngineUrlRequestInterceptor):
+    def __init__(self, editor):
+        super().__init__()
+        self.editor = editor
+
+    def interceptRequest(self, info):
+        url = info.requestUrl()
+        path = url.path()
+        if path.startswith('/'):
+            try:
+                note_id = int(path[1:])
+                self.editor.note_selected.emit(note_id)
+                info.block(True)
+            except ValueError:
+                pass
 
 
 
@@ -27,9 +44,8 @@ class MarkdownEditor(QWidget):
         # Create preview
         self.preview = QWebEngineView()
         self.preview.setHtml("")
-        # Enable link clicking
-        self.preview.page().setLinkDelegationPolicy(QWebEnginePage.LinkDelegationPolicy.DelegateAllLinks)
-        self.preview.page().linkClicked.connect(self._handle_url_changed)
+        # Enable link clicking - Fix for PySide6
+        self.preview.page().setUrlRequestInterceptor(LinkInterceptor(self))
 
         # Add widgets to splitter
         self.splitter.addWidget(self.editor)
@@ -165,14 +181,4 @@ class MarkdownEditor(QWidget):
         cursor.setPosition(position)
         self.editor.setTextCursor(cursor)
 
-    def _handle_url_changed(self, url):
-        """Handle URL changes in the preview window"""
-        path = url.path()
-        print(f"URL changed: {url}")
-        if path.startswith('/'):
-            try:
-                note_id = int(path[1:])  # Remove leading slash and convert to int
-                self.note_selected.emit(note_id)
-            except ValueError:
-                pass  # Not a valid note ID link
 
