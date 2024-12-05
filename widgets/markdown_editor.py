@@ -164,6 +164,7 @@ class MarkdownEditor(QWidget):
     def _handle_url_changed(self, url):
         """Handle URL changes in the preview window"""
         path = url.path()
+        print(f"URL changed: {url}")
         if path.startswith('/'):
             try:
                 note_id = int(path[1:])  # Remove leading slash and convert to int
