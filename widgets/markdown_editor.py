@@ -12,6 +12,7 @@ class LinkInterceptor(QWebEngineUrlRequestInterceptor):
         self.editor = editor
 
     def interceptRequest(self, info):
+        print("Intercepting request")
         url = info.requestUrl()
         path = url.path()
         if path.startswith('/'):
@@ -43,9 +44,9 @@ class MarkdownEditor(QWidget):
 
         # Create preview
         self.preview = QWebEngineView()
-        self.preview.setHtml("")
         # Enable link clicking - Fix for PySide6
         self.preview.page().setUrlRequestInterceptor(LinkInterceptor(self))
+        self.preview.setHtml("")
 
         # Add widgets to splitter
         self.splitter.addWidget(self.editor)
