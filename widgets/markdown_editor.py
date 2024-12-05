@@ -66,18 +66,23 @@ class LinkHandler(QWebEnginePage):
         self.markdown_editor = markdown_editor  # Store correct reference
 
     def acceptNavigationRequest(self, url, _type, isMainFrame):
+        # Get the full URL string to check scheme
+        url_str = url.toString()
         path = url.path()
+        
+        # Remove trailing slash if present
         if path.endswith('/'):
             path = path[:-1]
-        if path.startswith('/note/'):
-            path = path[6:]
-        if path.startswith('/'):
+            
+        # Handle note links regardless of current scheme
+        if '/note/' in path:
             try:
-                note_id = int(path[1:])
-                self.markdown_editor.note_selected.emit(note_id)  # Emit from correct object
+                note_id = int(path.split('/note/')[-1])
+                self.markdown_editor.note_selected.emit(note_id)
                 return False
             except ValueError:
                 pass
+                
         return True
 
 
