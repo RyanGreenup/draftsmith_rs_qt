@@ -76,7 +76,8 @@ class TabContent(QWidget):
 
         # Connect the Preview Request signal
         # This is needed if the preview is being loaded from the API
-        self.editor.preview_requested.connect(self._handle_preview_request)
+        self.editor.preview_requested.connect(lambda: self._handle_preview_request(send_content=False))
+        self.editor.render_requested.connect(lambda content: self._handle_preview_request(send_content=True, content=content))
 
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
@@ -159,25 +160,19 @@ class TabContent(QWidget):
             self.right_sidebar.update_backlinks(selection_data.backlinks)
             self.right_sidebar.update_tags(selection_data.tags)
 
-    def _handle_preview_request(self, send_content: bool = True):
+    def _handle_preview_request(self, send_content: bool = False, content: Optional[str] = None):
         """Handle request to update preview using current note
-        If send_content is true the QTextEdit content is sent up to the server where it is rendered
-        and then returned.
-
-        Otherwise the current note is pulled down as HTML
-
-        If this fails, it falls back to rendering the preview locally with
-        the markdown module.
+        If send_content is true, use the provided content for rendering.
+        Otherwise pull the current note HTML from server.
         """
         notes_api = api.client.NoteAPI('http://eir:37242')
         if self.notes_model and self.current_note_id is not None:
             try:
-                # If content was provided, send it up and render it
-                if send_content:
-                    content = self.editor.editor.toPlainText()
+                if send_content and content is not None:
+                    # Render the provided content
                     html = notes_api.render_markdown(content, format="html")
-                # Otherwise assume the user wants to pull the current note state.
                 else:
+                    # Pull the current note state
                     html = notes_api.get_rendered_note(
                         self.current_note_id,
                         format="html"
