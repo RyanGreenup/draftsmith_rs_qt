@@ -5,6 +5,7 @@ from PySide6.QtNetwork import QNetworkRequest
 from PySide6.QtGui import QAction
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestJob
 from typing import Literal, Optional, Dict
+from pydantic import BaseModel
 
 import requests
 from widgets.left_sidebar import LeftSidebar
@@ -188,6 +189,10 @@ class TabContent(QWidget):
 
     def _handle_preview_request(self, content: Optional[str] = None):
         """Handle request to update preview using streaming response"""
+        class RenderMarkdownRequest(BaseModel):
+            """Request to render markdown content"""
+            content: str
+            format: Optional[Literal["text", "html", "pdf"]] = None
         self.base_url = "http://eir:37242"
         if self.notes_model and (note_id := self.current_note_id) is not None:
             format = "html"
