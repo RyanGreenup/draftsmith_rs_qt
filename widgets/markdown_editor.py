@@ -1,5 +1,6 @@
-from . import css_resources_rc
-from . import js_resources_rc
+# from . import css_resources_rc
+# from . import js_resources_rc
+from . import static_resources_rc
 from . import katex_resources_rc
 from PySide6.QtWebEngineCore import (
     QWebEnginePage, QWebEngineUrlScheme,
@@ -186,9 +187,7 @@ class MarkdownEditor(QWidget):
             <meta charset="utf-8">
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
             <link rel="stylesheet" href="qrc:/katex/katex.min.css">
-            <style>
-                {self.markdown_css}
-            </style>
+            <link rel="stylesheet" href="qrc:/css/markdown.css">
         </head>
         <body><div class="markdown">
             {html}
