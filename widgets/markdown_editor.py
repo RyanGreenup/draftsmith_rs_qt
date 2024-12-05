@@ -41,6 +41,14 @@ asset_scheme.setFlags(
 )
 QWebEngineUrlScheme.registerScheme(asset_scheme)
 
+# Define and register the QRC scheme
+qrc_scheme = QWebEngineUrlScheme(b"qrc")
+qrc_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
+qrc_scheme.setFlags(
+    QWebEngineUrlScheme.LocalAccessAllowed | QWebEngineUrlScheme.CorsEnabled
+)
+QWebEngineUrlScheme.registerScheme(qrc_scheme)
+
 
 class AssetUrlSchemeHandler(QWebEngineUrlSchemeHandler):
     def __init__(self, markdown_editor):
@@ -130,6 +138,7 @@ class MarkdownEditor(QWidget):
         self.preview.settings().setAttribute(self.preview.settings().WebAttribute.JavascriptEnabled, True)
         self.preview.settings().setAttribute(self.preview.settings().WebAttribute.LocalContentCanAccessRemoteUrls, True)
         self.preview.settings().setAttribute(self.preview.settings().WebAttribute.LocalContentCanAccessFileUrls, True)
+        self.preview.settings().setAttribute(self.preview.settings().WebAttribute.AllowWindowWebglContent, True)
         self.preview.setHtml("", QUrl(URLScheme.ASSET.value))
 
         # Add widgets to splitter
