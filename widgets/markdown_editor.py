@@ -133,6 +133,9 @@ class MarkdownEditor(QWidget):
         # Create preview with custom link handling
         self.preview = QWebEngineView()
         self.preview.setPage(LinkHandler(self))
+        self.preview.settings().setAttribute(self.preview.settings().WebAttribute.JavascriptEnabled, True)
+        self.preview.settings().setAttribute(self.preview.settings().WebAttribute.LocalContentCanAccessRemoteUrls, True)
+        self.preview.settings().setAttribute(self.preview.settings().WebAttribute.LocalContentCanAccessFileUrls, True)
         self.preview.setHtml("", QUrl(URLScheme.ASSET.value))
 
         # Add widgets to splitter
@@ -175,9 +178,11 @@ class MarkdownEditor(QWidget):
         self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
 
     def _apply_html_template(self, html: str) -> str:
-        return f"""
+        return f"""<!DOCTYPE html>
         <html>
         <head>
+            <meta charset="utf-8">
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
             <style>
                 {self.markdown_css}
                 {self.katex_css}
