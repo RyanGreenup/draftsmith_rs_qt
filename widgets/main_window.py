@@ -58,6 +58,7 @@ class NoteApp(QMainWindow):
         self.main_content.editor.set_view_actions(
             self.menu_handler.actions["maximize_editor"],
             self.menu_handler.actions["maximize_preview"],
+            self.menu_handler.actions["use_remote_rendering"],
         )
 
 
