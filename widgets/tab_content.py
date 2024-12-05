@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import QWidget, QSplitter
+from pydantic import BaseModel, Field
 from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
 from PySide6.QtNetwork import QNetworkRequest
 from PySide6.QtGui import QAction
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestJob
-from typing import Optional, Dict
+from typing import Literal, Optional, Dict
 
 import requests
 from widgets.left_sidebar import LeftSidebar
@@ -13,8 +14,10 @@ from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
 import api
 
+
 class TabContent(QWidget):
     """A complete view implementation for a note"""
+
     note_saved = Signal(int)  # Emits note_id when saved
 
     def __init__(self, parent=None):
@@ -23,7 +26,7 @@ class TabContent(QWidget):
         self._current_response = None
         self._current_stream_device = None
         self._asset_cache = {}  # Cache for asset responses
-        
+
         self.current_note_id: Optional[int] = None
         self.notes_model: Optional[NotesModel] = None
         self.navigation_model: Optional[NavigationModel] = None
@@ -53,6 +56,7 @@ class TabContent(QWidget):
 
         # Add to layout
         from PySide6.QtWidgets import QVBoxLayout
+
         layout = QVBoxLayout()
         layout.addWidget(main_splitter)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -64,7 +68,9 @@ class TabContent(QWidget):
         self.editor.save_requested.connect(self._handle_save_request)
 
         # Connect view update signals directly to model
-        self.right_sidebar.forward_links.note_selected.connect(self._handle_view_request)
+        self.right_sidebar.forward_links.note_selected.connect(
+            self._handle_view_request
+        )
         self.right_sidebar.forward_links.note_selected_with_focus.connect(
             self._handle_view_request_with_focus
         )
@@ -79,7 +85,9 @@ class TabContent(QWidget):
         self.left_sidebar.tree.note_selected_with_focus.connect(
             self._handle_view_request_with_focus
         )
-        self.left_sidebar.search_sidebar.note_selected.connect(self._handle_view_request)
+        self.left_sidebar.search_sidebar.note_selected.connect(
+            self._handle_view_request
+        )
         self.left_sidebar.search_sidebar.note_selected_with_focus.connect(
             self._handle_view_request_with_focus
         )
@@ -102,7 +110,9 @@ class TabContent(QWidget):
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
 
-    def set_navigation_model(self, navigation_model: NavigationModel, actions: Dict[str, QAction]):
+    def set_navigation_model(
+        self, navigation_model: NavigationModel, actions: Dict[str, QAction]
+    ):
         """Set the navigation model for this tab"""
         self.navigation_model = navigation_model
 
@@ -181,19 +191,46 @@ class TabContent(QWidget):
         If send_content is true, use the provided content for rendering.
         Otherwise pull the current note HTML from server.
         """
-        notes_api = api.client.NoteAPI('http://eir:37242')
-        if self.notes_model and self.current_note_id is not None:
+
+        class RenderMarkdownRequest(BaseModel):
+            """Request to render markdown content"""
+
+            content: str
+            format: Optional[Literal["text", "html", "pdf"]] = None
+
+        self.base_url = "http://eir:37242"
+        if self.notes_model and (note_id := self.current_note_id) is not None:
+            format = "html"
             try:
                 if content is not None:
                     # Render the provided content
-                    html = notes_api.render_markdown(content, format="html")
-                else:
-                    # Pull the current note state
-                    html = notes_api.get_rendered_note(
-                        self.current_note_id,
-                        format="html"
+
+                    request = RenderMarkdownRequest(content=content, format=format)
+
+                    response = requests.post(
+                        f"{self.base_url}/render/markdown",
+                        headers={"Content-Type": "application/json"},
+                        data=request.model_dump_json(exclude_none=True),
                     )
-                self.editor.set_preview_content(html)
+
+                    response.raise_for_status()
+
+                    html = response.text
+
+                    self.editor.set_preview_content(html)
+                else:
+
+                    response = requests.get(
+                        f"{self.base_url}/notes/flat/{note_id}/render/{format}",
+                        headers={"Content-Type": "application/json"},
+                    )
+
+                    response.raise_for_status()
+
+                    html = response.text
+
+                    self.editor.set_preview_content(html)
+
             except Exception as e:
                 print(f"Error getting rendered note: {e}")
                 # Fall back to local preview
@@ -207,50 +244,53 @@ class TabContent(QWidget):
         """Set the current note to display"""
         if self.notes_model and note_id is not None:
             self._handle_view_request(note_id)
+
     def set_view_actions(self, actions: Dict[str, QAction]):
         """Set view actions for the editor"""
         self.view_actions = actions
         self.editor.set_view_actions(
             actions["maximize_editor"],
             actions["maximize_preview"],
-            actions["use_remote_rendering"]
+            actions["use_remote_rendering"],
         )
 
-    def _handle_asset_request(self, asset_name: str, job: 'QWebEngineUrlRequestJob'):
+    def _handle_asset_request(self, asset_name: str, job: "QWebEngineUrlRequestJob"):
         """Handle requests for assets from the preview pane with proper caching support"""
         try:
             base_url = "http://eir:37242"
-            
+
             # Get the Asset from the API with streaming enabled
             endpoint = (
                 f"{base_url}/assets/download/{asset_name}"
                 if isinstance(asset_name, str)
                 else f"{base_url}/assets/{asset_name}"
             )
-            
+
             # Store response as instance variable to prevent garbage collection
             self._current_response = requests.get(endpoint, stream=True)
             self._current_response.raise_for_status()
 
             # Get content type and other headers
-            content_type = self._current_response.headers.get('Content-Type', 'application/octet-stream')
-            
+            content_type = self._current_response.headers.get(
+                "Content-Type", "application/octet-stream"
+            )
+
             # Create the QWebEngineUrlRequestJob response headers
             headers = {
                 QNetworkRequest.KnownHeaders.ContentTypeHeader: content_type,
                 QNetworkRequest.KnownHeaders.ContentLengthHeader: int(
-                    self._current_response.headers.get('content-length', 0)
+                    self._current_response.headers.get("content-length", 0)
                 ),
                 QNetworkRequest.KnownHeaders.LastModifiedHeader: self._current_response.headers.get(
-                    'last-modified'
+                    "last-modified"
                 ),
-                QNetworkRequest.KnownHeaders.ETagHeader: self._current_response.headers.get('etag'),
+                QNetworkRequest.KnownHeaders.ETagHeader: self._current_response.headers.get(
+                    "etag"
+                ),
             }
-            
+
             # Add Cache-Control as a raw header since it's not in KnownHeaders
-            raw_headers = {
-                b"Cache-Control": b"public, max-age=3600"
-            }
+            raw_headers = {b"Cache-Control": b"public, max-age=3600"}
 
             # Create streaming device as child of job to manage lifetime
             class StreamDevice(QIODevice):
@@ -271,13 +311,15 @@ class TabContent(QWidget):
 
                 def bytesAvailable(self):
                     return super().bytesAvailable() + (
-                        int(self.response.headers.get('content-length', 0)) 
-                        if 'content-length' in self.response.headers 
+                        int(self.response.headers.get("content-length", 0))
+                        if "content-length" in self.response.headers
                         else 0
                     )
 
             # Create streaming device with job as parent
-            self._current_stream_device = StreamDevice(self._current_response, parent=job)
+            self._current_stream_device = StreamDevice(
+                self._current_response, parent=job
+            )
             if not self._current_stream_device.open(QIODevice.ReadOnly):
                 print(f"Error: Could not open stream device for asset {asset_name}")
                 job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
