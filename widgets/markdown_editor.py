@@ -10,9 +10,9 @@ class MarkdownEditor(QWidget):
     preview_requested = Signal()    # Pull the initial preview
     render_requested = Signal(str)  # Send up the content and get back the rendered HTML
 
-    def __init__(self, parent=None, use_remote_api_html=True):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.use_remote_api_html = use_remote_api_html
+        self._remote_rendering_action = None
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -46,7 +46,7 @@ class MarkdownEditor(QWidget):
         Sync the Preview with the Editor
         """
         # When text changes, we want to send the content up for rendering
-        if self.use_remote_api_html:
+        if self._remote_rendering_action and self._remote_rendering_action.isChecked():
             self.render_requested.emit(self.editor.toPlainText())
         else:
             self.update_timer.start(0)  # Local preview update
@@ -55,7 +55,7 @@ class MarkdownEditor(QWidget):
         """
         Update the preview with a new note
         """
-        if self.use_remote_api_html:
+        if self._remote_rendering_action and self._remote_rendering_action.isChecked():
             self.preview_requested.emit()  # Request preview from controller
         else:
             self.update_preview_local()
@@ -133,10 +133,11 @@ class MarkdownEditor(QWidget):
             else:
                 self.splitter.setSizes([300, 300])
 
-    def set_view_actions(self, maximize_editor_action, maximize_preview_action):
+    def set_view_actions(self, maximize_editor_action, maximize_preview_action, remote_rendering_action):
         """Connect view actions to the editor"""
         self._maximize_editor_action = maximize_editor_action
         self._maximize_preview_action = maximize_preview_action
+        self._remote_rendering_action = remote_rendering_action
         maximize_editor_action.triggered.connect(self.maximize_editor)
         maximize_preview_action.triggered.connect(self.maximize_preview)
 

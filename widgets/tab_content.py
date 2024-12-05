@@ -18,6 +18,7 @@ class TabContent(QWidget):
         self.current_note_id: Optional[int] = None
         self.notes_model: Optional[NotesModel] = None
         self.navigation_model: Optional[NavigationModel] = None
+        self.view_actions: Optional[Dict[str, QAction]] = None
 
         # Create components
         self.left_sidebar = LeftSidebar()
@@ -191,3 +192,11 @@ class TabContent(QWidget):
         """Set the current note to display"""
         if self.notes_model and note_id is not None:
             self._handle_view_request(note_id)
+    def set_view_actions(self, actions: Dict[str, QAction]):
+        """Set view actions for the editor"""
+        self.view_actions = actions
+        self.editor.set_view_actions(
+            actions["maximize_editor"],
+            actions["maximize_preview"],
+            actions["use_remote_rendering"]
+        )

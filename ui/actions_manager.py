@@ -134,4 +134,11 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["start_neovim"].setStatusTip("Start Neovim server for text editing")
     actions["start_neovim"].setToolTip("Start Neovim server for text editing")
 
+    # Add remote rendering action
+    actions["use_remote_rendering"] = QAction("Use &Remote Rendering", parent)
+    actions["use_remote_rendering"].setCheckable(True)
+    actions["use_remote_rendering"].setChecked(True)  # Default to remote rendering
+    actions["use_remote_rendering"].setStatusTip("Toggle between remote and local markdown rendering")
+    actions["use_remote_rendering"].setToolTip("Toggle between remote and local markdown rendering")
+
     return actions
