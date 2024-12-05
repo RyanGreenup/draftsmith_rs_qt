@@ -113,7 +113,7 @@ class MarkdownEditor(QWidget):
 
         # Load JS from resources
         self.katex_js = _resource_to_string(":/katex/katex.min.js")
-        self.katex_render_js = _resource_to_string(":/katex/auto-render.min.js")
+        self.katex_render_js = _resource_to_string(":/katex/contrib/auto-render.min.js")
         self.katex_css = _resource_to_string(":/katex/katex.min.css")
         self.katex_config = _resource_to_string(":/katex/config.js")
 
