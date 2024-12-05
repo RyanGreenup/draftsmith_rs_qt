@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QSplitter
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
 from PySide6.QtGui import QAction
+from PySide6.QtWebEngineCore import QWebEngineUrlRequestJob
 from typing import Optional, Dict
 from widgets.left_sidebar import LeftSidebar
 from widgets.markdown_editor import MarkdownEditor
@@ -83,6 +84,8 @@ class TabContent(QWidget):
         self.editor.render_requested.connect(self._handle_preview_request)
         # When user follows a link, it will change the view
         self.editor.note_selected.connect(self._handle_view_request)
+        # Handle asset requests from preview pane
+        self.editor.asset_requested.connect(self._handle_asset_request)
 
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
@@ -204,3 +207,44 @@ class TabContent(QWidget):
             actions["maximize_preview"],
             actions["use_remote_rendering"]
         )
+
+    def _handle_asset_request(self, asset_name: str, job: 'QWebEngineUrlRequestJob'):
+        """Handle requests for assets from the preview pane
+        
+        Args:
+            asset_name: Name of the asset to fetch (e.g. 'image.png')
+            job: QWebEngineUrlRequestJob to respond to with the asset data
+        """
+        try:
+            # Get API instance
+            notes_api = api.client.NoteAPI('http://eir:37242')
+            
+            # Download the asset
+            response = notes_api.download_asset(asset_name)
+            
+            # Create buffer for the response data
+            buffer = QBuffer(parent=self)
+            if not buffer.open(QIODevice.WriteOnly):
+                print(f"Error: Could not open buffer for writing asset {asset_name}")
+                job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
+                return
+
+            # Write response content to buffer
+            buffer.write(QByteArray(response.content))
+            
+            # Prepare buffer for reading
+            buffer.close()
+            if not buffer.open(QIODevice.ReadOnly):
+                print(f"Error: Could not open buffer for reading asset {asset_name}")
+                job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
+                return
+
+            # Get content type from response headers or guess from filename
+            content_type = response.headers.get('Content-Type', 'application/octet-stream')
+            
+            # Send the data back to the web view
+            job.reply(content_type.encode(), buffer)
+
+        except Exception as e:
+            print(f"Error fetching asset {asset_name}: {e}")
+            job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
