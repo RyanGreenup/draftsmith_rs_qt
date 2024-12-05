@@ -8,6 +8,26 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import Qt, QTimer, Signal, QUrl, QByteArray, QBuffer, QIODevice
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
+from enum import Enum
+from urllib.parse import quote
+
+class URLScheme(Enum):
+    """URL schemes used in the application"""
+    ASSET = "asset://local"
+    NOTE = "note://local"
+
+def make_asset_url(asset_name: str) -> str:
+    """Create properly formatted asset URL
+    
+    Args:
+        asset_name: The asset filename/path
+        
+    Returns:
+        str: Properly formatted asset URL
+    """
+    # Remove any leading slashes and 'm/' prefix if present
+    clean_name = asset_name.lstrip('/').removeprefix('m/')
+    return f"{URLScheme.ASSET.value}/m/{quote(clean_name)}"
 
 
 # Define and register the custom URL scheme for assets
@@ -26,13 +46,18 @@ class AssetUrlSchemeHandler(QWebEngineUrlSchemeHandler):
 
     def requestStarted(self, job: QWebEngineUrlRequestJob):
         url = job.requestUrl()
-        asset_name = url.path()[1:]  # Remove leading slash
-        if not asset_name:
+        path = url.path().lstrip('/')
+        
+        # Remove 'm/' prefix if present
+        if path.startswith('m/'):
+            path = path[2:]
+            
+        if not path:
             job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
             return
             
         # Emit signal to request asset data
-        self.markdown_editor.asset_requested.emit(asset_name, job)
+        self.markdown_editor.asset_requested.emit(path, job)
 
 
 class LinkHandler(QWebEnginePage):
@@ -83,7 +108,7 @@ class MarkdownEditor(QWidget):
         # Create preview with custom link handling
         self.preview = QWebEngineView()
         self.preview.setPage(LinkHandler(self))
-        self.preview.setHtml("", QUrl("asset://local/"))
+        self.preview.setHtml("", QUrl(URLScheme.ASSET.value))
 
         # Add widgets to splitter
         self.splitter.addWidget(self.editor)
@@ -122,7 +147,7 @@ class MarkdownEditor(QWidget):
 
     def set_preview_content(self, html: str):
         """Update preview with provided HTML content"""
-        self.preview.setHtml(html, QUrl("note://local/"))
+        self.preview.setHtml(html, QUrl(URLScheme.ASSET.value))
 
 
     def update_preview_local(self):
@@ -160,7 +185,7 @@ class MarkdownEditor(QWidget):
         </html>
         """
 
-        self.preview.setHtml(styled_html, QUrl("note://local/"))
+        self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
 
     def set_content(self, content: str):
         self.editor.setPlainText(content)
