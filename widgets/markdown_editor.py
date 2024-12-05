@@ -116,9 +116,6 @@ class MarkdownEditor(QWidget):
         super().__init__(parent)
         self._remote_rendering_action = None
 
-        # Load CSS from resources
-        self.markdown_css = _resource_to_string(":/css/markdown.css")
-
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
