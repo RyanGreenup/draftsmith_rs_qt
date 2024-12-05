@@ -138,7 +138,6 @@ class MarkdownEditor(QWidget):
         self.preview.settings().setAttribute(self.preview.settings().WebAttribute.JavascriptEnabled, True)
         self.preview.settings().setAttribute(self.preview.settings().WebAttribute.LocalContentCanAccessRemoteUrls, True)
         self.preview.settings().setAttribute(self.preview.settings().WebAttribute.LocalContentCanAccessFileUrls, True)
-        self.preview.settings().setAttribute(self.preview.settings().WebAttribute.AllowWindowWebglContent, True)
         self.preview.setHtml("", QUrl(URLScheme.ASSET.value))
 
         # Add widgets to splitter
