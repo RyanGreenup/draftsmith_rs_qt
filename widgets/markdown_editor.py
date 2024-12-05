@@ -1,7 +1,7 @@
 from PySide6.QtWebEngineCore import QWebEnginePage
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import Qt, QTimer, Signal, QUrl
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
 
@@ -84,7 +84,7 @@ class MarkdownEditor(QWidget):
 
     def set_preview_content(self, html: str):
         """Update preview with provided HTML content"""
-        self.preview.setHtml(html)
+        self.preview.setHtml(html, QUrl("note://local/"))
 
 
     def update_preview_local(self):
@@ -122,7 +122,7 @@ class MarkdownEditor(QWidget):
         </html>
         """
 
-        self.preview.setHtml(styled_html)
+        self.preview.setHtml(styled_html, QUrl("note://local/"))
 
     def set_content(self, content: str):
         self.editor.setPlainText(content)
