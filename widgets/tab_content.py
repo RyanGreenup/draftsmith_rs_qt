@@ -3,6 +3,8 @@ from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
 from PySide6.QtGui import QAction
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestJob
 from typing import Optional, Dict
+
+import requests
 from widgets.left_sidebar import LeftSidebar
 from widgets.markdown_editor import MarkdownEditor
 from widgets.right_sidebar import RightSidebar
@@ -216,11 +218,17 @@ class TabContent(QWidget):
             job: QWebEngineUrlRequestJob to respond to with the asset data
         """
         try:
-            # Get API instance
-            asset_api = api.client.AssetAPI('http://eir:37242')
 
-            # Download the asset data
-            response = asset_api.download_asset_data(asset_name)
+            self.base_url = "http://eir:37242"
+
+            # Get the Asset from the API
+            endpoint = (
+                f"{self.base_url}/assets/download/{asset_name}"
+                if isinstance(asset_name, str)
+                else f"{self.base_url}/assets/{asset_name}"
+            )
+            response = requests.get(endpoint)
+            response.raise_for_status()
 
             # Create buffer for the response data
             buffer = QBuffer(parent=self)
