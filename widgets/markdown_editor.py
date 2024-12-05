@@ -6,7 +6,7 @@ from PySide6.QtWebEngineCore import (
 )
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtCore import Qt, QTimer, Signal, QUrl, QByteArray, QBuffer, QIODevice
+from PySide6.QtCore import Qt, QTimer, Signal, QUrl, QByteArray, QBuffer, QIODevice, QFile
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
 from enum import Enum
