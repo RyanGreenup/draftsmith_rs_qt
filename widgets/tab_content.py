@@ -211,47 +211,60 @@ class TabContent(QWidget):
         )
 
     def _handle_asset_request(self, asset_name: str, job: 'QWebEngineUrlRequestJob'):
-        """Handle requests for assets from the preview pane
+        """Handle requests for assets from the preview pane by streaming them directly
 
         Args:
             asset_name: Name of the asset to fetch (e.g. 'image.png')
             job: QWebEngineUrlRequestJob to respond to with the asset data
         """
         try:
-
-            self.base_url = "http://eir:37242"
-
-            # Get the Asset from the API
+            base_url = "http://eir:37242"
+            
+            # Get the Asset from the API with streaming enabled
             endpoint = (
-                f"{self.base_url}/assets/download/{asset_name}"
+                f"{base_url}/assets/download/{asset_name}"
                 if isinstance(asset_name, str)
-                else f"{self.base_url}/assets/{asset_name}"
+                else f"{base_url}/assets/{asset_name}"
             )
-            response = requests.get(endpoint)
+            response = requests.get(endpoint, stream=True)
             response.raise_for_status()
 
-            # Create buffer for the response data
-            buffer = QBuffer(parent=self)
-            if not buffer.open(QIODevice.WriteOnly):
-                print(f"Error: Could not open buffer for writing asset {asset_name}")
-                job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
-                return
-
-            # Write response content to buffer
-            buffer.write(QByteArray(response.content))
-
-            # Prepare buffer for reading
-            buffer.close()
-            if not buffer.open(QIODevice.ReadOnly):
-                print(f"Error: Could not open buffer for reading asset {asset_name}")
-                job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
-                return
-
-            # Get content type from response headers or guess from filename
+            # Get content type from response headers or default
             content_type = response.headers.get('Content-Type', 'application/octet-stream')
 
-            # Send the data back to the web view
-            job.reply(content_type.encode(), buffer)
+            # Create an IODevice that streams the response content
+            class StreamDevice(QIODevice):
+                def __init__(self, response):
+                    super().__init__()
+                    self.response = response
+                    self.iterator = response.iter_content(chunk_size=8192)
+
+                def readData(self, maxSize):
+                    try:
+                        chunk = next(self.iterator, None)
+                        return chunk if chunk is not None else bytes()
+                    except Exception:
+                        return bytes()
+
+                def writeData(self, data):
+                    return -1  # Read only device
+
+                def bytesAvailable(self):
+                    return super().bytesAvailable() + (
+                        int(response.headers.get('content-length', 0)) 
+                        if 'content-length' in response.headers 
+                        else 0
+                    )
+
+            # Create and open the streaming device
+            stream_device = StreamDevice(response)
+            if not stream_device.open(QIODevice.ReadOnly):
+                print(f"Error: Could not open stream device for asset {asset_name}")
+                job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
+                return
+
+            # Send the streaming response to the web view
+            job.reply(content_type.encode(), stream_device)
 
         except Exception as e:
             print(f"Error fetching asset {asset_name}: {e}")
