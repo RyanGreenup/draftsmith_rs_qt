@@ -12,8 +12,11 @@ class LinkHandler(QWebEnginePage):
         self.markdown_editor = markdown_editor  # Store correct reference
 
     def acceptNavigationRequest(self, url, _type, isMainFrame):
-        print("Navigation request:", url.path())
         path = url.path()
+        if path.endswith('/'):
+            path = path[:-1]
+        if path.startswith('/note/'):
+            path = path[6:]
         if path.startswith('/'):
             try:
                 note_id = int(path[1:])
