@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget, QSplitter
-from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice 
+from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
+from PySide6.QtNetwork import QNetworkRequest
 from PySide6.QtGui import QAction
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestJob
 from typing import Optional, Dict
@@ -18,9 +19,10 @@ class TabContent(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # Add these new instance variables
+        # Instance variables for asset streaming
         self._current_response = None
         self._current_stream_device = None
+        self._asset_cache = {}  # Cache for asset responses
         
         self.current_note_id: Optional[int] = None
         self.notes_model: Optional[NotesModel] = None
@@ -215,7 +217,7 @@ class TabContent(QWidget):
         )
 
     def _handle_asset_request(self, asset_name: str, job: 'QWebEngineUrlRequestJob'):
-        """Handle requests for assets from the preview pane by streaming them directly"""
+        """Handle requests for assets from the preview pane with proper caching support"""
         try:
             base_url = "http://eir:37242"
             
@@ -230,8 +232,22 @@ class TabContent(QWidget):
             self._current_response = requests.get(endpoint, stream=True)
             self._current_response.raise_for_status()
 
-            # Get content type from response headers or default
+            # Get content type and other headers
             content_type = self._current_response.headers.get('Content-Type', 'application/octet-stream')
+            
+            # Create the QWebEngineUrlRequestJob response headers
+            headers = {
+                QNetworkRequest.KnownHeaders.ContentTypeHeader: content_type,
+                QNetworkRequest.KnownHeaders.ContentLengthHeader: int(
+                    self._current_response.headers.get('content-length', 0)
+                ),
+                QNetworkRequest.KnownHeaders.LastModifiedHeader: self._current_response.headers.get(
+                    'last-modified'
+                ),
+                QNetworkRequest.KnownHeaders.ETagHeader: self._current_response.headers.get('etag'),
+                # Enable caching for 1 hour
+                QNetworkRequest.KnownHeaders.CacheControlHeader: "public, max-age=3600"
+            }
 
             # Create streaming device as child of job to manage lifetime
             class StreamDevice(QIODevice):
@@ -264,8 +280,8 @@ class TabContent(QWidget):
                 job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
                 return
 
-            # Send the streaming response to the web view
-            job.reply(content_type.encode(), self._current_stream_device)
+            # Send the streaming response with headers to enable caching
+            job.reply(content_type.encode(), self._current_stream_device, headers)
 
         except Exception as e:
             print(f"Error fetching asset {asset_name}: {e}")
