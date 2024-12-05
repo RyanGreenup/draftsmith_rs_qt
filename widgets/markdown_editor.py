@@ -1,4 +1,6 @@
-from . import resources_rc
+from . import css_resources_rc
+from . import js_resources_rc
+from . import katex_resources_rc
 from PySide6.QtWebEngineCore import (
     QWebEnginePage, QWebEngineUrlScheme,
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob,
@@ -70,11 +72,11 @@ class LinkHandler(QWebEnginePage):
         # Get the full URL string to check scheme
         url_str = url.toString()
         path = url.path()
-        
+
         # Remove trailing slash if present
         if path.endswith('/'):
             path = path[:-1]
-            
+
         # Handle note links regardless of current scheme
         if '/note/' in path:
             try:
@@ -83,9 +85,15 @@ class LinkHandler(QWebEnginePage):
                 return False
             except ValueError:
                 pass
-                
+
         return True
 
+def _resource_to_string(qrc_path: str) -> str:
+    qrc_file = QFile(qrc_path)
+    qrc_file.open(QFile.ReadOnly)
+    content = qrc_file.readAll().data().decode()
+    qrc_file.close()
+    return content
 
 
 class MarkdownEditor(QWidget):
@@ -95,15 +103,20 @@ class MarkdownEditor(QWidget):
     note_selected = Signal(int)     # Emitted when a note link is clicked
     asset_requested = Signal(str, QWebEngineUrlRequestJob)  # Emitted when an asset is requested
 
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
-        
+
         # Load CSS from resources
-        css_file = QFile(":/styles/markdown.css")
-        css_file.open(QFile.ReadOnly)
-        self.css = css_file.readAll().data().decode()
-        css_file.close()
+        self.markdown_css = _resource_to_string(":/css/markdown.css")
+
+        # Load JS from resources
+        self.katex_js = _resource_to_string(":/katex/katex.min.js")
+        self.katex_render_js = _resource_to_string(":/katex/auto-render.min.js")
+        self.katex_css = _resource_to_string(":/katex/katex.min.css")
+        self.katex_config = _resource_to_string(":/katex/config.js")
+
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -158,40 +171,36 @@ class MarkdownEditor(QWidget):
             self.update_preview_local()
 
     def set_preview_content(self, html: str):
-        """Update preview with provided HTML content"""
-        styled_html = f"""
+        styled_html = self._apply_html_template(html)
+        self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
+
+    def _apply_html_template(self, html: str) -> str:
+        return f"""
         <html>
         <head>
             <style>
-                {self.css}
+                {self.markdown_css}
+                {self.katex_css}
             </style>
         </head>
-        <body>
+        <body><div class="markdown">
             {html}
+            </div>
+            <script>
+              {self.katex_js}
+              {self.katex_render_js}
+              {self.katex_config}
+            </script>
         </body>
         </html>
         """
-        self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
-
 
     def update_preview_local(self):
         # Convert markdown to HTML
         md = markdown.Markdown(extensions=["fenced_code", "tables", "wikilinks", "footnotes"])
         html = md.convert(self.editor.toPlainText())
+        styled_html = self._apply_html_template(html)
 
-        # Add styling from resource
-        styled_html = f"""
-        <html>
-        <head>
-            <style>
-                {self.css}
-            </style>
-        </head>
-        <body>
-            {html}
-        </body>
-        </html>
-        """
 
         self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
 
