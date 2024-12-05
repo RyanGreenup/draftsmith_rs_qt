@@ -42,6 +42,9 @@ class MarkdownEditor(QWidget):
         self.setLayout(layout)
 
     def on_text_changed(self):
+        """
+        Sync the Preview with the Editor
+        """
         # When text changes, we want to send the content up for rendering
         if self.use_remote_api_html:
             self.render_requested.emit(self.editor.toPlainText())
@@ -49,6 +52,9 @@ class MarkdownEditor(QWidget):
             self.update_timer.start(0)  # Local preview update
 
     def update_preview(self):
+        """
+        Update the preview with a new note
+        """
         if self.use_remote_api_html:
             self.preview_requested.emit()  # Request preview from controller
         else:

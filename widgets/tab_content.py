@@ -76,8 +76,8 @@ class TabContent(QWidget):
 
         # Connect the Preview Request signal
         # This is needed if the preview is being loaded from the API
-        self.editor.preview_requested.connect(lambda: self._handle_preview_request(send_content=False))
-        self.editor.render_requested.connect(lambda content: self._handle_preview_request(send_content=True, content=content))
+        self.editor.preview_requested.connect(self._handle_preview_request)
+        self.editor.render_requested.connect(self._handle_preview_request)
 
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
@@ -160,7 +160,7 @@ class TabContent(QWidget):
             self.right_sidebar.update_backlinks(selection_data.backlinks)
             self.right_sidebar.update_tags(selection_data.tags)
 
-    def _handle_preview_request(self, send_content: bool = False, content: Optional[str] = None):
+    def _handle_preview_request(self, content: Optional[str] = None):
         """Handle request to update preview using current note
         If send_content is true, use the provided content for rendering.
         Otherwise pull the current note HTML from server.
@@ -168,7 +168,7 @@ class TabContent(QWidget):
         notes_api = api.client.NoteAPI('http://eir:37242')
         if self.notes_model and self.current_note_id is not None:
             try:
-                if send_content and content is not None:
+                if content is not None:
                     # Render the provided content
                     html = notes_api.render_markdown(content, format="html")
                 else:
