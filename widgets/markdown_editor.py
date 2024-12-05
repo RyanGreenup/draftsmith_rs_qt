@@ -1,5 +1,5 @@
 from PySide6.QtWebEngineCore import (
-    QWebEnginePage, QWebEngineUrlScheme, 
+    QWebEnginePage, QWebEngineUrlScheme,
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob,
     QWebEngineProfile
 )
@@ -18,10 +18,10 @@ class URLScheme(Enum):
 
 def make_asset_url(asset_name: str) -> str:
     """Create properly formatted asset URL
-    
+
     Args:
         asset_name: The asset filename/path
-        
+
     Returns:
         str: Properly formatted asset URL
     """
@@ -47,15 +47,15 @@ class AssetUrlSchemeHandler(QWebEngineUrlSchemeHandler):
     def requestStarted(self, job: QWebEngineUrlRequestJob):
         url = job.requestUrl()
         path = url.path().lstrip('/')
-        
+
         # Remove 'm/' prefix if present
         if path.startswith('m/'):
             path = path[2:]
-            
+
         if not path:
             job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
             return
-            
+
         # Emit signal to request asset data
         self.markdown_editor.asset_requested.emit(path, job)
 
@@ -152,7 +152,7 @@ class MarkdownEditor(QWidget):
 
     def update_preview_local(self):
         # Convert markdown to HTML
-        md = markdown.Markdown(extensions=["fenced_code", "tables", "wikilinks"])
+        md = markdown.Markdown(extensions=["fenced_code", "tables", "wikilinks", "footnotes"])
         html = md.convert(self.editor.toPlainText())
 
         # Add some basic styling
