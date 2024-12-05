@@ -7,21 +7,21 @@ from widgets.text_edit.neovim_integration import EditorWidget
 
 
 class LinkHandler(QWebEnginePage):
-    def __init__(self, editor):
-        super().__init__()
-        self.editor = editor
+    def __init__(self, markdown_editor):
+        super().__init__(markdown_editor)  # Set parent
+        self.markdown_editor = markdown_editor  # Store correct reference
 
     def acceptNavigationRequest(self, url, _type, isMainFrame):
-        print("Navigation request:", url.path())  # Debug print
+        print("Navigation request:", url.path())
         path = url.path()
         if path.startswith('/'):
             try:
                 note_id = int(path[1:])
-                self.editor.note_selected.emit(note_id)
-                return False  # Don't navigate, we handled it
+                self.markdown_editor.note_selected.emit(note_id)  # Emit from correct object
+                return False
             except ValueError:
                 pass
-        return True  # Allow other navigation
+        return True
 
 
 
