@@ -67,7 +67,7 @@ class MarkdownEditor(QWidget):
 
     def update_preview_local(self):
         # Convert markdown to HTML
-        md = markdown.Markdown(extensions=["fenced_code", "tables"])
+        md = markdown.Markdown(extensions=["fenced_code", "tables", "wikilinks"])
         html = md.convert(self.editor.toPlainText())
 
         # Add some basic styling
