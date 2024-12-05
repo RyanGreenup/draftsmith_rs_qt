@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
-from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PySide6.QtCore import Qt, QTimer, Signal
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
@@ -25,7 +25,9 @@ class MarkdownEditor(QWidget):
         # Create preview
         self.preview = QWebEngineView()
         self.preview.setHtml("")
-        self.preview.urlChanged.connect(self._handle_url_changed)
+        # Enable link clicking
+        self.preview.page().setLinkDelegationPolicy(QWebEnginePage.LinkDelegationPolicy.DelegateAllLinks)
+        self.preview.page().linkClicked.connect(self._handle_url_changed)
 
         # Add widgets to splitter
         self.splitter.addWidget(self.editor)
