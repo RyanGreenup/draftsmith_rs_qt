@@ -283,8 +283,15 @@ class TabContent(QWidget):
                 job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
                 return
 
-            # Send the streaming response with headers to enable caching
-            job.reply(content_type.encode(), self._current_stream_device, headers, raw_headers)
+            # Set headers on the job's request
+            request = job.requestHeaders()
+            for header_type, value in headers.items():
+                request.setHeader(header_type, value)
+            for name, value in raw_headers.items():
+                request.setRawHeader(name, value)
+                
+            # Send the streaming response
+            job.reply(content_type.encode(), self._current_stream_device)
 
         except Exception as e:
             print(f"Error fetching asset {asset_name}: {e}")
