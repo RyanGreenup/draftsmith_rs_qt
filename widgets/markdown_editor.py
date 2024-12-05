@@ -1,4 +1,4 @@
-import resources_rc
+from . import resources_rc
 from PySide6.QtWebEngineCore import (
     QWebEnginePage, QWebEngineUrlScheme,
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob,
