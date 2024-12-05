@@ -9,7 +9,8 @@ from PySide6.QtWebEngineCore import (
 )
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtCore import Qt, QTimer, Signal, QUrl, QByteArray, QBuffer, QIODevice, QFile
+from PySide6.QtCore import (Qt, QTimer, Signal, QUrl, QByteArray, QBuffer, 
+                           QIODevice, QFile, QDirIterator, QDir)
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
 from enum import Enum
@@ -180,14 +181,24 @@ class MarkdownEditor(QWidget):
         styled_html = self._apply_html_template(html)
         self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
 
+    def _get_css_resources(self) -> str:
+        """Generate CSS link tags for all CSS files in resources"""
+        css_links = []
+        it = QDirIterator(":/css", QDir.Files, QDirIterator.Subdirectories)
+        while it.hasNext():
+            file_path = it.next()
+            css_links.append(f'<link rel="stylesheet" href="{file_path}">')
+        return '\n'.join(css_links)
+
     def _apply_html_template(self, html: str) -> str:
+        css_includes = self._get_css_resources()
         return f"""<!DOCTYPE html>
         <html>
         <head>
             <meta charset="utf-8">
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
             <link rel="stylesheet" href="qrc:/katex/katex.min.css">
-            <link rel="stylesheet" href="qrc:/css/markdown.css">
+            {css_includes}
         </head>
         <body><div class="markdown">
             {html}
