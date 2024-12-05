@@ -111,12 +111,6 @@ class MarkdownEditor(QWidget):
         # Load CSS from resources
         self.markdown_css = _resource_to_string(":/css/markdown.css")
 
-        # Load JS from resources
-        self.katex_js = _resource_to_string(":/katex/katex.min.js")
-        self.katex_render_js = _resource_to_string(":/katex/contrib/auto-render.min.js")
-        self.katex_css = _resource_to_string(":/katex/katex.min.css")
-        self.katex_config = _resource_to_string(":/katex/config.js")
-
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -183,19 +177,17 @@ class MarkdownEditor(QWidget):
         <head>
             <meta charset="utf-8">
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <link rel="stylesheet" href="qrc:/katex/katex.min.css">
             <style>
                 {self.markdown_css}
-                {self.katex_css}
             </style>
         </head>
         <body><div class="markdown">
             {html}
             </div>
-            <script>
-              {self.katex_js}
-              {self.katex_render_js}
-              {self.katex_config}
-            </script>
+            <script src="qrc:/katex/katex.min.js"></script>
+            <script src="qrc:/katex/contrib/auto-render.min.js"></script>
+            <script src="qrc:/katex/config.js"></script>
         </body>
         </html>
         """
