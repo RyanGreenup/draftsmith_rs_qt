@@ -6,8 +6,9 @@ from widgets.text_edit.neovim_integration import EditorWidget
 
 
 class MarkdownEditor(QWidget):
-    save_requested = Signal()  # Add save signal
-    preview_requested = Signal()  # Signal to request preview update
+    save_requested = Signal()
+    preview_requested = Signal()    # Pull the initial preview
+    render_requested = Signal(str)  # Send up the content and get back the rendered HTML
 
     def __init__(self, parent=None, use_remote_api_html=True):
         super().__init__(parent)
@@ -42,7 +43,7 @@ class MarkdownEditor(QWidget):
 
     def on_text_changed(self):
         # Start timer to update preview
-        self.update_timer.start(0)  # 500ms delay
+        self.update_timer.start(0)  # Optionally delay update
 
     def update_preview(self):
         if self.use_remote_api_html:
