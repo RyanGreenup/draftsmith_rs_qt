@@ -219,8 +219,8 @@ class TabContent(QWidget):
             # Get API instance
             asset_api = api.client.AssetAPI('http://eir:37242')
 
-            # Download the asset
-            response = asset_api.download_asset(asset_name)
+            # Download the asset data
+            response = asset_api.download_asset_data(asset_name)
 
             # Create buffer for the response data
             buffer = QBuffer(parent=self)

@@ -1253,3 +1253,26 @@ class AssetAPI(API):
         with open(output_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
+
+    def download_asset_data(self, asset_id: int | str) -> requests.Response:
+        """
+        Download an asset by its ID or filename and return the response object
+        
+        Args:
+            asset_id: The ID of the asset to download or its filename (e.g. 'icon.png')
+            
+        Returns:
+            requests.Response: Response object containing the asset data
+            
+        Raises:
+            requests.exceptions.RequestException: If the request fails
+            requests.exceptions.HTTPError: If the asset is not found (404)
+        """
+        endpoint = (
+            f"{self.base_url}/assets/download/{asset_id}"
+            if isinstance(asset_id, str)
+            else f"{self.base_url}/assets/{asset_id}"
+        )
+        response = requests.get(endpoint)
+        response.raise_for_status()
+        return response
