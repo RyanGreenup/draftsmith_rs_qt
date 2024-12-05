@@ -76,9 +76,13 @@ class TabContent(QWidget):
         )
 
         # Connect the Preview Request signal
-        # This is needed if the preview is being loaded from the API
+        # These two are needed if the preview is being loaded from the API
+        # This sends the QTextEdit content to the API for rendering
         self.editor.preview_requested.connect(self._handle_preview_request)
+        # This pulls the note
         self.editor.render_requested.connect(self._handle_preview_request)
+        # When user follows a link, it will change the view
+        self.editor.note_selected.connect(self._handle_view_request)
 
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
