@@ -9,6 +9,7 @@ class MarkdownEditor(QWidget):
     save_requested = Signal()
     preview_requested = Signal()    # Pull the initial preview
     render_requested = Signal(str)  # Send up the content and get back the rendered HTML
+    note_selected = Signal(int)     # Emitted when a note link is clicked
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -24,6 +25,7 @@ class MarkdownEditor(QWidget):
         # Create preview
         self.preview = QWebEngineView()
         self.preview.setHtml("")
+        self.preview.urlChanged.connect(self._handle_url_changed)
 
         # Add widgets to splitter
         self.splitter.addWidget(self.editor)
@@ -158,3 +160,13 @@ class MarkdownEditor(QWidget):
         cursor = self.editor.textCursor()
         cursor.setPosition(position)
         self.editor.setTextCursor(cursor)
+
+    def _handle_url_changed(self, url):
+        """Handle URL changes in the preview window"""
+        path = url.path()
+        if path.startswith('/'):
+            try:
+                note_id = int(path[1:])  # Remove leading slash and convert to int
+                self.note_selected.emit(note_id)
+            except ValueError:
+                pass  # Not a valid note ID link
