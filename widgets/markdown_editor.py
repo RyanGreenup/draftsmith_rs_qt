@@ -1,8 +1,10 @@
+from PySide6.QtWebEngineCore import QWebEnginePage
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
-from PySide6.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import Qt, QTimer, Signal
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
+
 
 
 class MarkdownEditor(QWidget):
@@ -173,3 +175,4 @@ class MarkdownEditor(QWidget):
                 self.note_selected.emit(note_id)
             except ValueError:
                 pass  # Not a valid note ID link
+
