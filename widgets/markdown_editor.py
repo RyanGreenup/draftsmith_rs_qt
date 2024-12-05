@@ -1,7 +1,5 @@
-# from . import css_resources_rc
-# from . import js_resources_rc
-from . import static_resources_rc
-from . import katex_resources_rc
+from . import static_resources_rc  # pyright:ignore
+from . import katex_resources_rc   # pyright:ignore
 from PySide6.QtWebEngineCore import (
     QWebEnginePage, QWebEngineUrlScheme,
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob,
@@ -9,7 +7,7 @@ from PySide6.QtWebEngineCore import (
 )
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtCore import (Qt, QTimer, Signal, QUrl, QByteArray, QBuffer, 
+from PySide6.QtCore import (Qt, QTimer, Signal, QUrl, QByteArray, QBuffer,
                            QIODevice, QFile, QDirIterator, QDir)
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
@@ -182,12 +180,25 @@ class MarkdownEditor(QWidget):
         self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
 
     def _get_css_resources(self) -> str:
-        """Generate CSS link tags for all CSS files in resources"""
+        """Generate CSS link tags for all CSS files in resources
+
+        If the file:
+
+        ./static/static.qrc
+
+        picked up the static css asset, then it will be included.
+
+        """
         css_links = []
         it = QDirIterator(":/css", QDir.Files, QDirIterator.Subdirectories)
         while it.hasNext():
             file_path = it.next()
-            css_links.append(f'<link rel="stylesheet" href="{file_path}">')
+            css_links.append(f'<link rel="stylesheet" href="qrc{file_path}">')
+
+        # If needed to debug
+        # print(css_links)
+        # sys.exit()
+
         return '\n'.join(css_links)
 
     def _apply_html_template(self, html: str) -> str:
