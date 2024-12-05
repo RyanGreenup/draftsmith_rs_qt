@@ -187,49 +187,39 @@ class TabContent(QWidget):
             self.right_sidebar.update_tags(selection_data.tags)
 
     def _handle_preview_request(self, content: Optional[str] = None):
-        """Handle request to update preview using current note
-        If send_content is true, use the provided content for rendering.
-        Otherwise pull the current note HTML from server.
-        """
-
-        class RenderMarkdownRequest(BaseModel):
-            """Request to render markdown content"""
-
-            content: str
-            format: Optional[Literal["text", "html", "pdf"]] = None
-
+        """Handle request to update preview using streaming response"""
         self.base_url = "http://eir:37242"
         if self.notes_model and (note_id := self.current_note_id) is not None:
             format = "html"
             try:
                 if content is not None:
                     # Render the provided content
-
                     request = RenderMarkdownRequest(content=content, format=format)
-
                     response = requests.post(
                         f"{self.base_url}/render/markdown",
                         headers={"Content-Type": "application/json"},
                         data=request.model_dump_json(exclude_none=True),
+                        stream=True  # Enable streaming
                     )
-
-                    response.raise_for_status()
-
-                    html = response.text
-
-                    self.editor.set_preview_content(html)
                 else:
-
                     response = requests.get(
                         f"{self.base_url}/notes/flat/{note_id}/render/{format}",
                         headers={"Content-Type": "application/json"},
+                        stream=True  # Enable streaming
                     )
 
-                    response.raise_for_status()
+                response.raise_for_status()
 
-                    html = response.text
-
-                    self.editor.set_preview_content(html)
+                # Create a QBuffer to accumulate streamed content
+                buffer = QByteArray()
+                
+                # Stream and accumulate the response content
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        buffer.append(chunk)
+                        # Update preview with accumulated content so far
+                        html = buffer.data().decode('utf-8')
+                        self.editor.set_preview_content(html)
 
             except Exception as e:
                 print(f"Error getting rendered note: {e}")
