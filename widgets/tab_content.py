@@ -245,8 +245,11 @@ class TabContent(QWidget):
                     'last-modified'
                 ),
                 QNetworkRequest.KnownHeaders.ETagHeader: self._current_response.headers.get('etag'),
-                # Enable caching for 1 hour
-                QNetworkRequest.KnownHeaders.CacheControlHeader: "public, max-age=3600"
+            }
+            
+            # Add Cache-Control as a raw header since it's not in KnownHeaders
+            raw_headers = {
+                b"Cache-Control": b"public, max-age=3600"
             }
 
             # Create streaming device as child of job to manage lifetime
@@ -281,7 +284,7 @@ class TabContent(QWidget):
                 return
 
             # Send the streaming response with headers to enable caching
-            job.reply(content_type.encode(), self._current_stream_device, headers)
+            job.reply(content_type.encode(), self._current_stream_device, headers, raw_headers)
 
         except Exception as e:
             print(f"Error fetching asset {asset_name}: {e}")
