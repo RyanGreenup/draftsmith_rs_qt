@@ -1,9 +1,38 @@
-from PySide6.QtWebEngineCore import QWebEnginePage
+from PySide6.QtWebEngineCore import (
+    QWebEnginePage, QWebEngineUrlScheme, 
+    QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob,
+    QWebEngineProfile
+)
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtCore import Qt, QTimer, Signal, QUrl
+from PySide6.QtCore import Qt, QTimer, Signal, QUrl, QByteArray, QBuffer, QIODevice
 import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
+
+
+# Define and register the custom URL scheme for assets
+asset_scheme = QWebEngineUrlScheme(b"asset")
+asset_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
+asset_scheme.setFlags(
+    QWebEngineUrlScheme.LocalAccessAllowed | QWebEngineUrlScheme.CorsEnabled
+)
+QWebEngineUrlScheme.registerScheme(asset_scheme)
+
+
+class AssetUrlSchemeHandler(QWebEngineUrlSchemeHandler):
+    def __init__(self, markdown_editor):
+        super().__init__()
+        self.markdown_editor = markdown_editor
+
+    def requestStarted(self, job: QWebEngineUrlRequestJob):
+        url = job.requestUrl()
+        asset_name = url.path()[1:]  # Remove leading slash
+        if not asset_name:
+            job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
+            return
+            
+        # Emit signal to request asset data
+        self.markdown_editor.asset_requested.emit(asset_name, job)
 
 
 class LinkHandler(QWebEnginePage):
@@ -33,6 +62,7 @@ class MarkdownEditor(QWidget):
     preview_requested = Signal()    # Pull the initial preview
     render_requested = Signal(str)  # Send up the content and get back the rendered HTML
     note_selected = Signal(int)     # Emitted when a note link is clicked
+    asset_requested = Signal(str, QWebEngineUrlRequestJob)  # Emitted when an asset is requested
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -45,10 +75,15 @@ class MarkdownEditor(QWidget):
         self.editor = EditorWidget()
         self.editor.textChanged.connect(self.on_text_changed)
 
+        # Set up WebEngine profile and handlers
+        self.profile = QWebEngineProfile.defaultProfile()
+        self.scheme_handler = AssetUrlSchemeHandler(self)
+        self.profile.installUrlSchemeHandler(b"asset", self.scheme_handler)
+
         # Create preview with custom link handling
         self.preview = QWebEngineView()
         self.preview.setPage(LinkHandler(self))
-        self.preview.setHtml("")
+        self.preview.setHtml("", QUrl("asset://local/"))
 
         # Add widgets to splitter
         self.splitter.addWidget(self.editor)
