@@ -210,18 +210,18 @@ class TabContent(QWidget):
 
     def _handle_asset_request(self, asset_name: str, job: 'QWebEngineUrlRequestJob'):
         """Handle requests for assets from the preview pane
-        
+
         Args:
             asset_name: Name of the asset to fetch (e.g. 'image.png')
             job: QWebEngineUrlRequestJob to respond to with the asset data
         """
         try:
             # Get API instance
-            notes_api = api.client.NoteAPI('http://eir:37242')
-            
+            asset_api = api.client.AssetAPI('http://eir:37242')
+
             # Download the asset
-            response = notes_api.download_asset(asset_name)
-            
+            response = asset_api.download_asset(asset_name)
+
             # Create buffer for the response data
             buffer = QBuffer(parent=self)
             if not buffer.open(QIODevice.WriteOnly):
@@ -231,7 +231,7 @@ class TabContent(QWidget):
 
             # Write response content to buffer
             buffer.write(QByteArray(response.content))
-            
+
             # Prepare buffer for reading
             buffer.close()
             if not buffer.open(QIODevice.ReadOnly):
@@ -241,7 +241,7 @@ class TabContent(QWidget):
 
             # Get content type from response headers or guess from filename
             content_type = response.headers.get('Content-Type', 'application/octet-stream')
-            
+
             # Send the data back to the web view
             job.reply(content_type.encode(), buffer)
 
