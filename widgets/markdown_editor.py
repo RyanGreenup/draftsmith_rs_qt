@@ -1,3 +1,4 @@
+import resources_rc
 from PySide6.QtWebEngineCore import (
     QWebEnginePage, QWebEngineUrlScheme,
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob,
@@ -97,6 +98,12 @@ class MarkdownEditor(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
+        
+        # Load CSS from resources
+        css_file = QFile(":/styles/markdown.css")
+        css_file.open(QFile.ReadOnly)
+        self.css = css_file.readAll().data().decode()
+        css_file.close()
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -152,7 +159,19 @@ class MarkdownEditor(QWidget):
 
     def set_preview_content(self, html: str):
         """Update preview with provided HTML content"""
-        self.preview.setHtml(html, QUrl(URLScheme.ASSET.value))
+        styled_html = f"""
+        <html>
+        <head>
+            <style>
+                {self.css}
+            </style>
+        </head>
+        <body>
+            {html}
+        </body>
+        </html>
+        """
+        self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
 
 
     def update_preview_local(self):
@@ -160,28 +179,12 @@ class MarkdownEditor(QWidget):
         md = markdown.Markdown(extensions=["fenced_code", "tables", "wikilinks", "footnotes"])
         html = md.convert(self.editor.toPlainText())
 
-        # Add some basic styling
+        # Add styling from resource
         styled_html = f"""
         <html>
         <head>
             <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    padding: 20px;
-                    max-width: 800px;
-                    margin: 0 auto;
-                }}
-                code {{
-                    background-color: #f4f4f4;
-                    padding: 2px 4px;
-                    border-radius: 4px;
-                }}
-                pre {{
-                    background-color: #f4f4f4;
-                    padding: 10px;
-                    border-radius: 4px;
-                }}
+                {self.css}
             </style>
         </head>
         <body>
