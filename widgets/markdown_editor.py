@@ -1,4 +1,4 @@
-from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineUrlRequestInterceptor
+from PySide6.QtWebEngineCore import QWebEnginePage
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import Qt, QTimer, Signal
@@ -6,22 +6,22 @@ import markdown
 from widgets.text_edit.neovim_integration import EditorWidget
 
 
-class LinkInterceptor(QWebEngineUrlRequestInterceptor):
+class LinkHandler(QWebEnginePage):
     def __init__(self, editor):
         super().__init__()
         self.editor = editor
 
-    def interceptRequest(self, info):
-        print("Intercepting request")
-        url = info.requestUrl()
+    def acceptNavigationRequest(self, url, _type, isMainFrame):
+        print("Navigation request:", url.path())  # Debug print
         path = url.path()
         if path.startswith('/'):
             try:
                 note_id = int(path[1:])
                 self.editor.note_selected.emit(note_id)
-                info.block(True)
+                return False  # Don't navigate, we handled it
             except ValueError:
                 pass
+        return True  # Allow other navigation
 
 
 
@@ -42,10 +42,9 @@ class MarkdownEditor(QWidget):
         self.editor = EditorWidget()
         self.editor.textChanged.connect(self.on_text_changed)
 
-        # Create preview
+        # Create preview with custom link handling
         self.preview = QWebEngineView()
-        # Enable link clicking - Fix for PySide6
-        self.preview.page().setUrlRequestInterceptor(LinkInterceptor(self))
+        self.preview.setPage(LinkHandler(self))
         self.preview.setHtml("")
 
         # Add widgets to splitter
