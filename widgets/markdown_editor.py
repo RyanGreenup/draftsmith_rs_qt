@@ -166,7 +166,7 @@ class MarkdownEditor(QWidget):
                 "tables",
                 "footnotes",
                 WikiLinkExtension(
-                    base_url="/note/"
+                    base_url=""
                 ),  # TODO this is inconsistent, consider using scheme handler and prefixing with a url
             ]
         )
@@ -174,7 +174,7 @@ class MarkdownEditor(QWidget):
         html = md.convert(self.editor.toPlainText())
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-        self.preview.setHtml(styled_html, QUrl("note://"))
+        self.preview.setHtml(styled_html)
 
     def set_content(self, content: str):
         self.editor.setPlainText(content)
