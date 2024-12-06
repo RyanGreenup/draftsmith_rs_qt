@@ -101,7 +101,10 @@ class NoteLinkPage(QWebEnginePage):
             except ValueError:
                 print(f"Failed to parse note ID from: {path}")
                 return False
-        return True  # Allow other navigation
+        elif nav_type == QWebEngineNavigationRequest.NavigationType.NavigationTypeLinkClicked:
+            # For clicked links that aren't note:// URLs, open in default browser
+            return False
+        return True  # Allow other navigation types
 
 
 def _resource_to_string(qrc_path: str) -> str:
