@@ -29,9 +29,10 @@ from urllib.parse import urlparse, urlunparse
 
 
 class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
-    def __init__(self, parent=None, base_api_url=None):
+    def __init__(self, parent=None, base_api_url=None, access_token=None):
         super().__init__(parent)
         self.base_api_url = base_api_url
+        self.access_token = access_token
 
     def interceptRequest(self, info: QWebEngineUrlRequestInfo):
         url = info.requestUrl()
@@ -43,6 +44,11 @@ class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
             asset_path = path[3:]  # Remove /m/ prefix
             new_url = f"{self.base_api_url}/assets/download/{asset_path}"
             print(f"Redirecting to: {new_url}")  # Debug print
+            
+            # Add Authorization header with access token
+            if self.access_token:
+                info.setHttpHeader(b"Authorization", f"Bearer {self.access_token}".encode())
+            
             info.redirect(QUrl(new_url))
 
 
@@ -92,7 +98,11 @@ class MarkdownEditor(QWidget):
         self.profile = QWebEngineProfile.defaultProfile()
 
         # Add asset URL interceptor
-        self.asset_interceptor = AssetUrlInterceptor(self, "http://eir:37242")
+        self.asset_interceptor = AssetUrlInterceptor(
+            self,
+            "http://eir:37242",
+            access_token=None  # Will need to be set later via a method
+        )
         self.profile.setUrlRequestInterceptor(self.asset_interceptor)
 
         # Create preview with custom link handling
