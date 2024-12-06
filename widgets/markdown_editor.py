@@ -70,6 +70,17 @@ note_scheme.setFlags(
 QWebEngineUrlScheme.registerScheme(note_scheme)
 
 
+class NoteUrlSchemeHandler(QWebEngineUrlSchemeHandler):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+    
+    def requestStarted(self, request: QWebEngineUrlRequestJob):
+        url = request.requestUrl()
+        print(f"Note scheme handler received request for: {url.toString()}")
+        # We don't actually need to handle the request - we just want the navigation event
+        # So we'll fail the request, letting the NoteLinkPage handle navigation
+        request.fail(QWebEngineUrlRequestJob.Error.RequestDenied)
+
 class NoteLinkPage(QWebEnginePage):
     def __init__(self, markdown_editor, profile):
         super().__init__(profile)
@@ -120,6 +131,10 @@ class MarkdownEditor(QWidget):
 
         # Set up WebEngine profile and handlers
         self.profile = QWebEngineProfile.defaultProfile()
+
+        # Add note URL scheme handler
+        self.note_handler = NoteUrlSchemeHandler(self)
+        self.profile.installUrlSchemeHandler(b"note", self.note_handler)
 
         # Add asset URL interceptor
         self.asset_interceptor = AssetUrlInterceptor(
