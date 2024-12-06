@@ -58,10 +58,11 @@ qrc_scheme.setFlags(
 QWebEngineUrlScheme.registerScheme(qrc_scheme)
 
 
-class NoteUrlSchemeHandler(QWebEngineUrlSchemeHandler):
-    def __init__(self, markdown_editor):
+class CustomUrlSchemeHandler(QWebEngineUrlSchemeHandler):
+    def __init__(self, markdown_editor, scheme_type):
         super().__init__()
         self.markdown_editor = markdown_editor
+        self.scheme_type = scheme_type
 
     def requestStarted(self, job: QWebEngineUrlRequestJob):
         url = job.requestUrl()
@@ -71,33 +72,19 @@ class NoteUrlSchemeHandler(QWebEngineUrlSchemeHandler):
             job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
             return
 
-        try:
-            note_id = int(path)
-            self.markdown_editor.note_selected.emit(note_id)
-            job.reply(QByteArray(), QByteArray())  # Successfully handle the request
-        except ValueError:
-            job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
-
-
-class AssetUrlSchemeHandler(QWebEngineUrlSchemeHandler):
-    def __init__(self, markdown_editor):
-        super().__init__()
-        self.markdown_editor = markdown_editor
-
-    def requestStarted(self, job: QWebEngineUrlRequestJob):
-        url = job.requestUrl()
-        path = url.path().lstrip('/')
-
-        # Remove 'm/' prefix if present
-        if path.startswith('m/'):
-            path = path[2:]
-
-        if not path:
-            job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
-            return
-
-        # Emit signal to request asset data
-        self.markdown_editor.asset_requested.emit(path, job)
+        if self.scheme_type == "note":
+            try:
+                note_id = int(path)
+                self.markdown_editor.note_selected.emit(note_id)
+                job.reply(QByteArray(), QByteArray())  # Successfully handle the request
+            except ValueError:
+                job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
+        
+        elif self.scheme_type == "asset":
+            # Remove 'm/' prefix if present
+            if path.startswith('m/'):
+                path = path[2:]
+            self.markdown_editor.asset_requested.emit(path, job)
 
 
 class LinkHandler(QWebEnginePage):
@@ -155,12 +142,10 @@ class MarkdownEditor(QWidget):
 
         # Set up WebEngine profile and handlers
         self.profile = QWebEngineProfile.defaultProfile()
-        self.scheme_handler = AssetUrlSchemeHandler(self)
-        self.profile.installUrlSchemeHandler(b"asset", self.scheme_handler)
-        
-        # Install the note scheme handler
-        self.note_scheme_handler = NoteUrlSchemeHandler(self)
-        self.profile.installUrlSchemeHandler(b"note", self.note_scheme_handler)
+        self.asset_handler = CustomUrlSchemeHandler(self, "asset")
+        self.note_handler = CustomUrlSchemeHandler(self, "note") 
+        self.profile.installUrlSchemeHandler(b"asset", self.asset_handler)
+        self.profile.installUrlSchemeHandler(b"note", self.note_handler)
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
