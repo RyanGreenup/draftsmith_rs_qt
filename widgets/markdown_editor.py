@@ -10,22 +10,6 @@ from PySide6.QtWebEngineCore import (
     QWebEngineProfile,
 )
 
-class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.asset_server = "http://server:8888"
-
-    def interceptRequest(self, info: QWebEngineUrlRequestInfo):
-        url = info.requestUrl()
-        path = url.path()
-        
-        print(f"Intercepted URL: {url.toString()}")  # Debug print
-        
-        if path.startswith('/m/'):
-            asset_path = path[3:]  # Remove /m/ prefix
-            new_url = f"{self.asset_server}/assets/download/{asset_path}"
-            print(f"Redirecting to: {new_url}")  # Debug print
-            info.redirect(QUrl(new_url))
 from PySide6.QtWidgets import QWidget, QSplitter, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import (
@@ -44,13 +28,39 @@ from enum import Enum
 from urllib.parse import urlparse, urlunparse
 
 
+class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
+    def __init__(self, parent=None, base_api_url=None):
+        super().__init__(parent)
+        self.base_api_url = base_api_url
+
+    def interceptRequest(self, info: QWebEngineUrlRequestInfo):
+        url = info.requestUrl()
+        path = url.path()
+
+        print(f"Intercepted URL: {url.toString()}")  # Debug print
+
+        if path.startswith("/m/"):
+            asset_path = path[3:]  # Remove /m/ prefix
+            new_url = f"{self.base_api_url}/assets/download/{asset_path}"
+            print(f"Redirecting to: {new_url}")  # Debug print
+            info.redirect(QUrl(new_url))
+
+
 # Define and register the QRC scheme
-qrc_scheme = QWebEngineUrlScheme(b"qrc")
-qrc_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
-qrc_scheme.setFlags(
+note_scheme = QWebEngineUrlScheme(b"qrc")
+note_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
+note_scheme.setFlags(
     QWebEngineUrlScheme.LocalAccessAllowed | QWebEngineUrlScheme.CorsEnabled
 )
-QWebEngineUrlScheme.registerScheme(qrc_scheme)
+QWebEngineUrlScheme.registerScheme(note_scheme)
+
+# Register the note scheme for local links
+note_scheme = QWebEngineUrlScheme(b"note")
+note_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
+note_scheme.setFlags(
+    QWebEngineUrlScheme.LocalAccessAllowed | QWebEngineUrlScheme.CorsEnabled
+)
+QWebEngineUrlScheme.registerScheme(note_scheme)
 
 
 def _resource_to_string(qrc_path: str) -> str:
@@ -82,12 +92,14 @@ class MarkdownEditor(QWidget):
         self.profile = QWebEngineProfile.defaultProfile()
 
         # Add asset URL interceptor
-        self.asset_interceptor = AssetUrlInterceptor(self)
+        self.asset_interceptor = AssetUrlInterceptor(self, "http://eir:37242")
         self.profile.setUrlRequestInterceptor(self.asset_interceptor)
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
-        self.preview.setPage(QWebEnginePage(self.profile, self.preview))  # Use our profile with interceptor
+        self.preview.setPage(
+            QWebEnginePage(self.profile, self.preview)
+        )  # Use our profile with interceptor
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.JavascriptEnabled, True
         )
@@ -136,7 +148,7 @@ class MarkdownEditor(QWidget):
     def set_preview_content(self, html: str):
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-        self.preview.setHtml(styled_html)
+        self.preview.setHtml(styled_html, QUrl("note://"))
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
@@ -197,7 +209,7 @@ class MarkdownEditor(QWidget):
         html = md.convert(self.editor.toPlainText())
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-        self.preview.setHtml(styled_html)
+        self.preview.setHtml(styled_html, QUrl("note://"))
 
     def set_content(self, content: str):
         self.editor.setPlainText(content)
