@@ -136,7 +136,7 @@ class MarkdownEditor(QWidget):
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
-        self.preview.setPage(NoteLinkPage(self.preview, self.profile))
+        self.preview.setPage(NoteLinkPage(self, self.profile))  # Pass self (MarkdownEditor) instead of preview
 
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.JavascriptEnabled, True
