@@ -13,12 +13,13 @@ from PySide6.QtWebEngineCore import (
 class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.asset_server = "http://server:8888"
+        self.asset_server = "http://eir:37242"
 
     def interceptRequest(self, info: QWebEngineUrlRequestInfo):
         url = info.requestUrl()
         path = url.path()
-        
+
+        print(path)
         if path.startswith('/m/'):
             asset_path = path[3:]  # Remove /m/ prefix
             new_url = f"{self.asset_server}/assets/download/{asset_path}"
@@ -77,7 +78,7 @@ class MarkdownEditor(QWidget):
 
         # Set up WebEngine profile and handlers
         self.profile = QWebEngineProfile.defaultProfile()
-        
+
         # Add asset URL interceptor
         self.asset_interceptor = AssetUrlInterceptor(self)
         self.profile.setUrlRequestInterceptor(self.asset_interceptor)
@@ -132,6 +133,7 @@ class MarkdownEditor(QWidget):
     def set_preview_content(self, html: str):
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
+        self.preview.setHtml(styled_html)
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
