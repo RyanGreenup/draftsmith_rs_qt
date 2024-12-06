@@ -41,6 +41,14 @@ asset_scheme.setFlags(
 )
 QWebEngineUrlScheme.registerScheme(asset_scheme)
 
+# Define and register the custom URL scheme for notes
+note_scheme = QWebEngineUrlScheme(b"note")
+note_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
+note_scheme.setFlags(
+    QWebEngineUrlScheme.LocalAccessAllowed | QWebEngineUrlScheme.CorsEnabled
+)
+QWebEngineUrlScheme.registerScheme(note_scheme)
+
 # Define and register the QRC scheme
 qrc_scheme = QWebEngineUrlScheme(b"qrc")
 qrc_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
@@ -48,6 +56,27 @@ qrc_scheme.setFlags(
     QWebEngineUrlScheme.LocalAccessAllowed | QWebEngineUrlScheme.CorsEnabled
 )
 QWebEngineUrlScheme.registerScheme(qrc_scheme)
+
+
+class NoteUrlSchemeHandler(QWebEngineUrlSchemeHandler):
+    def __init__(self, markdown_editor):
+        super().__init__()
+        self.markdown_editor = markdown_editor
+
+    def requestStarted(self, job: QWebEngineUrlRequestJob):
+        url = job.requestUrl()
+        path = url.path().lstrip('/')
+
+        if not path:
+            job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
+            return
+
+        try:
+            note_id = int(path)
+            self.markdown_editor.note_selected.emit(note_id)
+            job.reply(QByteArray(), QByteArray())  # Successfully handle the request
+        except ValueError:
+            job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
 
 
 class AssetUrlSchemeHandler(QWebEngineUrlSchemeHandler):
@@ -128,6 +157,10 @@ class MarkdownEditor(QWidget):
         self.profile = QWebEngineProfile.defaultProfile()
         self.scheme_handler = AssetUrlSchemeHandler(self)
         self.profile.installUrlSchemeHandler(b"asset", self.scheme_handler)
+        
+        # Install the note scheme handler
+        self.note_scheme_handler = NoteUrlSchemeHandler(self)
+        self.profile.installUrlSchemeHandler(b"note", self.note_scheme_handler)
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
