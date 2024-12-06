@@ -75,16 +75,21 @@ class NoteLinkPage(QWebEnginePage):
         super().__init__(profile)
         self.markdown_editor = markdown_editor
         
-    def acceptNavigationRequest(self, url, _type, isMainFrame):
+    def acceptNavigationRequest(self, url: QUrl, nav_type, isMainFrame):
+        url_str = url.toString()
+        print(f"Navigation request: {url_str}")  # Debug print
+        
         if url.scheme() == "note":
             try:
-                # Extract the ID from the path (removes the leading /)
-                note_id = int(url.path()[1:])
-                # Emit through the markdown editor
+                # Handle both note:/42 and note://42
+                path = url.path().strip('/')  # Remove leading/trailing slashes
+                note_id = int(path)
+                print(f"Emitting note_selected for ID: {note_id}")  # Debug print
                 self.markdown_editor.note_selected.emit(note_id)
                 return False  # Prevent actual navigation
             except ValueError:
-                pass
+                print(f"Failed to parse note ID from: {path}")
+                return False
         return True  # Allow other navigation
 
 
