@@ -101,8 +101,6 @@ class TabContent(QWidget):
         self.editor.render_requested.connect(self._handle_preview_request)
         # When user follows a link, it will change the view
         self.editor.note_selected.connect(self._handle_view_request)
-        # Handle asset requests from preview pane
-        self.editor.asset_requested.connect(self._handle_asset_request)
 
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
@@ -217,7 +215,7 @@ class TabContent(QWidget):
 
                 # Create a QBuffer to accumulate streamed content
                 buffer = QByteArray()
-                
+
                 # Stream and accumulate the response content
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
