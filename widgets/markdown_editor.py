@@ -73,15 +73,15 @@ QWebEngineUrlScheme.registerScheme(note_scheme)
 
 class NoteLinkPage(QWebEnginePage):
     note_selected = Signal(int)  # Add signal at class level
-    
+
     def __init__(self, markdown_editor, profile):
         super().__init__(profile)
         self.markdown_editor = markdown_editor
-        
+
     def acceptNavigationRequest(self, url: QUrl, nav_type, isMainFrame):
         url_str = url.toString()
         print(f"Navigation request: {url_str}")  # Debug print
-        
+
         if url.scheme() == "note":
             try:
                 path = url.path().strip('/')
@@ -134,9 +134,8 @@ class MarkdownEditor(QWidget):
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
-        page = NoteLinkPage(self, self.profile)
-        page.note_selected.connect(self.note_selected)  # Connect the signal
-        self.preview.setPage(page)
+        self.preview.setPage(NoteLinkPage(self, self.profile))
+
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.JavascriptEnabled, True
         )
