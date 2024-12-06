@@ -8,6 +8,7 @@ from PySide6.QtWebEngineCore import (
     QWebEngineUrlSchemeHandler,
     QWebEngineUrlRequestJob,
     QWebEngineProfile,
+    QWebEngineNavigationRequest,
 )
 
 from PySide6.QtWidgets import QWidget, QSplitter, QVBoxLayout
@@ -69,6 +70,24 @@ note_scheme.setFlags(
 QWebEngineUrlScheme.registerScheme(note_scheme)
 
 
+class NoteLinkPage(QWebEnginePage):
+    def __init__(self, markdown_editor, profile):
+        super().__init__(profile)
+        self.markdown_editor = markdown_editor
+        
+    def acceptNavigationRequest(self, url, _type, isMainFrame):
+        if url.scheme() == "note":
+            try:
+                # Extract the ID from the path (removes the leading /)
+                note_id = int(url.path()[1:])
+                # Emit through the markdown editor
+                self.markdown_editor.note_selected.emit(note_id)
+                return False  # Prevent actual navigation
+            except ValueError:
+                pass
+        return True  # Allow other navigation
+
+
 def _resource_to_string(qrc_path: str) -> str:
     qrc_file = QFile(qrc_path)
     qrc_file.open(QFile.ReadOnly)
@@ -108,8 +127,8 @@ class MarkdownEditor(QWidget):
         # Create preview with custom link handling
         self.preview = QWebEngineView()
         self.preview.setPage(
-            QWebEnginePage(self.profile, self.preview)
-        )  # Use our profile with interceptor
+            NoteLinkPage(self, self.profile)
+        )  # Use our custom page with note:// handling
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.JavascriptEnabled, True
         )
