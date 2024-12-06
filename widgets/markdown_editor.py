@@ -1,23 +1,39 @@
 from . import static_resources_rc  # pyright:ignore
-from . import katex_resources_rc   # pyright:ignore
+from . import katex_resources_rc  # pyright:ignore
 from PySide6.QtWebEngineCore import (
-    QWebEnginePage, QWebEngineUrlScheme,
-    QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob,
-    QWebEngineProfile
+    QWebEnginePage,
+    QWebEngineUrlScheme,
+    QWebEngineUrlSchemeHandler,
+    QWebEngineUrlRequestJob,
+    QWebEngineProfile,
 )
 from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtCore import (Qt, QTimer, Signal, QUrl, QByteArray, QBuffer,
-                           QIODevice, QFile, QDirIterator, QDir)
+from PySide6.QtCore import (
+    Qt,
+    QTimer,
+    Signal,
+    QUrl,
+    QByteArray,
+    QBuffer,
+    QIODevice,
+    QFile,
+    QDirIterator,
+    QDir,
+)
 import markdown
+from markdown.extensions.wikilinks import WikiLinkExtension
 from widgets.text_edit.neovim_integration import EditorWidget
 from enum import Enum
 from urllib.parse import quote
 
+
 class URLScheme(Enum):
     """URL schemes used in the application"""
+
     ASSET = "asset://local"
     NOTE = "note://local"
+
 
 def make_asset_url(asset_name: str) -> str:
     """Create properly formatted asset URL
@@ -29,7 +45,7 @@ def make_asset_url(asset_name: str) -> str:
         str: Properly formatted asset URL
     """
     # Remove any leading slashes and 'm/' prefix if present
-    clean_name = asset_name.lstrip('/').removeprefix('m/')
+    clean_name = asset_name.lstrip("/").removeprefix("m/")
     return f"{URLScheme.ASSET.value}/m/{quote(clean_name)}"
 
 
@@ -66,7 +82,7 @@ class CustomUrlSchemeHandler(QWebEngineUrlSchemeHandler):
 
     def requestStarted(self, job: QWebEngineUrlRequestJob):
         url = job.requestUrl()
-        path = url.path().lstrip('/')
+        path = url.path().lstrip("/")
 
         if not path:
             job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
@@ -79,10 +95,10 @@ class CustomUrlSchemeHandler(QWebEngineUrlSchemeHandler):
                 job.reply(QByteArray(), QByteArray())  # Successfully handle the request
             except ValueError:
                 job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
-        
+
         elif self.scheme_type == "asset":
             # Remove 'm/' prefix if present
-            if path.startswith('m/'):
+            if path.startswith("m/"):
                 path = path[2:]
             self.markdown_editor.asset_requested.emit(path, job)
 
@@ -98,19 +114,20 @@ class LinkHandler(QWebEnginePage):
         path = url.path()
 
         # Remove trailing slash if present
-        if path.endswith('/'):
+        if path.endswith("/"):
             path = path[:-1]
 
         # Handle note links regardless of current scheme
-        if '/note/' in path:
+        if "/note/" in path:
             try:
-                note_id = int(path.split('/note/')[-1])
+                note_id = int(path.split("/note/")[-1])
                 self.markdown_editor.note_selected.emit(note_id)
                 return False
             except ValueError:
                 pass
 
         return True
+
 
 def _resource_to_string(qrc_path: str) -> str:
     qrc_file = QFile(qrc_path)
@@ -122,16 +139,16 @@ def _resource_to_string(qrc_path: str) -> str:
 
 class MarkdownEditor(QWidget):
     save_requested = Signal()
-    preview_requested = Signal()    # Pull the initial preview
+    preview_requested = Signal()  # Pull the initial preview
     render_requested = Signal(str)  # Send up the content and get back the rendered HTML
-    note_selected = Signal(int)     # Emitted when a note link is clicked
-    asset_requested = Signal(str, QWebEngineUrlRequestJob)  # Emitted when an asset is requested
-
+    note_selected = Signal(int)  # Emitted when a note link is clicked
+    asset_requested = Signal(
+        str, QWebEngineUrlRequestJob
+    )  # Emitted when an asset is requested
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
-
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -143,16 +160,22 @@ class MarkdownEditor(QWidget):
         # Set up WebEngine profile and handlers
         self.profile = QWebEngineProfile.defaultProfile()
         self.asset_handler = CustomUrlSchemeHandler(self, "asset")
-        self.note_handler = CustomUrlSchemeHandler(self, "note") 
+        self.note_handler = CustomUrlSchemeHandler(self, "note")
         self.profile.installUrlSchemeHandler(b"asset", self.asset_handler)
         self.profile.installUrlSchemeHandler(b"note", self.note_handler)
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
         self.preview.setPage(LinkHandler(self))
-        self.preview.settings().setAttribute(self.preview.settings().WebAttribute.JavascriptEnabled, True)
-        self.preview.settings().setAttribute(self.preview.settings().WebAttribute.LocalContentCanAccessRemoteUrls, True)
-        self.preview.settings().setAttribute(self.preview.settings().WebAttribute.LocalContentCanAccessFileUrls, True)
+        self.preview.settings().setAttribute(
+            self.preview.settings().WebAttribute.JavascriptEnabled, True
+        )
+        self.preview.settings().setAttribute(
+            self.preview.settings().WebAttribute.LocalContentCanAccessRemoteUrls, True
+        )
+        self.preview.settings().setAttribute(
+            self.preview.settings().WebAttribute.LocalContentCanAccessFileUrls, True
+        )
         self.preview.setHtml("", QUrl(URLScheme.ASSET.value))
 
         # Add widgets to splitter
@@ -214,7 +237,7 @@ class MarkdownEditor(QWidget):
         # print(css_links)
         # sys.exit()
 
-        return '\n'.join(css_links)
+        return "\n".join(css_links)
 
     def _apply_html_template(self, html: str) -> str:
         css_includes = self._get_css_resources()
@@ -238,10 +261,17 @@ class MarkdownEditor(QWidget):
 
     def update_preview_local(self):
         # Convert markdown to HTML
-        md = markdown.Markdown(extensions=["fenced_code", "tables", "wikilinks", "footnotes"])
+        md = markdown.Markdown(
+            extensions=[
+                "fenced_code",
+                "tables",
+                "footnotes",
+                WikiLinkExtension(base_url="/note/"),
+            ]
+        )
+
         html = md.convert(self.editor.toPlainText())
         styled_html = self._apply_html_template(html)
-
 
         self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
 
@@ -276,7 +306,9 @@ class MarkdownEditor(QWidget):
             else:
                 self.splitter.setSizes([300, 300])
 
-    def set_view_actions(self, maximize_editor_action, maximize_preview_action, remote_rendering_action):
+    def set_view_actions(
+        self, maximize_editor_action, maximize_preview_action, remote_rendering_action
+    ):
         """Connect view actions to the editor"""
         self._maximize_editor_action = maximize_editor_action
         self._maximize_preview_action = maximize_preview_action
@@ -301,5 +333,3 @@ class MarkdownEditor(QWidget):
         cursor = self.editor.textCursor()
         cursor.setPosition(position)
         self.editor.setTextCursor(cursor)
-
-
