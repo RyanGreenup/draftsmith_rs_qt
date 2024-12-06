@@ -64,8 +64,10 @@ class AssetRequestInterceptor(QWebEngineUrlRequestInterceptor):
         # Check if the path matches the needed criteria
         api_scheme = urlparse(self.api_base_url).scheme
         api_netloc = urlparse(self.api_base_url).netloc
+
+        # Pull out the parts of the url
         print(url_parts)
-        if url_parts.path.startswith("/m/"):
+        if url_parts.netloc.startswith("/m/"):
             # Modify the URL path
             new_path = url_parts.path.replace("/m/", self.asset_endpoint)
             new_url_parts = list(url_parts)
@@ -177,7 +179,7 @@ class MarkdownEditor(QWidget):
     def set_preview_content(self, html: str):
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-        self.preview.setHtml(styled_html)
+        self.preview.setHtml(styled_html, QUrl("note://"))
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
@@ -236,8 +238,7 @@ class MarkdownEditor(QWidget):
         html = md.convert(self.editor.toPlainText())
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-
-        self.preview.setHtml(styled_html)
+        self.preview.setHtml(styled_html, QUrl("note://"))
 
     def set_content(self, content: str):
         self.editor.setPlainText(content)
