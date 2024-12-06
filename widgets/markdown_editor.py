@@ -7,7 +7,7 @@ from PySide6.QtWebEngineCore import (
     QWebEngineUrlRequestJob,
     QWebEngineProfile,
 )
-from PySide6.QtWidgets import QWidget, QSplitter, QTextEdit, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QSplitter, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import (
     Qt,
@@ -15,8 +15,6 @@ from PySide6.QtCore import (
     Signal,
     QUrl,
     QByteArray,
-    QBuffer,
-    QIODevice,
     QFile,
     QDirIterator,
     QDir,
@@ -25,7 +23,6 @@ import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
 from widgets.text_edit.neovim_integration import EditorWidget
 from enum import Enum
-from urllib.parse import quote
 
 
 class URLScheme(Enum):
