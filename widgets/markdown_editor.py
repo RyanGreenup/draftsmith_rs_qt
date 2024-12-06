@@ -241,6 +241,7 @@ class MarkdownEditor(QWidget):
 
     def _apply_html_template(self, html: str) -> str:
         css_includes = self._get_css_resources()
+        print(html)
         return f"""<!DOCTYPE html>
         <html>
         <head>
