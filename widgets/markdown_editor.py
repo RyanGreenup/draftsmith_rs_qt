@@ -72,14 +72,16 @@ QWebEngineUrlScheme.registerScheme(note_scheme)
 
 
 class NoteLinkPage(QWebEnginePage):
-    def __init__(self, web_engine, profile):
-        super().__init__(profile, web_engine)  # Set parent
-        self.web_engine = web_engine  # Store correct reference
+    def __init__(self, md_editor_widget, profile):
+        super().__init__(profile, md_editor_widget)  # Set parent
+        self.md_editor_widget = md_editor_widget  # Store correct reference
 
     def acceptNavigationRequest(self, url: QUrl, nav_type, isMainFrame):
         url_str = url.toString()
         print("-----------------------")
+        print(f"Navigation request: {url}")  # Debug print
         print(f"Navigation request: {url.scheme()}")  # Debug print
+        print(f"Navigation request: {url.path()}")  # Debug print
         print(".....................")
 
         if url.scheme() == "note":
@@ -87,7 +89,7 @@ class NoteLinkPage(QWebEnginePage):
                 path = url.path().strip('/')
                 note_id = int(path)
                 print(f"Emitting note_selected for ID: {note_id}")
-                self.note_selected.emit(note_id)  # Use class signal
+                self.md_editor_widget.note_selected.emit(note_id)  # Use widget signal
                 return False  # Prevent navigation
             except ValueError:
                 print(f"Failed to parse note ID from: {path}")
@@ -184,7 +186,7 @@ class MarkdownEditor(QWidget):
     def set_preview_content(self, html: str):
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-        self.preview.setHtml(styled_html, QUrl("note://"))
+        self.preview.setHtml(styled_html, QUrl("note:/"))
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
@@ -245,7 +247,7 @@ class MarkdownEditor(QWidget):
         html = md.convert(self.editor.toPlainText())
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-        self.preview.setHtml(styled_html, QUrl("note://"))
+        self.preview.setHtml(styled_html, QUrl("note:/"))
 
     def set_content(self, content: str):
         self.editor.setPlainText(content)
