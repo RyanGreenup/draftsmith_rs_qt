@@ -35,18 +35,6 @@ class URLScheme(Enum):
     NOTE = "note://local"
 
 
-def make_asset_url(asset_name: str) -> str:
-    """Create properly formatted asset URL
-
-    Args:
-        asset_name: The asset filename/path
-
-    Returns:
-        str: Properly formatted asset URL
-    """
-    # Remove any leading slashes and 'm/' prefix if present
-    clean_name = asset_name.lstrip("/").removeprefix("m/")
-    return f"{URLScheme.ASSET.value}/m/{quote(clean_name)}"
 
 
 # Define and register the custom URL scheme for assets
