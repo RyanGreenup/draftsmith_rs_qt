@@ -9,6 +9,20 @@ from PySide6.QtWebEngineCore import (
     QWebEngineUrlRequestJob,
     QWebEngineProfile,
 )
+
+class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.asset_server = "http://server:8888"
+
+    def interceptRequest(self, info: QWebEngineUrlRequestInfo):
+        url = info.requestUrl()
+        path = url.path()
+        
+        if path.startswith('/m/'):
+            asset_path = path[3:]  # Remove /m/ prefix
+            new_url = f"{self.asset_server}/assets/download/{asset_path}"
+            info.redirect(QUrl(new_url))
 from PySide6.QtWidgets import QWidget, QSplitter, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import (
@@ -63,6 +77,10 @@ class MarkdownEditor(QWidget):
 
         # Set up WebEngine profile and handlers
         self.profile = QWebEngineProfile.defaultProfile()
+        
+        # Add asset URL interceptor
+        self.asset_interceptor = AssetUrlInterceptor(self)
+        self.profile.setUrlRequestInterceptor(self.asset_interceptor)
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
