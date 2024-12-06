@@ -61,19 +61,13 @@ class AssetRequestInterceptor(QWebEngineUrlRequestInterceptor):
         original_url = info.requestUrl().toString()
         url_parts = urlparse(original_url)
 
-        # Check if the path matches the needed criteria
-        api_scheme = urlparse(self.api_base_url).scheme
-        api_netloc = urlparse(self.api_base_url).netloc
-
-        # Pull out the parts of the url
+        # Check if the path starts with /m/
         print(url_parts)
-        if url_parts.netloc.startswith("/m/"):
+        if url_parts.path.startswith("/m/"):
             # Modify the URL path
             new_path = url_parts.path.replace("/m/", self.asset_endpoint)
             new_url_parts = list(url_parts)
-            # new_url_parts[0] = api_scheme # Scheme, e.g. http or https
-            # new_url_parts[1] = api_netloc # Netloc (hostname and port)
-            new_url_parts[1] = "eir:37242" # Netloc (hostname and port)
+            new_url_parts[1] = "eir:37242"  # Netloc (hostname and port)
             new_url_parts[2] = new_path  # Path
 
             # Reconstruct the URL with modifications
