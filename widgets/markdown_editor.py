@@ -38,17 +38,17 @@ class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
         url = info.requestUrl()
         path = url.path()
 
-        print(f"Intercepted URL: {url.toString()}")  # Debug print
+        # print(f"Intercepted URL: {url.toString()}")  # Debug print
 
         if path.startswith("/m/"):
             asset_path = path[3:]  # Remove /m/ prefix
             new_url = f"{self.base_api_url}/assets/download/{asset_path}"
             print(f"Redirecting to: {new_url}")  # Debug print
-            
+
             # Add Authorization header with access token
             if self.access_token:
                 info.setHttpHeader(b"Authorization", f"Bearer {self.access_token}".encode())
-            
+
             info.redirect(QUrl(new_url))
 
 
@@ -101,7 +101,7 @@ class MarkdownEditor(QWidget):
         self.asset_interceptor = AssetUrlInterceptor(
             self,
             "http://eir:37242",
-            access_token=None  # Will need to be set later via a method
+            access_token=None  # TODO Will need to be set later via a method
         )
         self.profile.setUrlRequestInterceptor(self.asset_interceptor)
 
