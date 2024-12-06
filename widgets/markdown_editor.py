@@ -70,18 +70,10 @@ note_scheme.setFlags(
 QWebEngineUrlScheme.registerScheme(note_scheme)
 
 
-class NoteUrlSchemeHandler(QWebEngineUrlSchemeHandler):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-    
-    def requestStarted(self, request: QWebEngineUrlRequestJob):
-        url = request.requestUrl()
-        print(f"Note scheme handler received request for: {url.toString()}")
-        # We don't actually need to handle the request - we just want the navigation event
-        # So we'll fail the request, letting the NoteLinkPage handle navigation
-        request.fail(QWebEngineUrlRequestJob.Error.RequestDenied)
 
 class NoteLinkPage(QWebEnginePage):
+    note_selected = Signal(int)  # Add signal at class level
+    
     def __init__(self, markdown_editor, profile):
         super().__init__(profile)
         self.markdown_editor = markdown_editor
@@ -92,19 +84,15 @@ class NoteLinkPage(QWebEnginePage):
         
         if url.scheme() == "note":
             try:
-                # Handle both note:/42 and note://42
-                path = url.path().strip('/')  # Remove leading/trailing slashes
+                path = url.path().strip('/')
                 note_id = int(path)
-                print(f"Emitting note_selected for ID: {note_id}")  # Debug print
-                self.markdown_editor.note_selected.emit(note_id)
-                return False  # Prevent actual navigation
+                print(f"Emitting note_selected for ID: {note_id}")
+                self.note_selected.emit(note_id)  # Use class signal
+                return False  # Prevent navigation
             except ValueError:
                 print(f"Failed to parse note ID from: {path}")
                 return False
-        elif nav_type == QWebEngineNavigationRequest.NavigationType.NavigationTypeLinkClicked:
-            # For clicked links that aren't note:// URLs, open in default browser
-            return False
-        return True  # Allow other navigation types
+        return True
 
 
 def _resource_to_string(qrc_path: str) -> str:
@@ -135,9 +123,6 @@ class MarkdownEditor(QWidget):
         # Set up WebEngine profile and handlers
         self.profile = QWebEngineProfile.defaultProfile()
 
-        # Add note URL scheme handler
-        self.note_handler = NoteUrlSchemeHandler(self)
-        self.profile.installUrlSchemeHandler(b"note", self.note_handler)
 
         # Add asset URL interceptor
         self.asset_interceptor = AssetUrlInterceptor(
@@ -149,9 +134,9 @@ class MarkdownEditor(QWidget):
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
-        self.preview.setPage(
-            NoteLinkPage(self, self.profile)
-        )  # Use our custom page with note:// handling
+        page = NoteLinkPage(self, self.profile)
+        page.note_selected.connect(self.note_selected)  # Connect the signal
+        self.preview.setPage(page)
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.JavascriptEnabled, True
         )
