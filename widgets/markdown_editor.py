@@ -131,6 +131,21 @@ class MarkdownEditor(QWidget):
         str, QWebEngineUrlRequestJob
     )  # Emitted when an asset is requested
 
+    def replace_asset_links(self, html: str) -> str:
+        """Replace /m/ links with asset:// scheme"""
+        import re
+        # Regex to match href="/m/..." or src="/m/..."
+        pattern = r'(?P<attr>href|src)="(?P<path>/m/[^"]+)"'
+        
+        def repl(match):
+            attr = match.group('attr')
+            path = match.group('path')
+            # Convert '/m/filename' to 'asset://filename'
+            new_path = 'asset://' + path[3:]  # Remove '/m/' prefix
+            return f'{attr}="{new_path}"'
+        
+        return re.sub(pattern, repl, html)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
@@ -199,8 +214,9 @@ class MarkdownEditor(QWidget):
             self.update_preview_local()
 
     def set_preview_content(self, html: str):
+        html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-        self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
+        self.preview.setHtml(styled_html)
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
@@ -257,9 +273,10 @@ class MarkdownEditor(QWidget):
         )
 
         html = md.convert(self.editor.toPlainText())
+        html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
 
-        self.preview.setHtml(styled_html, QUrl(URLScheme.ASSET.value))
+        self.preview.setHtml(styled_html)
 
     def set_content(self, content: str):
         self.editor.setPlainText(content)
