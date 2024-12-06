@@ -16,7 +16,6 @@ from PySide6.QtCore import (
     QTimer,
     Signal,
     QUrl,
-    QByteArray,
     QFile,
     QDirIterator,
     QDir,
@@ -25,6 +24,7 @@ import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
 from widgets.text_edit.neovim_integration import EditorWidget
 from enum import Enum
+from urllib.parse import urlparse, urlunparse
 
 
 # Define and register the QRC scheme
@@ -36,9 +36,6 @@ qrc_scheme.setFlags(
 QWebEngineUrlScheme.registerScheme(qrc_scheme)
 
 
-
-
-
 def _resource_to_string(qrc_path: str) -> str:
     qrc_file = QFile(qrc_path)
     qrc_file.open(QFile.ReadOnly)
@@ -47,61 +44,11 @@ def _resource_to_string(qrc_path: str) -> str:
     return content
 
 
-from urllib.parse import urlparse, urlunparse
-
-class AssetRequestInterceptor(QWebEngineUrlRequestInterceptor):
-    def __init__(self, token, api_base_url="http://eir:37242", asset_endpoint="/assets/download", parent=None):
-        super().__init__(parent)
-        self.token = token
-        self.asset_endpoint = asset_endpoint
-        self.api_base_url = api_base_url
-
-    def interceptRequest(self, info: QWebEngineUrlRequestInfo):
-        print("Intercepting request")
-        original_url = info.requestUrl().toString()
-        url_parts = urlparse(original_url)
-
-        # Check if the path starts with /m/
-        print(url_parts)
-        if url_parts.path.startswith("/m/"):
-            # Modify the URL path
-            new_path = url_parts.path.replace("/m/", self.asset_endpoint)
-            new_url_parts = list(url_parts)
-            new_url_parts[1] = "eir:37242"  # Netloc (hostname and port)
-            new_url_parts[2] = new_path  # Path
-
-            # Reconstruct the URL with modifications
-            new_url = urlunparse(new_url_parts)
-            info.redirect(QUrl(new_url))
-
-        # Set the Authorization header to include the token
-        info.setHttpHeader(b"Authorization", f"Bearer {self.token}".encode())
-
-
-
 class MarkdownEditor(QWidget):
     save_requested = Signal()
     preview_requested = Signal()  # Pull the initial preview
     render_requested = Signal(str)  # Send up the content and get back the rendered HTML
     note_selected = Signal(int)  # Emitted when a note link is clicked
-    asset_requested = Signal(
-        str, QWebEngineUrlRequestJob
-    )  # Emitted when an asset is requested
-
-    # def replace_asset_links(self, html: str) -> str:
-    #     """Replace /m/ links with asset:// scheme"""
-    #     import re
-    #     # Regex to match href="/m/..." or src="/m/..."
-    #     pattern = r'(?P<attr>href|src)="(?P<path>/m/[^"]+)"'
-    #
-    #     def repl(match):
-    #         attr = match.group('attr')
-    #         path = match.group('path')
-    #         # Convert '/m/filename' to 'asset://filename'
-    #         new_path = 'asset://' + path[3:]  # Remove '/m/' prefix
-    #         return f'{attr}="{new_path}"'
-    #
-    #     return re.sub(pattern, repl, html)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -116,11 +63,6 @@ class MarkdownEditor(QWidget):
 
         # Set up WebEngine profile and handlers
         self.profile = QWebEngineProfile.defaultProfile()
-        interceptor = AssetRequestInterceptor(token="todo_implement_tokens", api_base_url="http://eir:37242")
-        self.profile.setUrlRequestInterceptor(interceptor)
-        # self.note_handler = CustomUrlSchemeHandler(self, "note")
-        # self.profile.installUrlSchemeHandler(b"asset", self.asset_handler)
-        # self.profile.installUrlSchemeHandler(b"note", self.note_handler)
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
@@ -133,7 +75,6 @@ class MarkdownEditor(QWidget):
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.LocalContentCanAccessFileUrls, True
         )
-        # self.preview.setHtml("", QUrl(URLScheme.ASSET.value))
 
         # Add widgets to splitter
         self.splitter.addWidget(self.editor)
@@ -173,7 +114,6 @@ class MarkdownEditor(QWidget):
     def set_preview_content(self, html: str):
         # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
-        self.preview.setHtml(styled_html, QUrl("note://"))
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
@@ -225,7 +165,9 @@ class MarkdownEditor(QWidget):
                 "fenced_code",
                 "tables",
                 "footnotes",
-                WikiLinkExtension(base_url="/note/"),  # TODO this is inconsistent, consider using scheme handler and prefixing with a url
+                WikiLinkExtension(
+                    base_url="/note/"
+                ),  # TODO this is inconsistent, consider using scheme handler and prefixing with a url
             ]
         )
 
