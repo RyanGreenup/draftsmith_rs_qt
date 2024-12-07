@@ -23,11 +23,6 @@ class TabContent(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # Instance variables for asset streaming
-        self._current_response = None
-        self._current_stream_device = None
-        self._asset_cache = {}  # Cache for asset responses
-
         self.current_note_id: Optional[int] = None
         self.notes_model: Optional[NotesModel] = None
         self.navigation_model: Optional[NavigationModel] = None
@@ -247,84 +242,3 @@ class TabContent(QWidget):
             actions["use_remote_rendering"],
         )
 
-    def _handle_asset_request(self, asset_name: str, job: "QWebEngineUrlRequestJob"):
-        """Handle requests for assets from the preview pane with proper caching support"""
-        try:
-            base_url = "http://eir:37242"
-
-            # Get the Asset from the API with streaming enabled
-            endpoint = (
-                f"{base_url}/assets/download/{asset_name}"
-                if isinstance(asset_name, str)
-                else f"{base_url}/assets/{asset_name}"
-            )
-
-            # Store response as instance variable to prevent garbage collection
-            self._current_response = requests.get(endpoint, stream=True)
-            self._current_response.raise_for_status()
-
-            # Get content type and other headers
-            content_type = self._current_response.headers.get(
-                "Content-Type", "application/octet-stream"
-            )
-
-            # Create the QWebEngineUrlRequestJob response headers
-            headers = {
-                QNetworkRequest.KnownHeaders.ContentTypeHeader: content_type,
-                QNetworkRequest.KnownHeaders.ContentLengthHeader: int(
-                    self._current_response.headers.get("content-length", 0)
-                ),
-                QNetworkRequest.KnownHeaders.LastModifiedHeader: self._current_response.headers.get(
-                    "last-modified"
-                ),
-                QNetworkRequest.KnownHeaders.ETagHeader: self._current_response.headers.get(
-                    "etag"
-                ),
-            }
-
-            # Add Cache-Control as a raw header since it's not in KnownHeaders
-            raw_headers = {b"Cache-Control": b"public, max-age=3600"}
-
-            # Create streaming device as child of job to manage lifetime
-            class StreamDevice(QIODevice):
-                def __init__(self, response, parent=None):
-                    super().__init__(parent)
-                    self.response = response
-                    self.iterator = response.iter_content(chunk_size=8192)
-
-                def readData(self, maxSize):
-                    try:
-                        chunk = next(self.iterator, None)
-                        return chunk if chunk is not None else bytes()
-                    except Exception:
-                        return bytes()
-
-                def writeData(self, data):
-                    return -1  # Read only device
-
-                def bytesAvailable(self):
-                    return super().bytesAvailable() + (
-                        int(self.response.headers.get("content-length", 0))
-                        if "content-length" in self.response.headers
-                        else 0
-                    )
-
-            # Create streaming device with job as parent
-            self._current_stream_device = StreamDevice(
-                self._current_response, parent=job
-            )
-            if not self._current_stream_device.open(QIODevice.ReadOnly):
-                print(f"Error: Could not open stream device for asset {asset_name}")
-                job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
-                return
-
-            # Create buffer for response
-            buffer = QByteArray()
-            buffer.append(content_type.encode())
-
-            # Send the streaming response with headers
-            job.reply(buffer, self._current_stream_device)
-
-        except Exception as e:
-            print(f"Error fetching asset {asset_name}: {e}")
-            job.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
