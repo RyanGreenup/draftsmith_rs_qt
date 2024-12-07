@@ -231,6 +231,10 @@ class TabContent(QWidget):
         """Get the currently displayed note ID"""
         return self.current_note_id
 
+    def focus_search(self):
+        """Focus the search input in the left sidebar of this tab"""
+        self.left_sidebar.focus_search()
+
     def set_current_note(self, note_id: int) -> None:
         """Set the current note to display"""
         if self.notes_model and note_id is not None:
