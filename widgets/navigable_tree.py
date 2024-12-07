@@ -132,6 +132,10 @@ class NavigableTree(QTreeWidget):
         
         return menu
 
+    def _delete_note(self, note_id: int):
+        """Handle note deletion request"""
+        self.note_deleted.emit(note_id)
+
     def contextMenuEvent(self, event):
         """Handle right click events"""
         current_item = self.currentItem()

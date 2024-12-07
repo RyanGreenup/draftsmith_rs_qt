@@ -196,17 +196,6 @@ class NotesModel(QObject):
 
             self.note_api.delete_note(note_id)
 
-            # Remove from parent's children
-            if note.parent_id and note.parent_id in self.notes:
-                self.notes[note.parent_id].remove_child(note)
-
-            # Remove from root notes if it's there
-            if note in self.root_notes:
-                self.root_notes.remove(note)
-
-            # Remove from notes dictionary
-            del self.notes[note_id]
-
             self.notes_updated.emit()
             return True
 

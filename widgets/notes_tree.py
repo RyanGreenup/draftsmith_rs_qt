@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, Set, List, Union
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
 from PySide6.QtCore import Qt, Signal
 from models.note import Note
 from models.notes_model import NotesModel
@@ -13,6 +13,7 @@ class NotesTreeWidget(NavigableTree):
     note_selected_with_focus = Signal(
         int
     )  # Signal emitted when note should be selected and focused
+    note_deleted = Signal(int)  # Signal emitted when a note should be deleted
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -208,6 +209,24 @@ class NotesTreeWidget(NavigableTree):
 
         # Restore state after update
         self.restore_state(state)
+
+    def _create_context_menu(self) -> QMenu:
+        """Create and return the context menu with note-specific actions"""
+        menu = super()._create_context_menu()
+        
+        # Add a separator before note-specific actions
+        menu.addSeparator()
+        
+        # Add delete action
+        current_item = self.currentItem()
+        if current_item:
+            note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
+            if note_data:
+                # Create delete action directly instead of trying to access main window
+                delete_action = menu.addAction("Delete Note")
+                delete_action.triggered.connect(lambda: self._delete_note(note_data.id))
+        
+        return menu
 
     def _add_note_to_tree(
         self, note: Note, parent: Union[QTreeWidget, QTreeWidgetItem]

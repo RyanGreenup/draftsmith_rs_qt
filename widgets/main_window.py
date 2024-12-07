@@ -168,11 +168,13 @@ class NoteApp(QMainWindow):
         )
 
         if new_note:
-            # Select the new note in tree
-            self.main_content.left_sidebar.tree.select_note_by_id(new_note.id)
-            # Focus the editor
-            self.main_content.editor.setFocus()
-            self.status_bar.showMessage("Created new note", 3000)
+            if isinstance(self.main_content, TabContent):
+                self.notes_model.refresh_notes()
+                # Select the new note in tree
+                self.main_content.left_sidebar.tree.select_note_by_id(new_note.id)
+                # Focus the editor (Let's not do this, it makes it to quickly create a bunch?)
+                self.main_content.editor.editor.setFocus()
+                self.status_bar.showMessage("Created new note", 3000)
         else:
             self.status_bar.showMessage("Failed to create note", 3000)
 

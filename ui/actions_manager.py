@@ -171,4 +171,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["zoom_reset"].setStatusTip("Reset UI scale to default")
     actions["zoom_reset"].setToolTip("Reset UI scale to default")
 
+    # Add delete note action
+    actions["delete_note"] = QAction("&Delete Note", parent)
+    actions["delete_note"].setShortcut("Delete")  # Optional keyboard shortcut
+    actions["delete_note"].setStatusTip("Delete the current note")
+    actions["delete_note"].setToolTip("Delete the current note")
+
     return actions

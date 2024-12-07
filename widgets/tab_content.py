@@ -71,6 +71,9 @@ class TabContent(QWidget):
         self.right_sidebar.forward_links.note_selected_with_focus.connect(
             self._handle_view_request_with_focus
         )
+
+        # Add connection for note deletion
+        self.left_sidebar.tree.note_deleted.connect(self._handle_note_deletion)
         self.right_sidebar.backlinks.note_selected.connect(self._handle_view_request)
         self.right_sidebar.backlinks.note_selected_with_focus.connect(
             self._handle_view_request_with_focus
@@ -170,8 +173,10 @@ class TabContent(QWidget):
             note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
                 content = self.editor.get_content()
-                if self.notes_model.update_note(note_data.id, content=content):
-                    self.note_saved.emit(note_data.id)
+                if self.notes_model:
+                    if self.notes_model.update_note(note_data.id, content=content):
+                        self.note_saved.emit(note_data.id)
+                        self.notes_model.refresh_notes()
 
     def _update_right_sidebar(self, selection_data):
         """Update right sidebar content when a note is selected"""
@@ -248,3 +253,20 @@ class TabContent(QWidget):
             actions["maximize_preview"],
             actions["use_remote_rendering"],
         )
+
+    def _handle_note_deletion(self, note_id: int):
+        """Handle note deletion request"""
+        try:
+            # Use the notes model to delete the note
+            if self.notes_model:
+                # Use the note_api directly from notes_model instead of through .api
+                response = self.notes_model.note_api.delete_note(note_id)
+                # After successful deletion, refresh the model
+                self.notes_model.refresh_notes()
+                # If the deleted note was the current note, clear the editor
+                if self.current_note_id == note_id:
+                    self.current_note_id = None
+                    self.editor.set_content("")
+        except Exception as e:
+            print(f"Error deleting note: {e}")
+            # Here you could add error handling UI feedback
