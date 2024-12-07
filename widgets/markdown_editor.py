@@ -11,7 +11,7 @@ from PySide6.QtWebEngineCore import (
     QWebEngineProfile,
 )
 
-from PySide6.QtWidgets import QWidget, QSplitter, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QWidget, QSplitter, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import (
     Qt,
@@ -105,7 +105,7 @@ class MarkdownEditor(QWidget):
     render_requested = Signal(str)  # Send up the content and get back the rendered HTML
     note_selected = Signal(int)  # Emitted when a note link is clicked
 
-    def __init__(self, api_url: str, parent=None):
+    def __init__(self, api_url: str, dark_mode=False, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
         self._current_scroll_handler = None  # Track current scroll handler
@@ -165,6 +165,12 @@ class MarkdownEditor(QWidget):
         layout.addWidget(self.splitter)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
+
+    def apply_dark_theme(self, dark_mode: bool):
+        print("triggered")
+        self.preview.settings().setAttribute(
+            self.preview.settings().WebAttribute.ForceDarkMode, dark_mode
+        )
 
     def _get_scroll_position(self):
         self.preview.page().runJavaScript(

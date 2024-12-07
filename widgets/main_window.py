@@ -11,6 +11,7 @@ from ui.tab_handler import TabHandler
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
 from widgets.tab_content import TabContent
+from app_config import DARK_QT_MATERIAL_THEME, LIGHT_QT_MATERIAL_THEME
 
 
 class NoteApp(QMainWindow):
@@ -250,13 +251,18 @@ class NoteApp(QMainWindow):
     def toggle_dark_mode(self):
         """Toggle between light and dark themes"""
         from qt_material import apply_stylesheet
-        
-        if self._actions["toggle_dark_mode"].isChecked():
-            apply_stylesheet(self.app(), theme='dark_teal.xml')
+
+        if self.is_dark_mode():
+            apply_stylesheet(self.app(), theme=DARK_QT_MATERIAL_THEME)
         else:
-            apply_stylesheet(self.app(), theme='light_blue.xml')
-        
+            apply_stylesheet(self.app(), theme=LIGHT_QT_MATERIAL_THEME)
+        self.main_content.editor.apply_dark_theme(self.is_dark_mode())
+
         self.status_bar.showMessage("Theme changed", 3000)
+
+    def is_dark_mode(self) -> bool:
+        """Check if dark mode is currently enabled"""
+        return self._actions["toggle_dark_mode"].isChecked()
 
     def app(self):
         """Helper method to get QApplication instance"""
