@@ -1,13 +1,21 @@
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLineEdit, 
-                              QListWidgetItem, QComboBox)
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QLineEdit,
+    QListWidgetItem,
+    QComboBox,
+)
 from PySide6.QtCore import Qt, Signal, QTimer
 from enum import Enum
+
 
 class SearchType(Enum):
     API = "API Search"
     TYPESENSE_HYBRID = "Typesense Hybrid"
-    TYPESENSE_SEMANTIC = "Typesense Semantic" 
+    TYPESENSE_SEMANTIC = "Typesense Semantic"
     TYPESENSE_STANDARD = "Typesense Standard"
+
+
 from PySide6.QtGui import QKeyEvent
 from widgets.right_sidebar import NavigableListWidget
 
@@ -37,7 +45,7 @@ class SearchSidebar(QWidget):
         self.search_type_combo = QComboBox()
         for search_type in SearchType:
             self.search_type_combo.addItem(search_type.value, search_type)
-        
+
         # Search input with placeholder
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search notes...")
@@ -112,7 +120,9 @@ class SearchSidebar(QWidget):
                 results = main_window.notes_model.note_api.search_notes(search_text)
             else:
                 # For not implemented search types
-                item = QListWidgetItem(f"{current_search_type.value} not implemented yet")
+                item = QListWidgetItem(
+                    f"{current_search_type.value} not implemented yet"
+                )
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
                 self.results_list.addItem(item)
                 return

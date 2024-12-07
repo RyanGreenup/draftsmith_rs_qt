@@ -8,10 +8,18 @@ from widgets.main_window import NoteApp
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
+
 @app.command()
 def main(
-    api_url: str = typer.Option("http://eir:37242", "--api-url", "-u", help="Base URL for the API server"),
-    theme: str = typer.Option(None, "--theme", "-t", help="Theme to use (e.g. 'dark_teal.xml', 'light_blue.xml')")
+    api_url: str = typer.Option(
+        "http://eir:37242", "--api-url", "-u", help="Base URL for the API server"
+    ),
+    theme: str = typer.Option(
+        None,
+        "--theme",
+        "-t",
+        help="Theme to use (e.g. 'dark_teal.xml', 'light_blue.xml')",
+    ),
 ):
     """
     Launch the Notes application with specified configuration.
@@ -30,6 +38,7 @@ def main(
     # Apply theme if specified
     if theme:
         from qt_material import apply_stylesheet
+
         apply_stylesheet(qt_app, theme=theme)
     else:
         # Load and apply the default stylesheet
@@ -42,6 +51,7 @@ def main(
 
     window.show()
     sys.exit(qt_app.exec())
+
 
 if __name__ == "__main__":
     app()
