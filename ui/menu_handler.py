@@ -52,8 +52,11 @@ class MenuHandler:
             self.main_window.focus_previous_widget
         )
         self.actions["focus_search"].triggered.connect(
-            lambda: self.main_window.tab_handler.tab_widget.currentWidget().focus_search() 
-            if self.main_window.tab_handler.tab_widget.currentWidget() else None
+            lambda: (
+                self.main_window.tab_handler.tab_widget.currentWidget().focus_search()
+                if self.main_window.tab_handler.tab_widget.currentWidget()
+                else None
+            )
         )
         self.actions["toggle_follow_mode"].triggered.connect(
             self.main_window.toggle_follow_mode

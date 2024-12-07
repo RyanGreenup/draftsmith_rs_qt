@@ -168,8 +168,7 @@ class MarkdownEditor(QWidget):
 
     def _get_scroll_position(self):
         self.preview.page().runJavaScript(
-            "window.scrollY",
-            self._update_preview_with_scroll
+            "window.scrollY", self._update_preview_with_scroll
         )
 
     def _update_preview_with_scroll(self, scroll_pos):
@@ -186,8 +185,6 @@ class MarkdownEditor(QWidget):
         # Start the update timer to prevent too frequent updates
         self.update_timer.start(self.update_delay)  # 500ms delay
 
-
-
     def update_preview(self):
         """
         Update the preview with a new note
@@ -196,19 +193,19 @@ class MarkdownEditor(QWidget):
 
     def set_preview_content(self, html: str):
         styled_html = self._apply_html_template(html)
-        
+
         # Safely disconnect previous handler if it exists
         if self._current_scroll_handler is not None:
             try:
                 self.preview.loadFinished.disconnect(self._current_scroll_handler)
             except TypeError:
                 pass  # Handler was already disconnected
-        
+
         # Create and store new handler
         self._current_scroll_handler = lambda: self.preview.page().runJavaScript(
             f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
         )
-        
+
         # Connect new handler
         self.preview.loadFinished.connect(self._current_scroll_handler)
         self.preview.setHtml(styled_html, QUrl("note:/"))
@@ -272,19 +269,19 @@ class MarkdownEditor(QWidget):
 
         html = md.convert(self.editor.toPlainText())
         styled_html = self._apply_html_template(html)
-        
+
         # Safely disconnect previous handler if it exists
         if self._current_scroll_handler is not None:
             try:
                 self.preview.loadFinished.disconnect(self._current_scroll_handler)
             except TypeError:
                 pass  # Handler was already disconnected
-        
+
         # Create and store new handler
         self._current_scroll_handler = lambda: self.preview.page().runJavaScript(
             f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
         )
-        
+
         # Connect new handler
         self.preview.loadFinished.connect(self._current_scroll_handler)
         self.preview.setHtml(styled_html, QUrl("note:/"))
