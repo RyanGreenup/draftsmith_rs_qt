@@ -1,56 +1,100 @@
+from PySide6.QtCore import QRegularExpression
 from .neovim_integration import EditorWidget
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 import re
 
+BLOCK_MATH_PATTERN = re.compile(r"\$\$(.*?)\$\$", re.DOTALL)
+# TODO is Dotall needed here?
+INLINE_MATH_PATTERN = re.compile(r"(?<!\$)\$((?!\$).+?)(?<!\$)\$", re.DOTALL)
 
 class MarkdownHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super().__init__(parent)
-        
-        # Define highlighting patterns and formats
-        self.highlighting_rules = []
-        
-        # Headers
-        header_format = QTextCharFormat()
-        header_format.setForeground(QColor("#569CD6"))
-        header_format.setFontWeight(QFont.Bold)
-        self.highlighting_rules.append((re.compile(r'^#{1,6}\s.*$'), header_format))
-        
-        # Bold
-        bold_format = QTextCharFormat()
-        bold_format.setFontWeight(QFont.Bold)
-        bold_format.setForeground(QColor("#C586C0"))
-        self.highlighting_rules.append((re.compile(r'\*\*.*?\*\*'), bold_format))
-        self.highlighting_rules.append((re.compile(r'__.*?__'), bold_format))
-        
-        # Italic
-        italic_format = QTextCharFormat()
-        italic_format.setFontItalic(True)
-        italic_format.setForeground(QColor("#9CDCFE"))
-        self.highlighting_rules.append((re.compile(r'\*.*?\*'), italic_format))
-        self.highlighting_rules.append((re.compile(r'_.*?_'), italic_format))
-        
-        # Code blocks
-        code_format = QTextCharFormat()
-        code_format.setForeground(QColor("#CE9178"))
-        code_format.setBackground(QColor("#1E1E1E"))
-        self.highlighting_rules.append((re.compile(r'`.*?`'), code_format))
-        
-        # Links
-        link_format = QTextCharFormat()
-        link_format.setForeground(QColor("#4EC9B0"))
-        self.highlighting_rules.append((re.compile(r'\[.*?\]\(.*?\)'), link_format))
-        
-        # Lists
-        list_format = QTextCharFormat()
-        list_format.setForeground(QColor("#DCDCAA"))
-        self.highlighting_rules.append((re.compile(r'^\s*[\-\*\+]\s'), list_format))
-        self.highlighting_rules.append((re.compile(r'^\s*\d+\.\s'), list_format))
+        # Define the highlighting rules
+        self.highlightingRules = []
+        # If using Native re module, use this list as unicode is handled differently
+        self.highlightingRules_unicode = []
+
+        # Heading format
+        for i in range(1, 7):
+            headingFormat = QTextCharFormat()
+            headingFormat.setFontWeight(QFont.Weight.Bold)
+            headingFormat.setForeground(QColor("blue"))
+            headingFormat.setFontPointSize(24 - i * 2)
+            hashes = "#" * i
+            self.highlightingRules.append(
+                (QRegularExpression(f"^{hashes} .+"), headingFormat)
+            )
+
+        # Inline Math
+        inlineMathFormat = QTextCharFormat()
+        inlineMathFormat.setForeground(QColor("darkGreen"))
+        # Set Background to highlight math
+        inlineMathFormat.setBackground(QColor("lightGray"))
+        self.highlightingRules.append(
+            (QRegularExpression(INLINE_MATH_PATTERN.pattern), inlineMathFormat)
+        )
+
+        # Bold format
+        boldFormat = QTextCharFormat()
+        boldFormat.setFontWeight(QFont.Weight.Bold)
+        self.highlightingRules.append(
+            (QRegularExpression("\\*\\*(.*?)\\*\\*"), boldFormat)
+        )
+        self.highlightingRules.append((QRegularExpression("__(.*?)__"), boldFormat))
+
+        # Italic format
+        italicFormat = QTextCharFormat()
+        italicFormat.setFontItalic(True)
+        self.highlightingRules.append((QRegularExpression("\\*(.*?)\\*"), italicFormat))
+        self.highlightingRules.append((QRegularExpression("_(.*?)_"), italicFormat))
+
+        # Code format
+        codeFormat = QTextCharFormat()
+        # codeFormat.setFontFamily(Config().config["fonts"]["editor"]["mono"])
+        codeFormat.setFontFamily("Fira Code")
+        codeFormat.setForeground(QColor("darkGreen"))
+        self.highlightingRules.append((QRegularExpression("`[^`]+`"), codeFormat))
+        self.highlightingRules.append((QRegularExpression("^\\s*```.*"), codeFormat))
+
+        # Link format
+        linkFormat = QTextCharFormat()
+        linkFormat.setForeground(QColor("darkBlue"))
+        linkFormat.setFontWeight(QFont.Weight.Bold)
+        self.highlightingRules.append(
+            (QRegularExpression("\\[.*?\\]\\(.*?\\)"), linkFormat)
+        )
+        # Wikilinks
+        self.highlightingRules.append(
+            (QRegularExpression("\\[\\[.*?\\]\\]"), linkFormat)
+        )
+
+        # Image format
+        imageFormat = QTextCharFormat()
+        imageFormat.setForeground(QColor("darkMagenta"))
+        self.highlightingRules.append(
+            (QRegularExpression("!\\[.*?\\]\\(.*?\\)"), imageFormat)
+        )
+
+        # List format
+        listFormat = QTextCharFormat()
+        listFormat.setForeground(QColor("brown"))
+        self.highlightingRules.append(
+            (QRegularExpression("^\\s*([-+*])\\s+.*"), listFormat)
+        )
+        self.highlightingRules.append(
+            (QRegularExpression("^\\s*\\d+\\.\\s+.*"), listFormat)
+        )
 
     def highlightBlock(self, text):
-        for pattern, format in self.highlighting_rules:
-            for match in pattern.finditer(text):
-                self.setFormat(match.start(), match.end() - match.start(), format)
+        if text:
+            for pattern, format in self.highlightingRules:
+                iterator = pattern.globalMatch(text)
+                while iterator.hasNext():
+                    match = iterator.next()
+                    index = match.capturedStart()
+                    length = match.capturedLength()
+                    self.setFormat(index, length, format)
 
 
 class MDEditor(EditorWidget):
