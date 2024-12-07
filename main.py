@@ -36,7 +36,6 @@ def main(
     # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-
     # Apply theme if specified
     apply_light_theme()
     # if theme:

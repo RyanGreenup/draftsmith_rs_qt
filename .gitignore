@@ -8,3 +8,4 @@ widgets/__pycache__
 .sass-cache
 api
 widgets/text_edit/__pycache__
+__pycache__
