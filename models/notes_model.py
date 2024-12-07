@@ -197,22 +197,16 @@ class NotesModel(QObject):
             note = self.notes.get(note_id)
             if not note:
                 return False
-
-            # Get parent ID before deletion if it exists
-            parent_id = note.parent.id if note.parent else None
             
+            # Delete from API
             self.note_api.delete_note(note_id)
             
-            # Emit deletion signal before refresh
+            # Emit deletion signal
             self.note_deleted.emit(note_id)
             
-            # Get fresh notes from the server to reflect deletion
+            # Refresh internal state
             self.refresh_notes()
             
-            # If we had a parent, select it after deletion
-            if parent_id and parent_id in self.notes:
-                self.select_note(parent_id)
-                
             return True
 
         except Exception as e:
