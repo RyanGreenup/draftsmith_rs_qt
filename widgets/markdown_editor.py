@@ -191,6 +191,12 @@ class MarkdownEditor(QWidget):
 
     def set_preview_content(self, html: str):
         styled_html = self._apply_html_template(html)
+        # Disconnect any existing handlers
+        try:
+            self.preview.loadFinished.disconnect()
+        except:
+            pass
+        # Connect handler before setting content
         self.preview.loadFinished.connect(
             lambda: self.preview.page().runJavaScript(
                 f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
@@ -257,6 +263,12 @@ class MarkdownEditor(QWidget):
 
         html = md.convert(self.editor.toPlainText())
         styled_html = self._apply_html_template(html)
+        # Disconnect any existing handlers
+        try:
+            self.preview.loadFinished.disconnect()
+        except:
+            pass
+        # Connect handler before setting content  
         self.preview.loadFinished.connect(
             lambda: self.preview.page().runJavaScript(
                 f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
