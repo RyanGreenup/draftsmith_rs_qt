@@ -14,13 +14,13 @@ from widgets.tab_content import TabContent
 
 
 class NoteApp(QMainWindow):
-    def __init__(self, actions: Dict[str, QAction]):
+    def __init__(self, actions: Dict[str, QAction], api_url: str = "http://eir:37242"):
         super().__init__()
         self._actions = actions
         self.setup_window()
 
         # Add notes model and load data
-        self.notes_model = NotesModel("http://eir:37242")
+        self.notes_model = NotesModel(api_url)
 
         # Initialize navigation model
         self.navigation_model = NavigationModel()
