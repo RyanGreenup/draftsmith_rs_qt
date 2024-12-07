@@ -1,5 +1,13 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QListWidgetItem
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLineEdit, 
+                              QListWidgetItem, QComboBox)
 from PySide6.QtCore import Qt, Signal, QTimer
+from enum import Enum
+
+class SearchType(Enum):
+    API = "API Search"
+    TYPESENSE_HYBRID = "Typesense Hybrid"
+    TYPESENSE_SEMANTIC = "Typesense Semantic" 
+    TYPESENSE_STANDARD = "Typesense Standard"
 from PySide6.QtGui import QKeyEvent
 from widgets.right_sidebar import NavigableListWidget
 
@@ -25,6 +33,11 @@ class SearchSidebar(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        # Search type selector
+        self.search_type_combo = QComboBox()
+        for search_type in SearchType:
+            self.search_type_combo.addItem(search_type.value, search_type)
+        
         # Search input with placeholder
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search notes...")
@@ -42,6 +55,7 @@ class SearchSidebar(QWidget):
             self.note_selected_with_focus.emit
         )
 
+        layout.addWidget(self.search_type_combo)
         layout.addWidget(self.search_input)
         layout.addWidget(self.results_list)
 
@@ -73,7 +87,7 @@ class SearchSidebar(QWidget):
         self.search_timer.start()
 
     def _perform_search(self):
-        """Perform the search using the notes model"""
+        """Perform the search using the selected search type"""
         search_text = self.search_input.text()
         self.results_list.clear()
 
@@ -85,13 +99,24 @@ class SearchSidebar(QWidget):
             self.results_list.addItem(item)
             return
 
+        # Get current search type
+        current_search_type = self.search_type_combo.currentData()
+
         # Get notes model from parent widget hierarchy
         main_window = self.window()
         if not main_window or not hasattr(main_window, "notes_model"):
             return
 
         try:
-            results = main_window.notes_model.note_api.search_notes(search_text)
+            if current_search_type == SearchType.API:
+                results = main_window.notes_model.note_api.search_notes(search_text)
+            else:
+                # For not implemented search types
+                item = QListWidgetItem(f"{current_search_type.value} not implemented yet")
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                self.results_list.addItem(item)
+                return
+
             if not results:
                 item = QListWidgetItem("No results found")
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
