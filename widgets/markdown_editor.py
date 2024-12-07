@@ -129,6 +129,7 @@ class MarkdownEditor(QWidget):
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
+        self.current_scroll_position = self.preview.page().scrollPosition()
         self.preview.setPage(
             NoteLinkPage(self, self.profile)
         )  # Pass self (MarkdownEditor) instead of preview
@@ -163,11 +164,36 @@ class MarkdownEditor(QWidget):
         """
         Sync the Preview with the Editor
         """
+        self.restore_scroll_position()
         # When text changes, we want to send the content up for rendering
         if self._remote_rendering_action and self._remote_rendering_action.isChecked():
             self.render_requested.emit(self.editor.toPlainText())
         else:
             self.update_timer.start(0)  # Local preview update
+        self.restore_scroll_position()
+
+
+    def store_scroll_position(self):
+        self.current_scroll_position = self.preview.page().scrollPosition()
+
+    def restore_scroll_position(self):
+        pos = self.current_scroll_position
+
+        contents_size = self.preview.page().contentsSize()
+        scrollable_x = contents_size.width() - self.preview.width()
+        if scrollable_x == 0:
+            perc_x = 0
+        else:
+            perc_x = min(100, round(100 / scrollable_x * pos.x()))
+
+        scrollable_y = contents_size.height() - self.preview.height()
+        if scrollable_y == 0:
+            perc_y = 0
+        else:
+            perc_y = min(100, round(100 / scrollable_y * pos.y()))
+        self.preview.scroll(perc_x, perc_y)
+
+    # [scroll_source]: https://github.com/qutebrowser/qutebrowser/commit/8504d41db3fa30c392da9b0813e9c6791f546b2a
 
     def update_preview(self):
         """
