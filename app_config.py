@@ -24,16 +24,16 @@ def qt_material_extra(density: int):
     }
 
 
-def apply_theme(theme_name: str):
+def apply_theme(theme_name: str, density: int = 0):
     app = QApplication.instance()
     apply_stylesheet(
-        app, theme=theme_name, extra=qt_material_extra(0), css_file="ui/styles/style.qss"
+        app, theme=theme_name, extra=qt_material_extra(density), css_file="ui/styles/style.qss"
     )
 
 
-def apply_light_theme():
-    apply_theme(LIGHT_QT_MATERIAL_THEME)
+def apply_light_theme(density: int = 0):
+    apply_theme(LIGHT_QT_MATERIAL_THEME, density)
 
 
-def apply_dark_theme():
-    apply_theme(DARK_QT_MATERIAL_THEME)
+def apply_dark_theme(density: int = 0):
+    apply_theme(DARK_QT_MATERIAL_THEME, density)

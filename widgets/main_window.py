@@ -18,6 +18,7 @@ class NoteApp(QMainWindow):
     def __init__(self, actions: Dict[str, QAction], api_url: str = "http://eir:37242"):
         super().__init__()
         self._actions = actions
+        self._zoom_level = 0  # Track zoom level
         self.setup_window()
         self.api_url = api_url
 
@@ -251,9 +252,9 @@ class NoteApp(QMainWindow):
     def toggle_dark_mode(self):
         """Toggle between light and dark themes"""
         if self.is_dark_mode():
-            apply_dark_theme()
+            apply_dark_theme(self._zoom_level)
         else:
-            apply_light_theme()
+            apply_light_theme(self._zoom_level)
 
         if isinstance(self.main_content, TabContent):
             self.main_content.editor.apply_dark_theme(self.is_dark_mode())
@@ -266,22 +267,28 @@ class NoteApp(QMainWindow):
 
     def zoom_in(self):
         """Increase the UI scale"""
-        current_scale = self.app().devicePixelRatio()
-        new_scale = min(current_scale + 0.1, 3.0)  # Max zoom of 300%
-        self.app().setDevicePixelRatio(new_scale)
-        self.status_bar.showMessage(f"Zoom: {int(new_scale * 100)}%", 3000)
+        self._zoom_level = min(self._zoom_level + 1, 3)  # Max zoom of +3
+        self._apply_current_theme()
+        self.status_bar.showMessage(f"Zoom level: {self._zoom_level}", 3000)
 
     def zoom_out(self):
         """Decrease the UI scale"""
-        current_scale = self.app().devicePixelRatio()
-        new_scale = max(current_scale - 0.1, 0.5)  # Min zoom of 50%
-        self.app().setDevicePixelRatio(new_scale)
-        self.status_bar.showMessage(f"Zoom: {int(new_scale * 100)}%", 3000)
+        self._zoom_level = max(self._zoom_level - 1, -3)  # Min zoom of -3
+        self._apply_current_theme()
+        self.status_bar.showMessage(f"Zoom level: {self._zoom_level}", 3000)
 
     def zoom_reset(self):
         """Reset the UI scale to default"""
-        self.app().setDevicePixelRatio(1.0)
-        self.status_bar.showMessage("Zoom: 100%", 3000)
+        self._zoom_level = 0
+        self._apply_current_theme()
+        self.status_bar.showMessage("Zoom reset", 3000)
+
+    def _apply_current_theme(self):
+        """Apply the current theme with the current zoom level"""
+        if self.is_dark_mode():
+            apply_dark_theme(self._zoom_level)
+        else:
+            apply_light_theme(self._zoom_level)
 
     def app(self):
         """Helper method to get QApplication instance"""
