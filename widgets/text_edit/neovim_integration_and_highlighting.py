@@ -15,16 +15,17 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         # If using Native re module, use this list as unicode is handled differently
         self.highlightingRules_unicode = []
 
-        # Heading format
-        for i in range(1, 7):
-            headingFormat = QTextCharFormat()
-            headingFormat.setFontWeight(QFont.Weight.Bold)
-            # headingFormat.setForeground(QColor("blue"))
-            headingFormat.setFontPointSize(24 - i * 2)
-            hashes = "#" * i
-            self.highlightingRules.append(
-                (QRegularExpression(f"^{hashes} .+"), headingFormat)
-            )
+        # this has false positive in code blocks
+        # # Heading format
+        # for i in range(1, 7):
+        #     headingFormat = QTextCharFormat()
+        #     headingFormat.setFontWeight(QFont.Weight.Bold)
+        #     # headingFormat.setForeground(QColor("blue"))
+        #     headingFormat.setFontPointSize(24 - i * 2)
+        #     hashes = "#" * i
+        #     self.highlightingRules.append(
+        #         (QRegularExpression(f"^{hashes} .+"), headingFormat)
+        #     )
 
         # Inline Math
         inlineMathFormat = QTextCharFormat()
