@@ -1,6 +1,6 @@
 from typing import Dict
 from models.selection_data import NoteSelectionData
-from PySide6.QtWidgets import QMainWindow, QStatusBar
+from PySide6.QtWidgets import QMainWindow, QStatusBar, QApplication
 from PySide6.QtGui import QAction
 from api.client import Tag
 from PySide6.QtGui import QKeySequence, QShortcut
