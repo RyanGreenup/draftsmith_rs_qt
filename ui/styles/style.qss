@@ -14,3 +14,8 @@ QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{
 QMenuBar:focus, QStatusBar:focus {{
     border: none;
 }}
+
+/* Remove default border from QTextEdit */
+QTextEdit {{
+    border: none;
+}}
