@@ -13,14 +13,6 @@ QT_MATERIAL_extra = {
 
 def apply_theme(theme_name: str):
     app = QApplication.instance()
-    if "dark" in theme_name:
-        app.setStyle("Fusion")  # Ensures consistent behavior
-        app.setPalette(app.style().standardPalette())
-        app.setPaletteColor = "dark"
-    else:
-        app.setStyle("Fusion")
-        app.setPalette(app.style().standardPalette())
-        app.setPaletteColor = "light"
     apply_stylesheet(
         app, theme=theme_name, extra=QT_MATERIAL_extra, css_file="ui/styles/style.qss"
     )
