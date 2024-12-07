@@ -24,7 +24,7 @@ from PySide6.QtCore import (
 )
 import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
-from widgets.text_edit.neovim_integration import EditorWidget
+from widgets.text_edit.neovim_integration_and_highlighting import MDEditor
 
 
 # Register custom schemes for the Web Engine Preview
@@ -113,13 +113,13 @@ class MarkdownEditor(QWidget):
         # Also the scroll doesn't bounce around, it's managed by JS not Py
         # so if updates are too quick the scroll position is lost and resets
         # to the top. Overall this buffer is a lot smoother.
-        self.update_delay = 400
+        self.update_delay = 200
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
 
         # Create editor
-        self.editor = EditorWidget()
+        self.editor = MDEditor()
         self.editor.textChanged.connect(self.on_text_changed)
 
         # Set up WebEngine profile and handlers
