@@ -1,16 +1,16 @@
 /* Style for widgets that can receive focus */
-QWidget:focus {
+QWidget:focus {{
     border: 2px solid #2196F3;  /* Material Blue color */
     border-radius: 4px;
-}
+}}
 
 /* Prevent double borders on already bordered widgets */
-QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{
     border: 2px solid #2196F3;
     border-radius: 4px;
-}
+}}
 
 /* Exclude certain widgets from focus styling */
-QMenuBar:focus, QStatusBar:focus {
+QMenuBar:focus, QStatusBar:focus {{
     border: none;
-}
+}}
