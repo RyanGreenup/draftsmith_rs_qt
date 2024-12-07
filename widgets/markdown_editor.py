@@ -169,7 +169,7 @@ class MarkdownEditor(QWidget):
     def _update_preview_with_scroll(self, scroll_pos):
         self._last_scroll = scroll_pos
         if self._remote_rendering_action and self._remote_rendering_action.isChecked():
-            self.preview_requested.emit()
+            self.render_requested.emit(self.editor.toPlainText())
         else:
             self.update_preview_local()
 
