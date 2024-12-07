@@ -177,7 +177,8 @@ class MarkdownEditor(QWidget):
         """
         Sync the Preview with the Editor
         """
-        self._get_scroll_position()  # This will trigger the update chain
+        # Start the update timer to prevent too frequent updates
+        self.update_timer.start(500)  # 500ms delay
 
 
 
@@ -185,10 +186,7 @@ class MarkdownEditor(QWidget):
         """
         Update the preview with a new note
         """
-        if self._remote_rendering_action and self._remote_rendering_action.isChecked():
-            self.preview_requested.emit()  # Request preview from controller
-        else:
-            self.update_preview_local()
+        self._get_scroll_position()  # This will trigger the update chain through _update_preview_with_scroll
 
     def set_preview_content(self, html: str):
         styled_html = self._apply_html_template(html)
