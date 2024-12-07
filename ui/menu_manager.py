@@ -30,6 +30,7 @@ def create_file_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     file_menu.addAction(actions["new"])
     file_menu.addAction(actions["open"])
     file_menu.addAction(actions["save"])
+    file_menu.addAction(actions["delete_note"])
     file_menu.addAction(actions["exit"])
 
     file_menu.addSeparator()
