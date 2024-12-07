@@ -15,8 +15,8 @@ QMenuBar:focus, QStatusBar:focus {{
     border: none;
 }}
 
-/* Remove default border and reset text color for QTextEdit */
+/* Remove default border and set text color based on theme */
 QTextEdit {{
     border: none;
-    color: palette(text);
+    color: palette(light) ? black : white;
 }}
