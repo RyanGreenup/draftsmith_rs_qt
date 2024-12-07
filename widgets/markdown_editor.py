@@ -108,7 +108,11 @@ class MarkdownEditor(QWidget):
     def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
-        self.update_delay = 0
+        # The delay stops flickering images when typing, but still updates quickly
+        # Also the scroll doesn't bounce around, it's managed by JS not Py
+        # so if updates are too quick the scroll position is lost and resets
+        # to the top. Overall this buffer is a lot smoother.
+        self.update_delay = 400
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -268,7 +272,7 @@ class MarkdownEditor(QWidget):
             self.preview.loadFinished.disconnect()
         except:
             pass
-        # Connect handler before setting content  
+        # Connect handler before setting content
         self.preview.loadFinished.connect(
             lambda: self.preview.page().runJavaScript(
                 f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
