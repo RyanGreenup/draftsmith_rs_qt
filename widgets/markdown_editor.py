@@ -167,7 +167,6 @@ class MarkdownEditor(QWidget):
         self.setLayout(layout)
 
     def apply_dark_theme(self, dark_mode: bool):
-        print("triggered")
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.ForceDarkMode, dark_mode
         )

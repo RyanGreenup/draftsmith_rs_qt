@@ -5,6 +5,7 @@ import sys
 from ui.actions_manager import create_actions
 from ui.toolbar_manager import create_toolbar
 from widgets.main_window import NoteApp
+from app_config import apply_dark_theme, apply_light_theme
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
@@ -35,15 +36,18 @@ def main(
     # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    # Apply theme if specified
-    if theme:
-        from qt_material import apply_stylesheet
 
-        apply_stylesheet(qt_app, theme=theme)
-    else:
-        # Load and apply the default stylesheet
-        with open("ui/styles/style.qss", "r") as file:
-            qt_app.setStyleSheet(file.read())
+    # Apply theme if specified
+    apply_light_theme()
+    # if theme:
+    #     # Must be imported AFTER PySide6 / PyQt
+    #     from qt_material import apply_stylesheet
+    #
+    #     apply_stylesheet(qt_app, theme=theme)
+    # else:
+    #     # Load and apply the default stylesheet
+    #     with open("ui/styles/style.qss", "r") as file:
+    #         qt_app.setStyleSheet(file.read())
 
     # Add toolbar using actions
     toolbar = create_toolbar(window, actions)

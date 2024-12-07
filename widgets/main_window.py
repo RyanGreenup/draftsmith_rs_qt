@@ -11,7 +11,7 @@ from ui.tab_handler import TabHandler
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
 from widgets.tab_content import TabContent
-from app_config import DARK_QT_MATERIAL_THEME, LIGHT_QT_MATERIAL_THEME
+from app_config import apply_dark_theme, apply_light_theme
 
 
 class NoteApp(QMainWindow):
@@ -250,13 +250,13 @@ class NoteApp(QMainWindow):
 
     def toggle_dark_mode(self):
         """Toggle between light and dark themes"""
-        from qt_material import apply_stylesheet
-
         if self.is_dark_mode():
-            apply_stylesheet(self.app(), theme=DARK_QT_MATERIAL_THEME)
+            apply_dark_theme()
         else:
-            apply_stylesheet(self.app(), theme=LIGHT_QT_MATERIAL_THEME)
-        self.main_content.editor.apply_dark_theme(self.is_dark_mode())
+            apply_light_theme()
+
+        if isinstance(self.main_content, TabContent):
+            self.main_content.editor.apply_dark_theme(self.is_dark_mode())
 
         self.status_bar.showMessage("Theme changed", 3000)
 
