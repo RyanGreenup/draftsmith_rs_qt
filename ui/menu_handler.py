@@ -73,6 +73,11 @@ class MenuHandler:
             self.main_window.toggle_dark_mode
         )
 
+        # Connect zoom actions
+        self.actions["zoom_in"].triggered.connect(self.main_window.zoom_in)
+        self.actions["zoom_out"].triggered.connect(self.main_window.zoom_out)
+        self.actions["zoom_reset"].triggered.connect(self.main_window.zoom_reset)
+
         # Connect tab state actions
         self.actions["save_tabs_state"].triggered.connect(
             self.main_window.tab_handler.save_tabs_state

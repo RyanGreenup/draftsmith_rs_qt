@@ -40,6 +40,14 @@ def create_file_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     return file_menu
 
 
+def create_zoom_menu(parent, actions: Dict[str, QAction]) -> QMenu:
+    """Create a Zoom submenu"""
+    zoom_menu = QMenu("&Zoom", parent)
+    zoom_menu.addAction(actions["zoom_in"])
+    zoom_menu.addAction(actions["zoom_out"])
+    zoom_menu.addAction(actions["zoom_reset"])
+    return zoom_menu
+
 def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     """Create a View menu using existing actions"""
     view_menu = QMenu("&View", parent)
@@ -67,6 +75,9 @@ def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     view_menu.addSeparator()
     view_menu.addAction(actions["use_remote_rendering"])
     view_menu.addAction(actions["start_neovim"])
+
+    # Add zoom menu before the final separator
+    view_menu.addMenu(create_zoom_menu(parent, actions))
 
     # Add the Refresh action
     view_menu.addSeparator()

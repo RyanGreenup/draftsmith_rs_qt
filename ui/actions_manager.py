@@ -155,4 +155,20 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["toggle_dark_mode"].setStatusTip("Toggle between light and dark themes")
     actions["toggle_dark_mode"].setToolTip("Toggle between light and dark themes")
 
+    # Add zoom/scale actions
+    actions["zoom_in"] = QAction("Zoom &In", parent)
+    actions["zoom_in"].setShortcut("Ctrl+=")  # Common zoom in shortcut
+    actions["zoom_in"].setStatusTip("Increase UI scale")
+    actions["zoom_in"].setToolTip("Increase UI scale")
+
+    actions["zoom_out"] = QAction("Zoom &Out", parent)
+    actions["zoom_out"].setShortcut("Ctrl+-")  # Common zoom out shortcut
+    actions["zoom_out"].setStatusTip("Decrease UI scale")
+    actions["zoom_out"].setToolTip("Decrease UI scale")
+
+    actions["zoom_reset"] = QAction("Reset &Zoom", parent)
+    actions["zoom_reset"].setShortcut("Ctrl+0")  # Common zoom reset shortcut
+    actions["zoom_reset"].setStatusTip("Reset UI scale to default")
+    actions["zoom_reset"].setToolTip("Reset UI scale to default")
+
     return actions

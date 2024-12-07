@@ -264,6 +264,25 @@ class NoteApp(QMainWindow):
         """Check if dark mode is currently enabled"""
         return self._actions["toggle_dark_mode"].isChecked()
 
+    def zoom_in(self):
+        """Increase the UI scale"""
+        current_scale = self.app().devicePixelRatio()
+        new_scale = min(current_scale + 0.1, 3.0)  # Max zoom of 300%
+        self.app().setDevicePixelRatio(new_scale)
+        self.status_bar.showMessage(f"Zoom: {int(new_scale * 100)}%", 3000)
+
+    def zoom_out(self):
+        """Decrease the UI scale"""
+        current_scale = self.app().devicePixelRatio()
+        new_scale = max(current_scale - 0.1, 0.5)  # Min zoom of 50%
+        self.app().setDevicePixelRatio(new_scale)
+        self.status_bar.showMessage(f"Zoom: {int(new_scale * 100)}%", 3000)
+
+    def zoom_reset(self):
+        """Reset the UI scale to default"""
+        self.app().setDevicePixelRatio(1.0)
+        self.status_bar.showMessage("Zoom: 100%", 3000)
+
     def app(self):
         """Helper method to get QApplication instance"""
         return QApplication.instance()
