@@ -63,6 +63,8 @@ def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
 
     # Add remote rendering toggle before the final separator and refresh
     view_menu.addSeparator()
+    view_menu.addAction(actions["toggle_dark_mode"])
+    view_menu.addSeparator()
     view_menu.addAction(actions["use_remote_rendering"])
     view_menu.addAction(actions["start_neovim"])
 

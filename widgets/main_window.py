@@ -247,6 +247,21 @@ class NoteApp(QMainWindow):
             current_tab.editor.editor.start_nvim_session()
             self.status_bar.showMessage("Neovim server started", 3000)
 
+    def toggle_dark_mode(self):
+        """Toggle between light and dark themes"""
+        from qt_material import apply_stylesheet
+        
+        if self._actions["toggle_dark_mode"].isChecked():
+            apply_stylesheet(self.app(), theme='dark_teal.xml')
+        else:
+            apply_stylesheet(self.app(), theme='light_blue.xml')
+        
+        self.status_bar.showMessage("Theme changed", 3000)
+
+    def app(self):
+        """Helper method to get QApplication instance"""
+        return QApplication.instance()
+
     def _trigger_save_current_tab(self):
         """Trigger save on the currently active tab"""
         current_tab = self.tab_handler.tab_widget.currentWidget()

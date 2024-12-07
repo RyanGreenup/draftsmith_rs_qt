@@ -68,6 +68,11 @@ class MenuHandler:
             self.main_window.start_neovim_server
         )
 
+        # Connect dark mode action
+        self.actions["toggle_dark_mode"].triggered.connect(
+            self.main_window.toggle_dark_mode
+        )
+
         # Connect tab state actions
         self.actions["save_tabs_state"].triggered.connect(
             self.main_window.tab_handler.save_tabs_state

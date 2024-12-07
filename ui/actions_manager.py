@@ -149,4 +149,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
         "Toggle between remote and local markdown rendering"
     )
 
+    # Add dark mode action
+    actions["toggle_dark_mode"] = QAction("&Dark Mode", parent)
+    actions["toggle_dark_mode"].setCheckable(True)
+    actions["toggle_dark_mode"].setStatusTip("Toggle between light and dark themes")
+    actions["toggle_dark_mode"].setToolTip("Toggle between light and dark themes")
+
     return actions
