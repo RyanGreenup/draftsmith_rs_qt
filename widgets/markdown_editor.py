@@ -108,6 +108,7 @@ class MarkdownEditor(QWidget):
     def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
+        self._current_scroll_handler = None  # Track current scroll handler
         # The delay stops flickering images when typing, but still updates quickly
         # Also the scroll doesn't bounce around, it's managed by JS not Py
         # so if updates are too quick the scroll position is lost and resets
@@ -195,17 +196,21 @@ class MarkdownEditor(QWidget):
 
     def set_preview_content(self, html: str):
         styled_html = self._apply_html_template(html)
-        # Disconnect any existing handlers
-        try:
-            self.preview.loadFinished.disconnect()
-        except:
-            pass
-        # Connect handler before setting content
-        self.preview.loadFinished.connect(
-            lambda: self.preview.page().runJavaScript(
-                f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
-            )
+        
+        # Safely disconnect previous handler if it exists
+        if self._current_scroll_handler is not None:
+            try:
+                self.preview.loadFinished.disconnect(self._current_scroll_handler)
+            except TypeError:
+                pass  # Handler was already disconnected
+        
+        # Create and store new handler
+        self._current_scroll_handler = lambda: self.preview.page().runJavaScript(
+            f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
         )
+        
+        # Connect new handler
+        self.preview.loadFinished.connect(self._current_scroll_handler)
         self.preview.setHtml(styled_html, QUrl("note:/"))
 
     def _get_css_resources(self) -> str:
@@ -267,17 +272,21 @@ class MarkdownEditor(QWidget):
 
         html = md.convert(self.editor.toPlainText())
         styled_html = self._apply_html_template(html)
-        # Disconnect any existing handlers
-        try:
-            self.preview.loadFinished.disconnect()
-        except:
-            pass
-        # Connect handler before setting content
-        self.preview.loadFinished.connect(
-            lambda: self.preview.page().runJavaScript(
-                f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
-            )
+        
+        # Safely disconnect previous handler if it exists
+        if self._current_scroll_handler is not None:
+            try:
+                self.preview.loadFinished.disconnect(self._current_scroll_handler)
+            except TypeError:
+                pass  # Handler was already disconnected
+        
+        # Create and store new handler
+        self._current_scroll_handler = lambda: self.preview.page().runJavaScript(
+            f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
         )
+        
+        # Connect new handler
+        self.preview.loadFinished.connect(self._current_scroll_handler)
         self.preview.setHtml(styled_html, QUrl("note:/"))
 
     def set_content(self, content: str):
