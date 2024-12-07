@@ -69,6 +69,11 @@ class NoteApp(QMainWindow):
             self._trigger_save_current_tab
         )
 
+        # Add connection for delete action
+        self.menu_handler.actions["delete_note"].triggered.connect(
+            self._trigger_delete_current_note
+        )
+
         self.setup_command_palette()
 
     def setup_window(self):
@@ -291,6 +296,16 @@ class NoteApp(QMainWindow):
             apply_dark_theme(self._zoom_level)
         else:
             apply_light_theme(self._zoom_level)
+
+    def _trigger_delete_current_note(self):
+        """Trigger deletion of the currently viewed note"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            # Get the current note ID from the tab
+            note_id = current_tab.get_current_note_id()
+            if note_id is not None:
+                # Use existing deletion logic through the tab
+                current_tab._handle_note_deletion(note_id)
 
     def app(self):
         """Helper method to get QApplication instance"""
