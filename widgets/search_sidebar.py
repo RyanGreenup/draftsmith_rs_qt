@@ -28,7 +28,6 @@ class SearchSidebar(QWidget):
         # Search input with placeholder
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search notes...")
-        self.search_input.returnPressed.connect(self.handle_return)
 
         # Results list
         self.results_list = NavigableListWidget()
@@ -109,14 +108,6 @@ class SearchSidebar(QWidget):
             item = QListWidgetItem("Error performing search")
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
             self.results_list.addItem(item)
-
-    def handle_return(self, event: QKeyEvent) -> bool:
-        """Handle return/enter press in search input"""
-        if self.results_list.count() > 0:
-            self.results_list.setCurrentRow(0)
-            self.results_list.setFocus()
-            return True
-        return False
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard events"""
