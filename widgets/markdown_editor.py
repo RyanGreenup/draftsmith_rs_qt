@@ -105,7 +105,7 @@ class MarkdownEditor(QWidget):
     render_requested = Signal(str)  # Send up the content and get back the rendered HTML
     note_selected = Signal(int)  # Emitted when a note link is clicked
 
-    def __init__(self, parent=None):
+    def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
 
@@ -122,7 +122,7 @@ class MarkdownEditor(QWidget):
         # Add asset URL interceptor
         self.asset_interceptor = AssetUrlInterceptor(
             self,
-            "http://eir:37242",
+            base_api_url=api_url,
             access_token=None,  # TODO Will need to be set later via a method
         )
         self.profile.setUrlRequestInterceptor(self.asset_interceptor)

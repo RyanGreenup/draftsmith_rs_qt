@@ -18,6 +18,7 @@ class NoteApp(QMainWindow):
         super().__init__()
         self._actions = actions
         self.setup_window()
+        self.api_url = api_url
 
         # Add notes model and load data
         self.notes_model = NotesModel(api_url)

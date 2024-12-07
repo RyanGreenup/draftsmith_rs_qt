@@ -21,18 +21,19 @@ class TabContent(QWidget):
 
     note_saved = Signal(int)  # Emits note_id when saved
 
-    def __init__(self, parent=None):
+    def __init__(self, base_url: str, parent=None):
         super().__init__(parent)
         self.current_note_id: Optional[int] = None
         self.notes_model: Optional[NotesModel] = None
         self.navigation_model: Optional[NavigationModel] = None
         self.view_actions: Optional[Dict[str, QAction]] = None
+        self.base_url = base_url
 
         # Create components
         self.left_sidebar = LeftSidebar()
         self.right_sidebar = RightSidebar()
         # Create the MarkdownEditor Region
-        self.editor = MarkdownEditor()
+        self.editor = MarkdownEditor(self.base_url)
         # NOTE this has:
         # .editor: QTextEdit
         # .preview: QWebEngineView
@@ -189,7 +190,6 @@ class TabContent(QWidget):
             content: str
             format: Optional[Literal["text", "html", "pdf"]] = None
 
-        self.base_url = "http://eir:37242"
         if self.notes_model and (note_id := self.current_note_id) is not None:
             format = "html"
             try:

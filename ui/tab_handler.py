@@ -14,6 +14,7 @@ class TabHandler:
         self._last_tree_state: Optional[Dict[str, Any]] = None
         self._tab_note_ids: Dict[int, int] = {}  # Map tab index to note ID
         self.state_file = Path.home() / ".config" / "draftsmith_qt" / "tab_state.json"
+        self.api_url = main_window.api_url
 
     def setup_tabs(self):
         """Initialize tabs and set up central widget"""
@@ -42,7 +43,7 @@ class TabHandler:
     def create_new_tab(self, title: str = "New Tab") -> TabContent:
         """Create a new tab with its own view implementation"""
         # Create new tab content
-        tab_content = TabContent()
+        tab_content = TabContent(base_url=self.api_url)
 
         # Connect to models
         tab_content.set_model(self.main_window.notes_model)

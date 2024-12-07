@@ -3,11 +3,12 @@ from .main_content import MainContent
 
 
 class NotesTabWidget(QTabWidget):
-    def __init__(self, parent=None):
+    def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
         self.setTabsClosable(True)
         self.setMovable(True)
         self.tabCloseRequested.connect(self.close_tab)
+        self.api_url = api_url
 
     def add_new_tab(self, title="New Tab"):
         """Create a new tab with MainContent"""
@@ -16,7 +17,7 @@ class NotesTabWidget(QTabWidget):
         self.setCurrentIndex(index)
 
         # Initialize models
-        tab_content.initialize_notes_model("http://eir:37242")
+        tab_content.initialize_notes_model(self.api_url)
 
         # Get navigation model from main window
         main_window = self.window()

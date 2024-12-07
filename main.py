@@ -6,7 +6,7 @@ from ui.actions_manager import create_actions
 from ui.toolbar_manager import create_toolbar
 from widgets.main_window import NoteApp
 
-app = typer.Typer()
+app = typer.Typer(pretty_exceptions_enable=False)
 
 @app.command()
 def main(
