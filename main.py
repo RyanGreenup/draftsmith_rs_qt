@@ -21,7 +21,6 @@ if __name__ == "__main__":
     # Allow C-c to kill app
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-
     # setup stylesheet
     # apply_stylesheet(app, theme='dark_teal.xml')
     # apply_stylesheet(app, theme='light_blue.xml')

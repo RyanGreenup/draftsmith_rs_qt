@@ -7,10 +7,10 @@ from utils.key_constants import Key
 
 class ReturnKeyHandler(Protocol):
     """Protocol for handling return key press behavior"""
-    
+
     def handle_return(self, event: QKeyEvent) -> bool:
         """Handle return key press
-        
+
         Returns:
             bool: True if the event was handled, False otherwise
         """
@@ -21,7 +21,9 @@ class NavigableListWidget(QListWidget):
     """Base class for list widgets with keyboard navigation"""
 
     note_selected = Signal(int)  # Signal emitted when a note is selected
-    note_selected_with_focus = Signal(int)  # Signal emitted when a note should be selected and focused
+    note_selected_with_focus = Signal(
+        int
+    )  # Signal emitted when a note should be selected and focused
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -86,4 +88,3 @@ class NavigableListWidget(QListWidget):
             event.accept()
         else:
             super().keyPressEvent(event)
-

@@ -65,7 +65,7 @@ def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     view_menu.addSeparator()
     view_menu.addAction(actions["use_remote_rendering"])
     view_menu.addAction(actions["start_neovim"])
-    
+
     # Add the Refresh action
     view_menu.addSeparator()
     view_menu.addAction(actions["refresh"])

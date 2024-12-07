@@ -24,7 +24,7 @@ class CommandPalette(PopupPalette):
         for menu in menubar.findChildren(QMenu):
             # For each menu, get its actions recursively
             self._collect_actions_from_menu(menu)
-        
+
         # Clear and repopulate the results list
         self.results_list.clear()
         for action in self._actions:
@@ -37,7 +37,9 @@ class CommandPalette(PopupPalette):
         for action in menu.actions():
             if action.menu():  # If action has submenu, recurse into it
                 self._collect_actions_from_menu(action.menu())
-            elif action.text() and action.isEnabled():  # Only add enabled actions with text
+            elif (
+                action.text() and action.isEnabled()
+            ):  # Only add enabled actions with text
                 self._actions.append(action)
 
     def get_all_items(self) -> List[QAction]:

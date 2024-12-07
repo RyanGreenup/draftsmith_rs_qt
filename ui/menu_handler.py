@@ -51,14 +51,12 @@ class MenuHandler:
         self.actions["focus_previous"].triggered.connect(
             self.main_window.focus_previous_widget
         )
-        self.actions["focus_search"].triggered.connect(
-            self.main_window.focus_search
-        )
+        self.actions["focus_search"].triggered.connect(self.main_window.focus_search)
         self.actions["toggle_follow_mode"].triggered.connect(
             self.main_window.toggle_follow_mode
         )
         self.actions["refresh"].triggered.connect(self.main_window.refresh_model)
-        
+
         # Connect neovim action
         self.actions["start_neovim"].triggered.connect(
             self.main_window.start_neovim_server

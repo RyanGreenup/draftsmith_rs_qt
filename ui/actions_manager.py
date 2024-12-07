@@ -81,7 +81,9 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
 
     actions["toggle_follow_mode"] = QAction("Toggle &Follow Mode", parent)
     actions["toggle_follow_mode"].setShortcut("Ctrl+F")
-    actions["toggle_follow_mode"].setStatusTip("Toggle automatic note preview when navigating")
+    actions["toggle_follow_mode"].setStatusTip(
+        "Toggle automatic note preview when navigating"
+    )
     actions["toggle_follow_mode"].setCheckable(True)
 
     actions["maximize_editor"] = QAction("Ma&ximize Editor", parent)
@@ -118,8 +120,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["save_tabs_state"].setToolTip("Save the current arrangement of tabs")
 
     actions["restore_tabs_state"] = QAction("&Restore Tabs State", parent)
-    actions["restore_tabs_state"].setShortcut("Ctrl+Alt+R") 
-    actions["restore_tabs_state"].setStatusTip("Restore previously saved tab arrangement")
+    actions["restore_tabs_state"].setShortcut("Ctrl+Alt+R")
+    actions["restore_tabs_state"].setStatusTip(
+        "Restore previously saved tab arrangement"
+    )
     actions["restore_tabs_state"].setToolTip("Restore previously saved tab arrangement")
 
     # Add refresh action
@@ -138,7 +142,11 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["use_remote_rendering"] = QAction("Use &Remote Rendering", parent)
     actions["use_remote_rendering"].setCheckable(True)
     actions["use_remote_rendering"].setChecked(True)  # Default to remote rendering
-    actions["use_remote_rendering"].setStatusTip("Toggle between remote and local markdown rendering")
-    actions["use_remote_rendering"].setToolTip("Toggle between remote and local markdown rendering")
+    actions["use_remote_rendering"].setStatusTip(
+        "Toggle between remote and local markdown rendering"
+    )
+    actions["use_remote_rendering"].setToolTip(
+        "Toggle between remote and local markdown rendering"
+    )
 
     return actions

@@ -1257,13 +1257,13 @@ class AssetAPI(API):
     def download_asset_data(self, asset_id: int | str) -> requests.Response:
         """
         Download an asset by its ID or filename and return the response object
-        
+
         Args:
             asset_id: The ID of the asset to download or its filename (e.g. 'icon.png')
-            
+
         Returns:
             requests.Response: Response object containing the asset data
-            
+
         Raises:
             requests.exceptions.RequestException: If the request fails
             requests.exceptions.HTTPError: If the asset is not found (404)

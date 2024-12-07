@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional, List
 
 from widgets.tab_content import TabContent
 
+
 class TabHandler:
     def __init__(self, main_window):
         self.main_window = main_window
@@ -46,8 +47,7 @@ class TabHandler:
         # Connect to models
         tab_content.set_model(self.main_window.notes_model)
         tab_content.set_navigation_model(
-            self.main_window.navigation_model,
-            self.main_window._actions
+            self.main_window.navigation_model, self.main_window._actions
         )
 
         # Connect save signal to status updates
@@ -74,7 +74,9 @@ class TabHandler:
 
     def _handle_note_saved(self, note_id: int):
         """Update status bar when note is saved"""
-        self.main_window.status_bar.showMessage(f"Note {note_id} saved successfully", 3000)
+        self.main_window.status_bar.showMessage(
+            f"Note {note_id} saved successfully", 3000
+        )
 
     def close_current_tab(self):
         current_index = self.tab_widget.currentIndex()
@@ -138,17 +140,14 @@ class TabHandler:
                 tab_state = {
                     "title": self.tab_widget.tabText(i),
                     "note_id": tab.get_current_note_id(),
-                    "tree_state": tree_state
+                    "tree_state": tree_state,
                 }
                 tabs_state.append(tab_state)
 
-        state = {
-            "current_tab": self.tab_widget.currentIndex(),
-            "tabs": tabs_state
-        }
+        state = {"current_tab": self.tab_widget.currentIndex(), "tabs": tabs_state}
 
         try:
-            with open(self.state_file, 'w') as f:
+            with open(self.state_file, "w") as f:
                 json.dump(state, f)
         except Exception as e:
             print(f"Error saving tab state: {e}")
@@ -159,7 +158,7 @@ class TabHandler:
             return False
 
         try:
-            with open(self.state_file, 'r') as f:
+            with open(self.state_file, "r") as f:
                 state = json.load(f)
 
             # Close all existing tabs except one

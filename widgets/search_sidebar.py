@@ -1,20 +1,18 @@
-from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QLineEdit,
-    QListWidgetItem
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QListWidgetItem
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QKeyEvent
 from widgets.right_sidebar import NavigableListWidget
 
-SEARCH_DELAY = 200 # Delay in milliseconds for search debounce
+SEARCH_DELAY = 200  # Delay in milliseconds for search debounce
+
 
 class SearchSidebar(QWidget):
     """Widget for searching notes and displaying results"""
 
     note_selected = Signal(int)  # Emitted when search result is selected
-    note_selected_with_focus = Signal(int)  # Emitted when search result is selected with focus
+    note_selected_with_focus = Signal(
+        int
+    )  # Emitted when search result is selected with focus
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -34,12 +32,16 @@ class SearchSidebar(QWidget):
 
         # Results list
         self.results_list = NavigableListWidget()
-        self.results_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.results_list.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
         self.results_list.setWordWrap(True)
-        
+
         # Forward the note selection signals
         self.results_list.note_selected.connect(self.note_selected.emit)
-        self.results_list.note_selected_with_focus.connect(self.note_selected_with_focus.emit)
+        self.results_list.note_selected_with_focus.connect(
+            self.note_selected_with_focus.emit
+        )
 
         layout.addWidget(self.search_input)
         layout.addWidget(self.results_list)
@@ -59,7 +61,7 @@ class SearchSidebar(QWidget):
         """Handle selection changes in results list"""
         if not self.follow_mode:
             return
-            
+
         current = self.results_list.currentItem()
         if current:
             note_id = current.data(Qt.ItemDataRole.UserRole)
@@ -78,13 +80,15 @@ class SearchSidebar(QWidget):
 
         if not search_text:
             item = QListWidgetItem("Type to search...")
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)  # Make non-clickable
+            item.setFlags(
+                item.flags() & ~Qt.ItemFlag.ItemIsEnabled
+            )  # Make non-clickable
             self.results_list.addItem(item)
             return
 
         # Get notes model from parent widget hierarchy
         main_window = self.window()
-        if not main_window or not hasattr(main_window, 'notes_model'):
+        if not main_window or not hasattr(main_window, "notes_model"):
             return
 
         try:

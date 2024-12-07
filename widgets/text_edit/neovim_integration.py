@@ -9,6 +9,7 @@ import random
 
 SOCKET_PATH = f"/tmp/draftsmith_qt.{random.random()}.sock"
 
+
 class EditorWidget(QTextEdit):
     textUpdated = Signal(str)
 
@@ -33,7 +34,9 @@ class EditorWidget(QTextEdit):
             os.remove(socket_path)
 
         # Start nvim with socket listening and track the process
-        self.nvim_process = subprocess.Popen(['nvim', '--listen', socket_path, '--headless'])
+        self.nvim_process = subprocess.Popen(
+            ["nvim", "--listen", socket_path, "--headless"]
+        )
 
         # # Set filetype to markdown
         # self.nvim_process.command('set filetype=markdown')
@@ -43,7 +46,7 @@ class EditorWidget(QTextEdit):
 
     def connect_to_nvim(self, socket_path):
         try:
-            self.nvim = pynvim.attach('socket', path=socket_path)
+            self.nvim = pynvim.attach("socket", path=socket_path)
             self.nvim_buffer = self.nvim.current.buffer
 
             # Initialize nvim buffer with current text
@@ -53,8 +56,8 @@ class EditorWidget(QTextEdit):
             self.nvim_timer.start(20)  # Check every 20ms
 
             # Set filetype to markdown
-            self.nvim.command(f'LspStop')
-            self.nvim.command(f'set filetype=markdown')
+            self.nvim.command(f"LspStop")
+            self.nvim.command(f"set filetype=markdown")
 
         except Exception as e:
             print(f"Failed to connect to nvim: {e}")
@@ -69,7 +72,7 @@ class EditorWidget(QTextEdit):
             try:
                 self.is_syncing = True
                 text = self.toPlainText()
-                lines = text.split('\n')
+                lines = text.split("\n")
                 self.nvim_buffer[:] = lines
                 self.is_syncing = False
             except Exception as e:
@@ -85,13 +88,13 @@ class EditorWidget(QTextEdit):
             except:
                 pass
 
-        if hasattr(self, 'nvim_process'):
+        if hasattr(self, "nvim_process"):
             try:
                 self.nvim_process.terminate()
                 self.nvim_process.wait(timeout=1)
             except:
                 pass
-            delattr(self, 'nvim_process')
+            delattr(self, "nvim_process")
 
         self.nvim = None
         self.nvim_buffer = None
@@ -104,7 +107,10 @@ class EditorWidget(QTextEdit):
         if self.nvim_buffer is not None and not self.is_syncing:
             try:
                 # First check if nvim process is still running
-                if hasattr(self, 'nvim_process') and self.nvim_process.poll() is not None:
+                if (
+                    hasattr(self, "nvim_process")
+                    and self.nvim_process.poll() is not None
+                ):
                     print("Neovim process terminated")
                     self.cleanup_nvim()
                     return
@@ -114,7 +120,7 @@ class EditorWidget(QTextEdit):
                 # Don't do anything with an empty vim buffer
                 if nvim_text := self.nvim_buffer[:]:
                     # Join with new lines
-                    nvim_text = '\n'.join(nvim_text)
+                    nvim_text = "\n".join(nvim_text)
                     # Get current text
                     current_text = self.toPlainText()
 
@@ -148,15 +154,13 @@ class EditorWidget(QTextEdit):
         self._start_nvim_session()
 
         # Start neovide
-        subprocess.Popen(['neovide', '--server', SOCKET_PATH])
+        subprocess.Popen(["neovide", "--server", SOCKET_PATH])
 
 
 async def run_async_command(command):
     # Create a subprocess using asyncio
     process = await asyncio.create_subprocess_exec(
-        *command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
 
     # Wait for the process to finish and collect the output

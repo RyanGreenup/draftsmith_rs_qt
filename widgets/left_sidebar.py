@@ -50,7 +50,7 @@ class LeftSidebar(QWidget):
             self.tree.hide()
             self.tags_tree.hide()
             self.search_sidebar.show()
-            
+
     def focus_search(self):
         """Focus the search input and switch to search view"""
         self.tree_selector.setCurrentText("Search")

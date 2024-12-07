@@ -182,10 +182,13 @@ class TabContent(QWidget):
 
     def _handle_preview_request(self, content: Optional[str] = None):
         """Handle request to update preview using streaming response"""
+
         class RenderMarkdownRequest(BaseModel):
             """Request to render markdown content"""
+
             content: str
             format: Optional[Literal["text", "html", "pdf"]] = None
+
         self.base_url = "http://eir:37242"
         if self.notes_model and (note_id := self.current_note_id) is not None:
             format = "html"
@@ -197,13 +200,13 @@ class TabContent(QWidget):
                         f"{self.base_url}/render/markdown",
                         headers={"Content-Type": "application/json"},
                         data=request.model_dump_json(exclude_none=True),
-                        stream=True  # Enable streaming
+                        stream=True,  # Enable streaming
                     )
                 else:
                     response = requests.get(
                         f"{self.base_url}/notes/flat/{note_id}/render/{format}",
                         headers={"Content-Type": "application/json"},
-                        stream=True  # Enable streaming
+                        stream=True,  # Enable streaming
                     )
 
                 response.raise_for_status()
@@ -216,7 +219,7 @@ class TabContent(QWidget):
                     if chunk:
                         buffer.append(chunk)
                         # Update preview with accumulated content so far
-                        html = buffer.data().decode('utf-8')
+                        html = buffer.data().decode("utf-8")
                         self.editor.set_preview_content(html)
 
             except Exception as e:
@@ -241,4 +244,3 @@ class TabContent(QWidget):
             actions["maximize_preview"],
             actions["use_remote_rendering"],
         )
-

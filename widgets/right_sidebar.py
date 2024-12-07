@@ -16,13 +16,12 @@ from api.client import Tag
 from widgets.navigable_list import NavigableListWidget
 
 
-
 class BacklinksWidget(NavigableListWidget):
     """Widget for displaying backlinks to the current note"""
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        
+
     def handle_return(self, event: QKeyEvent) -> bool:
         """Use default return key behavior"""
         return super().handle_return(event)
@@ -49,7 +48,7 @@ class ForwardLinksWidget(NavigableListWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        
+
     def handle_return(self, event: QKeyEvent) -> bool:
         """Use default return key behavior"""
         return super().handle_return(event)

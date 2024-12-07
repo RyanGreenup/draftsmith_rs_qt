@@ -14,15 +14,15 @@ class NotesTabWidget(QTabWidget):
         tab_content = MainContent(handle_size=20)
         index = self.addTab(tab_content, title)
         self.setCurrentIndex(index)
-        
+
         # Initialize models
         tab_content.initialize_notes_model("http://eir:37242")
-        
+
         # Get navigation model from main window
         main_window = self.window()
-        if main_window and hasattr(main_window, 'navigation_model'):
+        if main_window and hasattr(main_window, "navigation_model"):
             tab_content.set_navigation_model(main_window.navigation_model)
-            
+
         tab_content.left_sidebar.tree.setFocus()
         return tab_content
 

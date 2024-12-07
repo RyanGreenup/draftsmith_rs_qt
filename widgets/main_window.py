@@ -61,9 +61,10 @@ class NoteApp(QMainWindow):
             self.menu_handler.actions["use_remote_rendering"],
         )
 
-
         # Connect save action to current tab
-        self.menu_handler.actions["save"].triggered.connect(self._trigger_save_current_tab)
+        self.menu_handler.actions["save"].triggered.connect(
+            self._trigger_save_current_tab
+        )
 
         self.setup_command_palette()
 
@@ -123,9 +124,6 @@ class NoteApp(QMainWindow):
     def focus_previous_widget(self):
         """Simulate Shift+Tab key press to move focus to previous widget"""
         self.focusPreviousChild()
-
-
-
 
     def update_right_sidebar(self, selection_data: "NoteSelectionData") -> None:
         """Update right sidebar content when a note is selected"""

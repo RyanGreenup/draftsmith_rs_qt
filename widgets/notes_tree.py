@@ -10,7 +10,9 @@ from widgets.navigable_tree import NavigableTree
 
 class NotesTreeWidget(NavigableTree):
     note_selected = Signal(int)  # Signal emitted when a note is selected
-    note_selected_with_focus = Signal(int)  # Signal emitted when note should be selected and focused
+    note_selected_with_focus = Signal(
+        int
+    )  # Signal emitted when note should be selected and focused
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -45,13 +47,12 @@ class NotesTreeWidget(NavigableTree):
         """Handle selection changes and notify model"""
         if not self.follow_mode:
             return
-            
+
         current = self.currentItem()
         if current and self.notes_model:
             note_data = current.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
                 self.notes_model.select_note(note_data.id)
-
 
     def select_note_by_id(self, note_id: int, emit_signal: bool = True) -> None:
         """Select the tree item corresponding to the given note ID"""
@@ -96,12 +97,12 @@ class NotesTreeWidget(NavigableTree):
             if self._handle_return(event):
                 event.accept()
                 return
-        
+
         # Handle J/K navigation using base class
         elif self._handle_navigation_key(event):
             event.accept()
             return
-            
+
         # Handle tree-specific keys
         elif event.key() in (Key.Key_Space, Key.Key_Right, Key.Key_Left):
             current = self.currentItem()
@@ -128,7 +129,7 @@ class NotesTreeWidget(NavigableTree):
                     self.cycle_fold_level_of_all_items()
                 event.accept()
                 return
-                
+
         # Let other keys propagate to parent
         super().keyPressEvent(event)
 

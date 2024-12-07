@@ -26,15 +26,20 @@ import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
 from widgets.text_edit.neovim_integration import EditorWidget
 
+
 # Register custom schemes for the Web Engine Preview
-def register_scheme(scheme_name: str, scheme_flags = (
-    QWebEngineUrlScheme.Flag.LocalAccessAllowed |
-    QWebEngineUrlScheme.Flag.CorsEnabled
-    )):
+def register_scheme(
+    scheme_name: str,
+    scheme_flags=(
+        QWebEngineUrlScheme.Flag.LocalAccessAllowed
+        | QWebEngineUrlScheme.Flag.CorsEnabled
+    ),
+):
     scheme = QWebEngineUrlScheme(scheme_name.encode())
     scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
     scheme.setFlags(scheme_flags)
     QWebEngineUrlScheme.registerScheme(scheme)
+
 
 register_scheme("note")
 register_scheme("qrc")
@@ -59,12 +64,11 @@ class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
 
             # Add Authorization header with access token
             if self.access_token:
-                info.setHttpHeader(b"Authorization", f"Bearer {self.access_token}".encode())
+                info.setHttpHeader(
+                    b"Authorization", f"Bearer {self.access_token}".encode()
+                )
 
             info.redirect(QUrl(new_url))
-
-
-
 
 
 class NoteLinkPage(QWebEnginePage):
@@ -84,7 +88,7 @@ class NoteLinkPage(QWebEnginePage):
         if url.scheme() == "note":
             path = ""
             try:
-                path = url.path().strip('/')
+                path = url.path().strip("/")
                 note_id = int(path)
                 # print(f"Emitting note_selected for ID: {note_id}")
                 self.md_editor_widget.note_selected.emit(note_id)  # Use widget signal
@@ -93,9 +97,6 @@ class NoteLinkPage(QWebEnginePage):
                 print(f"Failed to parse note ID from: {path}")
                 return False
         return True
-
-
-
 
 
 class MarkdownEditor(QWidget):
@@ -118,18 +119,19 @@ class MarkdownEditor(QWidget):
         # Set up WebEngine profile and handlers
         self.profile = QWebEngineProfile.defaultProfile()
 
-
         # Add asset URL interceptor
         self.asset_interceptor = AssetUrlInterceptor(
             self,
             "http://eir:37242",
-            access_token=None  # TODO Will need to be set later via a method
+            access_token=None,  # TODO Will need to be set later via a method
         )
         self.profile.setUrlRequestInterceptor(self.asset_interceptor)
 
         # Create preview with custom link handling
         self.preview = QWebEngineView()
-        self.preview.setPage(NoteLinkPage(self, self.profile))  # Pass self (MarkdownEditor) instead of preview
+        self.preview.setPage(
+            NoteLinkPage(self, self.profile)
+        )  # Pass self (MarkdownEditor) instead of preview
 
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.JavascriptEnabled, True
@@ -192,7 +194,9 @@ class MarkdownEditor(QWidget):
 
         """
         css_links = []
-        it = QDirIterator(":/css", QDir.Filter.Files, QDirIterator.IteratorFlag.Subdirectories)
+        it = QDirIterator(
+            ":/css", QDir.Filter.Files, QDirIterator.IteratorFlag.Subdirectories
+        )
         while it.hasNext():
             file_path = it.next()
             css_links.append(f'<link rel="stylesheet" href="qrc{file_path}">')

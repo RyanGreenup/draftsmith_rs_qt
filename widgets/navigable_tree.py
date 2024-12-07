@@ -9,7 +9,9 @@ class NavigableTree(QTreeWidget):
     """Base class for tree widgets with keyboard navigation"""
 
     note_selected = Signal(int)  # Emitted when a note is selected
-    note_selected_with_focus = Signal(int)  # Emitted when a note is selected with focus request
+    note_selected_with_focus = Signal(
+        int
+    )  # Emitted when a note is selected with focus request
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -58,6 +60,7 @@ class NavigableTree(QTreeWidget):
         # When we reach max_depth (fully expanded), next press should collapse all
         if self.current_fold_level == max_depth:
             self.current_fold_level = -1
+
             # Explicitly collapse all items at every level
             def collapse_all(item: Optional[QTreeWidgetItem] = None):
                 items = []
