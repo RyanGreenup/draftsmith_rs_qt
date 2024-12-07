@@ -19,7 +19,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         for i in range(1, 7):
             headingFormat = QTextCharFormat()
             headingFormat.setFontWeight(QFont.Weight.Bold)
-            headingFormat.setForeground(QColor("blue"))
+            # headingFormat.setForeground(QColor("blue"))
             headingFormat.setFontPointSize(24 - i * 2)
             hashes = "#" * i
             self.highlightingRules.append(
@@ -71,14 +71,14 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         # Image format
         imageFormat = QTextCharFormat()
-        imageFormat.setForeground(QColor("darkMagenta"))
+        # imageFormat.setForeground(QColor("darkMagenta"))
         self.highlightingRules.append(
             (QRegularExpression("!\\[.*?\\]\\(.*?\\)"), imageFormat)
         )
 
         # List format
         listFormat = QTextCharFormat()
-        listFormat.setForeground(QColor("brown"))
+        # listFormat.setForeground(QColor("brown"))
         self.highlightingRules.append(
             (QRegularExpression("^\\s*([-+*])\\s+.*"), listFormat)
         )

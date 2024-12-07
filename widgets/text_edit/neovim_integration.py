@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QTextEdit
+from PySide6.QtWidgets import QPlainTextEdit, QTextEdit
 from PySide6.QtCore import Signal, QTimer
 import pynvim
 import subprocess
@@ -10,7 +10,7 @@ import random
 SOCKET_PATH = f"/tmp/draftsmith_qt.{random.random()}.sock"
 
 
-class EditorWidget(QTextEdit):
+class EditorWidget(QPlainTextEdit):
     textUpdated = Signal(str)
 
     def __init__(self):
