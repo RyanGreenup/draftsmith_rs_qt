@@ -20,6 +20,7 @@ class NotesModel(QObject):
     note_selected = Signal(
         object
     )  # Emitted when a note is selected with NoteSelectionData
+    note_deleted = Signal(int)  # Add this new signal - emits deleted note's ID
 
     def __init__(self, api_url: str):
         super().__init__()
@@ -197,11 +198,21 @@ class NotesModel(QObject):
             if not note:
                 return False
 
+            # Get parent ID before deletion if it exists
+            parent_id = note.parent.id if note.parent else None
+            
             self.note_api.delete_note(note_id)
-
-            self.notes_updated.emit()
+            
+            # Emit deletion signal before refresh
+            self.note_deleted.emit(note_id)
+            
             # Get fresh notes from the server to reflect deletion
             self.refresh_notes()
+            
+            # If we had a parent, select it after deletion
+            if parent_id and parent_id in self.notes:
+                self.select_note(parent_id)
+                
             return True
 
         except Exception as e:

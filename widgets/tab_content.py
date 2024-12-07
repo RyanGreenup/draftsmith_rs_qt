@@ -63,6 +63,10 @@ class TabContent(QWidget):
         """Connect internal signals"""
         # Editor signals
         self.editor.save_requested.connect(self._handle_save_request)
+        
+        # Connect note deletion signal
+        if self.notes_model:
+            self.notes_model.note_deleted.connect(self._handle_note_deleted_signal)
 
         # Connect view update signals directly to model
         self.right_sidebar.forward_links.note_selected.connect(
@@ -256,17 +260,21 @@ class TabContent(QWidget):
     def _handle_note_deletion(self, note_id: int):
         """Handle note deletion request"""
         try:
-            # Use the notes model to delete the note
             if self.notes_model:
-                # TODO unfocus this note, otherwise refresh will lead to errors
-
-                # Use the note_api directly from notes_model instead of through .api
-                response = self.notes_model.delete_note(note_id)
-
-                # If the deleted note was the current note, clear the editor
+                # Delete the note through the model
+                self.notes_model.delete_note(note_id)
+                
+                # Clear the editor if this was the current note
+                # (though the note_deleted signal handler should handle this)
                 if self.current_note_id == note_id:
                     self.current_note_id = None
                     self.editor.set_content("")
+                    
         except Exception as e:
             print(f"Error deleting note: {e}")
-            # Here you could add error handling UI feedback
+
+    def _handle_note_deleted_signal(self, deleted_note_id: int):
+        """Handle when a note is deleted by clearing view if needed"""
+        if self.current_note_id == deleted_note_id:
+            self.current_note_id = None
+            self.editor.set_content("")
