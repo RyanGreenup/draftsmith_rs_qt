@@ -1,5 +1,5 @@
 from typing import Optional
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
 from PySide6.QtCore import Qt, Signal, QEvent
 from PySide6.QtGui import QKeyEvent
 from utils.key_constants import Key
@@ -118,3 +118,23 @@ class NavigableTree(QTreeWidget):
             return
         else:
             super().keyPressEvent(event)
+            
+    def _create_context_menu(self) -> QMenu:
+        """Create and return the context menu"""
+        menu = QMenu(self)
+        
+        # Add basic menu items - subclasses can override this method to add more items
+        expand_action = menu.addAction("Expand")
+        expand_action.triggered.connect(lambda: self.currentItem().setExpanded(True))
+        
+        collapse_action = menu.addAction("Collapse")
+        collapse_action.triggered.connect(lambda: self.currentItem().setExpanded(False))
+        
+        return menu
+
+    def contextMenuEvent(self, event):
+        """Handle right click events"""
+        current_item = self.currentItem()
+        if current_item:
+            menu = self._create_context_menu()
+            menu.exec(event.globalPos())
