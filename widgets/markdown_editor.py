@@ -1,14 +1,12 @@
-from . import static_resources_rc  # pyright:ignore
-from . import katex_resources_rc  # pyright:ignore
+# pyright: reportUnusedImport=false
+from . import static_resources_rc  # type: ignore
+from . import katex_resources_rc  # type: ignore
 from PySide6.QtWebEngineCore import (
     QWebEnginePage,
     QWebEngineUrlRequestInfo,
     QWebEngineUrlRequestInterceptor,
     QWebEngineUrlScheme,
-    QWebEngineUrlSchemeHandler,
-    QWebEngineUrlRequestJob,
     QWebEngineProfile,
-    QWebEngineNavigationRequest,
 )
 
 from PySide6.QtWidgets import QWidget, QSplitter, QVBoxLayout
@@ -25,8 +23,19 @@ from PySide6.QtCore import (
 import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
 from widgets.text_edit.neovim_integration import EditorWidget
-from enum import Enum
-from urllib.parse import urlparse, urlunparse
+
+# Register custom schemes for the Web Engine Preview
+def register_scheme(scheme_name: str, scheme_flags = (
+    QWebEngineUrlScheme.Flag.LocalAccessAllowed |
+    QWebEngineUrlScheme.Flag.CorsEnabled
+    )):
+    scheme = QWebEngineUrlScheme(scheme_name.encode())
+    scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
+    scheme.setFlags(scheme_flags)
+    QWebEngineUrlScheme.registerScheme(scheme)
+
+register_scheme("note")
+register_scheme("qrc")
 
 
 class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
@@ -44,7 +53,7 @@ class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
         if path.startswith("/m/"):
             asset_path = path[3:]  # Remove /m/ prefix
             new_url = f"{self.base_api_url}/assets/download/{asset_path}"
-            print(f"Redirecting to: {new_url}")  # Debug print
+            # print(f"Redirecting to: {new_url}")  # Debug print
 
             # Add Authorization header with access token
             if self.access_token:
@@ -53,21 +62,6 @@ class AssetUrlInterceptor(QWebEngineUrlRequestInterceptor):
             info.redirect(QUrl(new_url))
 
 
-# Define and register the QRC scheme
-note_scheme = QWebEngineUrlScheme(b"qrc")
-note_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
-note_scheme.setFlags(
-    QWebEngineUrlScheme.LocalAccessAllowed | QWebEngineUrlScheme.CorsEnabled
-)
-QWebEngineUrlScheme.registerScheme(note_scheme)
-
-# Register the note scheme for local links
-note_scheme = QWebEngineUrlScheme(b"note")
-note_scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
-note_scheme.setFlags(
-    QWebEngineUrlScheme.LocalAccessAllowed | QWebEngineUrlScheme.CorsEnabled
-)
-QWebEngineUrlScheme.registerScheme(note_scheme)
 
 
 
@@ -76,19 +70,21 @@ class NoteLinkPage(QWebEnginePage):
         super().__init__(profile, md_editor_widget)  # Set parent
         self.md_editor_widget = md_editor_widget  # Store correct reference
 
-    def acceptNavigationRequest(self, url: QUrl, nav_type, isMainFrame):
-        url_str = url.toString()
-        print("-----------------------")
-        print(f"Navigation request: {url}")  # Debug print
-        print(f"Navigation request: {url.scheme()}")  # Debug print
-        print(f"Navigation request: {url.path()}")  # Debug print
-        print(".....................")
+    def acceptNavigationRequest(self, url: QUrl | str, type, isMainFrame):
+        if isinstance(url, str):
+            url = QUrl(url)
+        # print("-----------------------")
+        # print(f"Navigation request: {url}")  # Debug print
+        # print(f"Navigation request: {url.scheme()}")  # Debug print
+        # print(f"Navigation request: {url.path()}")  # Debug print
+        # print(".....................")
 
         if url.scheme() == "note":
+            path = ""
             try:
                 path = url.path().strip('/')
                 note_id = int(path)
-                print(f"Emitting note_selected for ID: {note_id}")
+                # print(f"Emitting note_selected for ID: {note_id}")
                 self.md_editor_widget.note_selected.emit(note_id)  # Use widget signal
                 return False  # Prevent navigation
             except ValueError:
@@ -97,12 +93,7 @@ class NoteLinkPage(QWebEnginePage):
         return True
 
 
-def _resource_to_string(qrc_path: str) -> str:
-    qrc_file = QFile(qrc_path)
-    qrc_file.open(QFile.ReadOnly)
-    content = qrc_file.readAll().data().decode()
-    qrc_file.close()
-    return content
+
 
 
 class MarkdownEditor(QWidget):
@@ -199,7 +190,7 @@ class MarkdownEditor(QWidget):
 
         """
         css_links = []
-        it = QDirIterator(":/css", QDir.Files, QDirIterator.Subdirectories)
+        it = QDirIterator(":/css", QDir.Filter.Files, QDirIterator.IteratorFlag.Subdirectories)
         while it.hasNext():
             file_path = it.next()
             css_links.append(f'<link rel="stylesheet" href="qrc{file_path}">')
@@ -212,7 +203,6 @@ class MarkdownEditor(QWidget):
 
     def _apply_html_template(self, html: str) -> str:
         css_includes = self._get_css_resources()
-        # print(html)
         return f"""<!DOCTYPE html>
         <html>
         <head>
