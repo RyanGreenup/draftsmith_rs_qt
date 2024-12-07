@@ -63,8 +63,11 @@ class TabContent(QWidget):
         """Connect internal signals"""
         # Editor signals
         self.editor.save_requested.connect(self._handle_save_request)
-        
-        # Connect note deletion signal
+
+        # Add connection for note deletion
+        # What to do when the user has asked to delete a note
+        self.left_sidebar.tree.note_deleted.connect(self._handle_note_deletion)
+        # After the note has been deleted, make sure to clear the view if needed
         if self.notes_model:
             self.notes_model.note_deleted.connect(self._handle_note_deleted_signal)
 
@@ -76,8 +79,6 @@ class TabContent(QWidget):
             self._handle_view_request_with_focus
         )
 
-        # Add connection for note deletion
-        self.left_sidebar.tree.note_deleted.connect(self._handle_note_deletion)
         self.right_sidebar.backlinks.note_selected.connect(self._handle_view_request)
         self.right_sidebar.backlinks.note_selected_with_focus.connect(
             self._handle_view_request_with_focus
@@ -263,13 +264,13 @@ class TabContent(QWidget):
             if self.notes_model:
                 # Delete the note through the model
                 self.notes_model.delete_note(note_id)
-                
+
                 # Clear the editor if this was the current note
                 # (though the note_deleted signal handler should handle this)
                 if self.current_note_id == note_id:
                     self.current_note_id = None
                     self.editor.set_content("")
-                    
+
         except Exception as e:
             print(f"Error deleting note: {e}")
 
