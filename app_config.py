@@ -4,17 +4,30 @@ from qt_material import apply_stylesheet
 
 DARK_QT_MATERIAL_THEME = "dark_teal.xml"
 LIGHT_QT_MATERIAL_THEME = "light_blue.xml"
-QT_MATERIAL_extra = {
-    "font_family": "Roboto",
-    "density_scale": "0",
-    "font_size": "13px",
-}
+
+sizes = {
+        -3: "10px",
+        -2: "12px",
+        -1: "14px",
+        0: "16px",
+        1: "18px",
+        2: "20px",
+        3: "22px",
+        }
+
+def qt_material_extra(density: int):
+
+    return {
+        "font_family": "Roboto",
+        "density_scale": str(density),
+        "font_size": sizes[density],
+    }
 
 
 def apply_theme(theme_name: str):
     app = QApplication.instance()
     apply_stylesheet(
-        app, theme=theme_name, extra=QT_MATERIAL_extra, css_file="ui/styles/style.qss"
+        app, theme=theme_name, extra=qt_material_extra(0), css_file="ui/styles/style.qss"
     )
 
 
