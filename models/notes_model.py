@@ -174,6 +174,9 @@ class NotesModel(QObject):
 
             api_response = self.note_api.update_note(note_id, update_data)
             note.update_from_api_note(api_response)
+
+            # Update the notes to reflect the new state
+            self.refresh_notes()
             return True
 
         except Exception as e:
@@ -197,6 +200,8 @@ class NotesModel(QObject):
             self.note_api.delete_note(note_id)
 
             self.notes_updated.emit()
+            # Get fresh notes from the server to reflect deletion
+            self.refresh_notes()
             return True
 
         except Exception as e:

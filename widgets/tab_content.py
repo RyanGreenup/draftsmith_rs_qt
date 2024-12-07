@@ -176,7 +176,6 @@ class TabContent(QWidget):
                 if self.notes_model:
                     if self.notes_model.update_note(note_data.id, content=content):
                         self.note_saved.emit(note_data.id)
-                        self.notes_model.refresh_notes()
 
     def _update_right_sidebar(self, selection_data):
         """Update right sidebar content when a note is selected"""
@@ -259,10 +258,11 @@ class TabContent(QWidget):
         try:
             # Use the notes model to delete the note
             if self.notes_model:
+                # TODO unfocus this note, otherwise refresh will lead to errors
+
                 # Use the note_api directly from notes_model instead of through .api
-                response = self.notes_model.note_api.delete_note(note_id)
-                # After successful deletion, refresh the model
-                self.notes_model.refresh_notes()
+                response = self.notes_model.delete_note(note_id)
+
                 # If the deleted note was the current note, clear the editor
                 if self.current_note_id == note_id:
                     self.current_note_id = None
