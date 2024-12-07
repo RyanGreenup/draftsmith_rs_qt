@@ -108,6 +108,7 @@ class MarkdownEditor(QWidget):
     def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
         self._remote_rendering_action = None
+        self.update_delay = 0
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -178,7 +179,7 @@ class MarkdownEditor(QWidget):
         Sync the Preview with the Editor
         """
         # Start the update timer to prevent too frequent updates
-        self.update_timer.start(500)  # 500ms delay
+        self.update_timer.start(self.update_delay)  # 500ms delay
 
 
 
