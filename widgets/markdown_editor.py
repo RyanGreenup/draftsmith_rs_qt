@@ -1,6 +1,8 @@
 # pyright: reportUnusedImport=false
 from . import static_resources_rc  # type: ignore
 from . import katex_resources_rc  # type: ignore
+from . import katex_fonts_rc  # type: ignore
+
 from PySide6.QtWebEngineCore import (
     QWebEnginePage,
     QWebEngineUrlRequestInfo,

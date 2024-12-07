@@ -1,9 +1,0 @@
-<!DOCTYPE RCC>
-<RCC version="1.0">
-    <qresource prefix="/katex">
-        <file>katex.min.js</file>
-        <file>auto-render.min.js</file>
-        <file>katex.min.css</file>
-        <file>config.js</file>
-    </qresource>
-</RCC>
