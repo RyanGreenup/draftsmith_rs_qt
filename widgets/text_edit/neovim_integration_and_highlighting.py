@@ -1,4 +1,4 @@
-from neovim_integration import EditorWidget
+from .neovim_integration import EditorWidget
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 import re
 
