@@ -160,40 +160,26 @@ class MarkdownEditor(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
+    def _get_scroll_position(self):
+        self.preview.page().runJavaScript(
+            "window.scrollY",
+            self._update_preview_with_scroll
+        )
+
+    def _update_preview_with_scroll(self, scroll_pos):
+        self._last_scroll = scroll_pos
+        if self._remote_rendering_action and self._remote_rendering_action.isChecked():
+            self.preview_requested.emit()
+        else:
+            self.update_preview_local()
+
     def on_text_changed(self):
         """
         Sync the Preview with the Editor
         """
-        self.restore_scroll_position()
-        # When text changes, we want to send the content up for rendering
-        if self._remote_rendering_action and self._remote_rendering_action.isChecked():
-            self.render_requested.emit(self.editor.toPlainText())
-        else:
-            self.update_timer.start(0)  # Local preview update
-        self.restore_scroll_position()
+        self._get_scroll_position()  # This will trigger the update chain
 
 
-    def store_scroll_position(self):
-        self.current_scroll_position = self.preview.page().scrollPosition()
-
-    def restore_scroll_position(self):
-        pos = self.current_scroll_position
-
-        contents_size = self.preview.page().contentsSize()
-        scrollable_x = contents_size.width() - self.preview.width()
-        if scrollable_x == 0:
-            perc_x = 0
-        else:
-            perc_x = min(100, round(100 / scrollable_x * pos.x()))
-
-        scrollable_y = contents_size.height() - self.preview.height()
-        if scrollable_y == 0:
-            perc_y = 0
-        else:
-            perc_y = min(100, round(100 / scrollable_y * pos.y()))
-        self.preview.scroll(perc_x, perc_y)
-
-    # [scroll_source]: https://github.com/qutebrowser/qutebrowser/commit/8504d41db3fa30c392da9b0813e9c6791f546b2a
 
     def update_preview(self):
         """
@@ -205,8 +191,12 @@ class MarkdownEditor(QWidget):
             self.update_preview_local()
 
     def set_preview_content(self, html: str):
-        # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
+        self.preview.loadFinished.connect(
+            lambda: self.preview.page().runJavaScript(
+                f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
+            )
+        )
         self.preview.setHtml(styled_html, QUrl("note:/"))
 
     def _get_css_resources(self) -> str:
@@ -267,8 +257,12 @@ class MarkdownEditor(QWidget):
         )
 
         html = md.convert(self.editor.toPlainText())
-        # html = self.replace_asset_links(html)
         styled_html = self._apply_html_template(html)
+        self.preview.loadFinished.connect(
+            lambda: self.preview.page().runJavaScript(
+                f"window.scrollTo(0, {getattr(self, '_last_scroll', 0)});"
+            )
+        )
         self.preview.setHtml(styled_html, QUrl("note:/"))
 
     def set_content(self, content: str):
