@@ -6,14 +6,15 @@ DARK_QT_MATERIAL_THEME = "dark_teal.xml"
 LIGHT_QT_MATERIAL_THEME = "light_blue.xml"
 
 sizes = {
-        -3: "10px",
-        -2: "12px",
-        -1: "14px",
-        0: "16px",
-        1: "18px",
-        2: "20px",
-        3: "22px",
-        }
+    -3: "10px",
+    -2: "12px",
+    -1: "14px",
+    0: "16px",
+    1: "18px",
+    2: "20px",
+    3: "22px",
+}
+
 
 def qt_material_extra(density: int):
 
@@ -27,7 +28,10 @@ def qt_material_extra(density: int):
 def apply_theme(theme_name: str, density: int = 0):
     app = QApplication.instance()
     apply_stylesheet(
-        app, theme=theme_name, extra=qt_material_extra(density), css_file="ui/styles/style.qss"
+        app,
+        theme=theme_name,
+        extra=qt_material_extra(density),
+        css_file="ui/styles/style.qss",
     )
 
 

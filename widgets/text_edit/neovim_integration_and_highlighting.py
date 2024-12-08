@@ -7,6 +7,7 @@ BLOCK_MATH_PATTERN = re.compile(r"\$\$(.*?)\$\$", re.DOTALL)
 # TODO is Dotall needed here?
 INLINE_MATH_PATTERN = re.compile(r"(?<!\$)\$((?!\$).+?)(?<!\$)\$", re.DOTALL)
 
+
 class MarkdownHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -103,4 +104,3 @@ class MDEditor(EditorWidget):
         super().__init__()
         # Initialize syntax highlighter
         self.highlighter = MarkdownHighlighter(self.document())
-

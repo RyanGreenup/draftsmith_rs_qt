@@ -331,7 +331,6 @@ class MarkdownEditor(QWidget):
         maximize_editor_action.triggered.connect(self.maximize_editor)
         maximize_preview_action.triggered.connect(self.maximize_preview)
 
-
     def get_content(self) -> str:
         """Get current editor content"""
         return self.editor.toPlainText()
