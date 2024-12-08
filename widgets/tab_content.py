@@ -279,7 +279,10 @@ class TabContent(QWidget):
         try:
             if self.notes_model:
                 # If we're deleting the currently selected item, select the one above first
-                if current_item and current_item.data(0, Qt.ItemDataRole.UserRole).id == note_id:
+                if (
+                    current_item
+                    and current_item.data(0, Qt.ItemDataRole.UserRole).id == note_id
+                ):
                     self.left_sidebar.tree.select_item_above()
                 # Delete the note through the model
                 self.notes_model.delete_note(note_id)

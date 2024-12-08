@@ -244,17 +244,17 @@ class NotesTreeWidget(NavigableTree):
         """
         if not item:
             return None
-            
+
         # Get the current visual index
         current_index = self.indexFromItem(item)
         if not current_index.isValid():
             return None
-            
+
         # Get the index of item above
         above_index = self.indexAbove(current_index)
         if not above_index.isValid():
             return None
-            
+
         # Return the item at that index
         return self.itemFromIndex(above_index)
 
@@ -266,11 +266,11 @@ class NotesTreeWidget(NavigableTree):
         current_item = self.currentItem()
         if not current_item:
             return False
-            
+
         item_above = self.get_item_above(current_item)
         if not item_above:
             return False
-            
+
         self.setCurrentItem(item_above)
         self.scrollToItem(item_above)
         return True
@@ -343,7 +343,9 @@ class NotesTreeWidget(NavigableTree):
             if note_data:
                 # Add promote/demote actions
                 promote_action = menu.addAction("Promote")
-                promote_action.triggered.connect(lambda: self.promote_note(current_item))
+                promote_action.triggered.connect(
+                    lambda: self.promote_note(current_item)
+                )
                 # Only enable promote if item has a parent
                 promote_action.setEnabled(current_item.parent() is not None)
 
@@ -553,11 +555,13 @@ class NotesTreeWidget(NavigableTree):
 
         # Get grandparent item
         grandparent_item = parent_item.parent()
-        
+
         if grandparent_item:
             # If there's a grandparent, attach to it
             grandparent_note = grandparent_item.data(0, Qt.ItemDataRole.UserRole)
-            return self.notes_model.attach_note_to_parent(note_data.id, grandparent_note.id)
+            return self.notes_model.attach_note_to_parent(
+                note_data.id, grandparent_note.id
+            )
         else:
             # If no grandparent, detach from parent (move to root)
             return self.notes_model.detach_note_from_parent(note_data.id)
