@@ -112,14 +112,20 @@ class TabContent(QWidget):
         """Connect this view to the model"""
         self.notes_model = notes_model
         self.left_sidebar.tree.set_model(notes_model)
-        # Connect note selection to view updates
-        self.notes_model.note_selected.connect(self._update_view)
+        # Connect note selection to view updates, but only when this tab is active
+        self.notes_model.note_selected.connect(self._filtered_update_view)
         # Initialize palettes with view actions
         self.note_select_palette = NoteSelectPalette(notes_model, self)
         # Initialize note link palette
         from widgets.note_id_link_insert import NoteLinkInsertPalette
 
         self.note_link_palette = NoteLinkInsertPalette(notes_model, self)
+
+    def _filtered_update_view(self, selection_data):
+        """Only update view if this tab is currently active"""
+        tab_widget = self.parent()
+        if tab_widget and tab_widget.currentWidget() == self:
+            self._update_view(selection_data)
 
     def set_navigation_model(
         self, navigation_model: NavigationModel, actions: Dict[str, QAction]
@@ -183,7 +189,12 @@ class TabContent(QWidget):
         """Internal handler for save requests"""
         content = self.editor.get_content()
         if self.notes_model:
+            # Store current note ID before save
+            current_note_id = self.get_current_note_id()
             if self.notes_model.update_note(note_id, content=content):
+                # Update this tab's view specifically
+                if current_note_id is not None:
+                    self.set_current_note(current_note_id)
                 self.note_saved.emit(note_id)
 
     def _update_right_sidebar(self, selection_data):

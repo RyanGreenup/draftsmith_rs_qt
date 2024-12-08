@@ -176,7 +176,7 @@ class NotesModel(QObject):
             api_response = self.note_api.update_note(note_id, update_data)
             note.update_from_api_note(api_response)
 
-            # Update the notes to reflect the new state
+            # Refresh notes but don't trigger a global re-selection
             self.refresh_notes()
             return True
 
