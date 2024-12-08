@@ -66,6 +66,7 @@ def create_edit_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     edit_menu.addAction(actions["paste_note"])
     return edit_menu
 
+
 def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     """Create a View menu using existing actions"""
     view_menu = QMenu("&View", parent)

@@ -20,7 +20,9 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
         note = item.data(Qt.ItemDataRole.UserRole)
         if note and self.parent():
             # The parent is TabContent, which has direct access to the editor
-            if hasattr(self.parent(), 'editor') and hasattr(self.parent().editor, 'editor'):
+            if hasattr(self.parent(), "editor") and hasattr(
+                self.parent().editor, "editor"
+            ):
                 editor: QTextEdit = self.parent().editor.editor
 
                 # Insert the note link at cursor position
@@ -38,7 +40,9 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
 
         if self.parent():
             # The parent is TabContent, which has direct access to the editor
-            if hasattr(self.parent(), 'editor') and hasattr(self.parent().editor, 'editor'):
+            if hasattr(self.parent(), "editor") and hasattr(
+                self.parent().editor, "editor"
+            ):
                 editor: QTextEdit = self.parent().editor.editor
                 self.original_cursor_position = editor.textCursor().position()
 
@@ -52,10 +56,15 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
 
     def hide(self) -> None:
         """Restore cursor position if no selection was made"""
-        if not self.results_list.currentItem() and self.original_cursor_position is not None:
+        if (
+            not self.results_list.currentItem()
+            and self.original_cursor_position is not None
+        ):
             if self.parent():
                 # The parent is TabContent, which has direct access to the editor
-                if hasattr(self.parent(), 'editor') and hasattr(self.parent().editor, 'editor'):
+                if hasattr(self.parent(), "editor") and hasattr(
+                    self.parent().editor, "editor"
+                ):
                     editor: QTextEdit = self.parent().editor.editor
                     cursor = editor.textCursor()
                     cursor.setPosition(self.original_cursor_position)

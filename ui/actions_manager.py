@@ -210,7 +210,9 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
 
     # Add note link insertion action
     actions["insert_note_link"] = QAction("Insert Note &Link", parent)
-    actions["insert_note_link"].setShortcut("Ctrl+Shift+L")  # Different from Ctrl+L which is used for "next_tab"
+    actions["insert_note_link"].setShortcut(
+        "Ctrl+Shift+L"
+    )  # Different from Ctrl+L which is used for "next_tab"
     actions["insert_note_link"].setStatusTip("Insert a link to another note")
     actions["insert_note_link"].setToolTip("Insert a link to another note")
 

@@ -118,6 +118,7 @@ class TabContent(QWidget):
         self.note_select_palette = NoteSelectPalette(notes_model, self)
         # Initialize note link palette
         from widgets.note_id_link_insert import NoteLinkInsertPalette
+
         self.note_link_palette = NoteLinkInsertPalette(notes_model, self)
 
     def set_navigation_model(

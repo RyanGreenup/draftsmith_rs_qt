@@ -1,6 +1,14 @@
 from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
-from PySide6.QtCore import Qt, Signal, QMimeData, QPropertyAnimation, QEasingCurve, Property, QObject
+from PySide6.QtCore import (
+    Qt,
+    Signal,
+    QMimeData,
+    QPropertyAnimation,
+    QEasingCurve,
+    Property,
+    QObject,
+)
 from PySide6.QtGui import QPainter
 from models.note import Note
 from models.notes_model import NotesModel
@@ -22,6 +30,7 @@ class HoverOpacity(QObject):
     def opacity(self, value):
         self._opacity = value
 
+
 class NotesTreeWidget(NavigableTree):
     note_selected = Signal(int)  # Signal emitted when a note is selected
     note_selected_with_focus = Signal(
@@ -38,12 +47,12 @@ class NotesTreeWidget(NavigableTree):
         self.notes_model: Optional[NotesModel] = None
         self.follow_mode: bool = True  # Default to true for backward compatibility
         self.itemSelectionChanged.connect(self._on_selection_changed)
-        
+
         # Track hover item during drag
         self.hover_item = None
         self.hover_animation = None
         self.hover_opacity = HoverOpacity()
-        
+
         # Cut/paste tracking
         self.cut_item = None  # Store reference to cut item
 
@@ -70,10 +79,10 @@ class NotesTreeWidget(NavigableTree):
         if self.notes_model is not None:
             # Save state before update
             state = self.save_state()
-            
+
             # Update tree
             self.update_tree(self.notes_model.root_notes)
-            
+
             # Restore state after update
             self.restore_state(state)
 
@@ -256,10 +265,9 @@ class NotesTreeWidget(NavigableTree):
         # Use the model to update the relationship
         if self.notes_model:
             success = self.notes_model.attach_note_to_parent(
-                cut_note.id,
-                target_note.id
+                cut_note.id, target_note.id
             )
-            
+
             if success:
                 # Clear cut state and trigger repaint
                 self.cut_item = None
@@ -270,7 +278,7 @@ class NotesTreeWidget(NavigableTree):
         # Clear cut state
         self.cut_item = None
         self.original_background = None
-        
+
         # Save current state before update
         state = self.save_state()
 
@@ -312,7 +320,7 @@ class NotesTreeWidget(NavigableTree):
                 delete_action.triggered.connect(
                     lambda: self.note_deleted.emit(note_data.id)
                 )
-                
+
                 # Add separator and note ID label at bottom
                 menu.addSeparator()
                 id_action = menu.addAction(f"Note ID: {note_data.id}")
@@ -342,16 +350,16 @@ class NotesTreeWidget(NavigableTree):
     def paintEvent(self, event):
         """Draw hover highlight during drag and cut item highlight"""
         super().paintEvent(event)
-        
+
         painter = QPainter(self.viewport())
-        
+
         # Draw hover highlight
         if self.hover_item:
             rect = self.visualItemRect(self.hover_item)
             color = self.palette().color(QPalette.ColorRole.Highlight)
             color.setAlpha(int(self.hover_opacity.opacity * 255))
             painter.fillRect(rect, color)
-            
+
         # Draw cut item highlight
         if self.cut_item:
             rect = self.visualItemRect(self.cut_item)
@@ -383,7 +391,7 @@ class NotesTreeWidget(NavigableTree):
         """Handle drop events for note reordering and detaching"""
         # Get the target item (where we're dropping)
         target = self.itemAt(event.pos())
-        
+
         # Get the dragged item
         dragged = self.currentItem()
         if not dragged or dragged == target:
@@ -395,7 +403,7 @@ class NotesTreeWidget(NavigableTree):
         if not dragged_note:
             event.ignore()
             return
-            
+
         # Clear hover state
         self.hover_item = None
         self.viewport().update()
@@ -427,10 +435,9 @@ class NotesTreeWidget(NavigableTree):
         # Use the model to update the relationship
         if self.notes_model:
             success = self.notes_model.attach_note_to_parent(
-                dragged_note.id, 
-                target_note.id
+                dragged_note.id, target_note.id
             )
-            
+
             if not success:
                 # If the model update failed, we might want to show an error
                 return
@@ -449,14 +456,16 @@ class NotesTreeWidget(NavigableTree):
             new_hover = self.itemAt(event.pos())
             if new_hover != self.hover_item:
                 self.hover_item = new_hover
-                
+
                 # Start new hover animation
                 if self.hover_animation:
                     self.hover_animation.stop()
                     self.hover_animation.deleteLater()
-                
+
                 if new_hover:
-                    self.hover_animation = QPropertyAnimation(self.hover_opacity, b"opacity")
+                    self.hover_animation = QPropertyAnimation(
+                        self.hover_opacity, b"opacity"
+                    )
                     self.hover_animation.setDuration(200)
                     self.hover_animation.setStartValue(0.0)
                     self.hover_animation.setEndValue(0.4)
@@ -465,7 +474,7 @@ class NotesTreeWidget(NavigableTree):
                     self.hover_animation.start()
                 else:
                     self.hover_opacity._opacity = 0.0
-                
+
                 self.viewport().update()
             event.accept()
         else:

@@ -220,11 +220,11 @@ class NotesModel(QObject):
     def attach_note_to_parent(self, child_id: int, parent_id: int) -> bool:
         """
         Attach a note as a child of another note
-        
+
         Args:
             child_id: ID of the note to attach as child
             parent_id: ID of the parent note
-            
+
         Returns:
             bool: True if successful, False otherwise
         """
@@ -237,10 +237,10 @@ class NotesModel(QObject):
 
             # Use the API to attach the note
             self.note_api.attach_note_to_parent(child_id, parent_id)
-            
+
             # Refresh internal state and emit signal
             self.refresh_notes()  # This emits notes_updated
-            
+
             return True
 
         except Exception as e:
@@ -250,10 +250,10 @@ class NotesModel(QObject):
     def detach_note_from_parent(self, note_id: int) -> bool:
         """
         Detach a note from its parent
-        
+
         Args:
             note_id: ID of the note to detach from its parent
-                
+
         Returns:
             bool: True if successful, False otherwise
         """
@@ -265,10 +265,10 @@ class NotesModel(QObject):
 
             # Use the API to detach the note
             self.note_api.detach_note_from_parent(note_id)
-            
+
             # Refresh internal state and emit signal
             self.refresh_notes()  # This emits notes_updated
-            
+
             return True
 
         except Exception as e:
