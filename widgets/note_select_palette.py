@@ -15,6 +15,7 @@ class NoteSelectPalette(PopupPalette):
         super().__init__(parent)
         self.notes_model = notes_model
         self._notes: List[Note] = []
+        self._note_paths: dict[int, str] = {}  # Add cache for note paths
         self.search_input.setPlaceholderText("Type note title...")
         self.original_note_id = None
         # Follow mode triggers a signal that is connected in main_window.py
@@ -30,8 +31,22 @@ class NoteSelectPalette(PopupPalette):
         self.results_list.currentItemChanged.connect(self.on_selection_changed)
 
     def populate_notes(self) -> None:
-        """Collect all notes from the model"""
+        """Collect all notes from the model and cache their paths if needed"""
         self._notes = self.notes_model.get_all_notes()
+        
+        # Pre-fetch all note paths if using full paths
+        if self.use_full_path and self.parent():
+            try:
+                note_api = self.parent().notes_model.note_api
+                breadcrumbs = note_api.get_all_note_breadcrumbs()
+                # Convert breadcrumbs to paths
+                self._note_paths = {
+                    note_id: "/".join(note.title for note in trail)
+                    for note_id, trail in breadcrumbs.items()
+                }
+            except Exception as e:
+                print(f"Failed to fetch note paths: {e}")
+                self._note_paths = {}
 
         # Clear and repopulate the results list
         self.results_list.clear()
@@ -49,21 +64,10 @@ class NoteSelectPalette(PopupPalette):
         if not isinstance(data, Note) or not data.title:
             return None
 
-        # Get note path from parent window's notes model
-        note_path = ""
+        # Get note path from cache if using full paths
+        display_text = ""
         if self.use_full_path:
-            if self.parent():
-                try:
-                    base_url = self.parent().base_url  # type:ignore
-                    note_api = NoteAPI(base_url)
-                    note_path = note_api.get_note_path(data.id)
-                except AttributeError:
-                    print("Base URL not set for NoteSelectPalette")
-            else:
-                print("Parent window not set for NoteSelectPalette")
-
-        # Create display text with path and title
-        display_text = f"{note_path}"
+            display_text = self._note_paths.get(data.id, "")
 
         item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, data)
@@ -84,9 +88,7 @@ class NoteSelectPalette(PopupPalette):
         for note in self._notes:
             # Search in both title and full path
             note_text = note.title.lower()
-            note_path = ""
-            if self.parent():
-                note_path = self.parent().notes_model.note_api.get_note_path(note.id).lower()
+            note_path = self._note_paths.get(note.id, "").lower() if self.use_full_path else ""
 
             if all(term in note_text or term in note_path for term in search_terms):
                 item = self.create_list_item(note)
