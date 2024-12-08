@@ -59,6 +59,13 @@ def create_zoom_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     return zoom_menu
 
 
+def create_edit_menu(parent, actions: Dict[str, QAction]) -> QMenu:
+    """Create an Edit menu using existing actions"""
+    edit_menu = QMenu("&Edit", parent)
+    edit_menu.addAction(actions["cut_note"])
+    edit_menu.addAction(actions["paste_note"])
+    return edit_menu
+
 def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     """Create a View menu using existing actions"""
     view_menu = QMenu("&View", parent)

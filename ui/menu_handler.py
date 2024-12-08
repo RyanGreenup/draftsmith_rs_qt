@@ -21,6 +21,10 @@ class MenuHandler:
         self.file_menu = create_file_menu(self.main_window, self.actions)
         self.menubar.addMenu(self.file_menu)
 
+        # Setup Edit menu
+        self.edit_menu = create_edit_menu(self.main_window, self.actions)
+        self.menubar.addMenu(self.edit_menu)
+
         # Setup View menu
         self.view_menu = create_view_menu(self.main_window, self.actions)
         self.menubar.addMenu(self.view_menu)
