@@ -324,6 +324,20 @@ class NotesTreeWidget(NavigableTree):
         if current_item:
             note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
+                # Add promote/demote actions
+                promote_action = menu.addAction("Promote")
+                promote_action.triggered.connect(lambda: self.promote_note(current_item))
+                # Only enable promote if item has a parent
+                promote_action.setEnabled(current_item.parent() is not None)
+
+                demote_action = menu.addAction("Demote")
+                demote_action.triggered.connect(lambda: self.demote_note(current_item))
+                # Only enable demote if there's an item above
+                demote_action.setEnabled(self.get_item_above(current_item) is not None)
+
+                # Add separator before cut/paste
+                menu.addSeparator()
+
                 # Add cut action
                 cut_action = menu.addAction("Cut")
                 cut_action.triggered.connect(lambda: self._handle_cut(current_item))
