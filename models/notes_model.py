@@ -246,3 +246,31 @@ class NotesModel(QObject):
         except Exception as e:
             print(f"Error attaching note {child_id} to parent {parent_id}: {e}")
             return False
+
+    def detach_note_from_parent(self, note_id: int) -> bool:
+        """
+        Detach a note from its parent
+        
+        Args:
+            note_id: ID of the note to detach from its parent
+                
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Verify note exists in our model
+            note = self.notes.get(note_id)
+            if not note:
+                return False
+
+            # Use the API to detach the note
+            self.note_api.detach_note_from_parent(note_id)
+            
+            # Refresh internal state and emit signal
+            self.refresh_notes()  # This emits notes_updated
+            
+            return True
+
+        except Exception as e:
+            print(f"Error detaching note {note_id} from parent: {e}")
+            return False
