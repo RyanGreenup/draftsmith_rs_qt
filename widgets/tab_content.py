@@ -30,6 +30,7 @@ class TabContent(QWidget):
         self.navigation_model: Optional[NavigationModel] = None
         self.view_actions: Optional[Dict[str, QAction]] = None
         self.base_url = base_url
+        self.note_select_palette = None  # Will be initialized when model is set
 
         # Create components
         self.left_sidebar = LeftSidebar()
@@ -111,6 +112,8 @@ class TabContent(QWidget):
         self.left_sidebar.tree.set_model(notes_model)
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
+        # Initialize note select palette
+        self.note_select_palette = NoteSelectPalette(notes_model, self)
 
     def set_navigation_model(
         self, navigation_model: NavigationModel, actions: Dict[str, QAction]
@@ -281,6 +284,11 @@ class TabContent(QWidget):
 
 
 
+
+    def show_note_select_palette(self):
+        """Show the note selection palette"""
+        if self.notes_model and self.note_select_palette:
+            self.note_select_palette.show_palette()
 
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
