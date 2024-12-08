@@ -1,110 +1,17 @@
-from typing import List, Optional, Any
-from PySide6.QtWidgets import QListWidgetItem, QMainWindow
+from typing import Optional
+from PySide6.QtWidgets import QListWidgetItem
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
-from .popup_palette import PopupPalette
-from models.note import Note
-from models.notes_model import NotesModel
-from api.client import NoteAPI
+from .palette_populated_with_notes import PalettePopulatedWithNotes
 
 
-class NoteSelectPalette(PopupPalette):
+class NoteSelectPalette(PalettePopulatedWithNotes):
     """Popup palette for selecting notes by title"""
 
-    def __init__(self, notes_model: NotesModel, 
-                 parent: Optional[QMainWindow] = None, 
-                 use_full_path: bool = False) -> None:
-        super().__init__(parent, min_width=800, max_height=1000)  # Increased from 600 to 1000
-        self.notes_model = notes_model
-        self._notes: List[Note] = []
-        self._note_paths: dict[int, str] = {}  # Add cache for note paths
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self.search_input.setPlaceholderText("Type note title...")
         self.original_note_id = None
-        # Follow mode triggers a signal that is connected in main_window.py
-        # This signal updates this variable
-        # In the future, notes_tree and this palette may
-        # take a reference to main_window to directly inspect that variable
-        # For now I've left them modular
-        # To change the default just trigger the signal in main_window.py at startup
-        self.follow_mode = True
 
-        # Before this can be used, the api needs an endpoint to fetch
-        # all the breadcrumbs for all notes, otherwise it will be too slow
-        # Manually walking the tree will be less slow, but will add code complexity
-        # that should be offloaded to the API
-        self.use_full_path = use_full_path
-
-        # Connect selection change signal
-        self.results_list.currentItemChanged.connect(self.on_selection_changed)
-
-    def populate_notes(self) -> None:
-        """Collect all notes from the model and cache their paths if needed"""
-        self._notes = self.notes_model.get_all_notes()
-
-        # Pre-fetch all note paths if using full paths
-        if self.use_full_path and self.parent():
-            try:
-                note_api = self.parent().notes_model.note_api
-                # Fetch breadcrumbs for each note individually
-                self._note_paths = {}
-                for note in self._notes:
-                    try:
-                        breadcrumbs = note_api.get_note_breadcrumbs(note.id)
-                        self._note_paths[note.id] = "/".join(note.title for note in breadcrumbs)
-                    except Exception as e:
-                        print(f"Failed to fetch breadcrumbs for note {note.id}: {e}")
-                        self._note_paths[note.id] = note.title
-            except Exception as e:
-                print(f"Failed to fetch note paths: {e}")
-                self._note_paths = {}
-
-        # Clear and repopulate the results list
-        self.results_list.clear()
-        for note in self._notes:
-            item = self.create_list_item(note)
-            if item:
-                self.results_list.addItem(item)
-
-    def get_all_items(self) -> List[Note]:
-        """Get all notes"""
-        return self._notes
-
-    def create_list_item(self, data: Any) -> Optional[QListWidgetItem]:
-        """Create a list item from a note"""
-        if not isinstance(data, Note) or not data.title:
-            return None
-
-        # Get display text - either full path or just title
-        if self.use_full_path:
-            display_text = self._note_paths.get(data.id, data.title)
-        else:
-            display_text = data.title
-
-        item = QListWidgetItem(display_text)
-        item.setData(Qt.ItemDataRole.UserRole, data)
-
-        # Style the item
-        font = QFont()
-        font.setPointSize(11)
-        item.setFont(font)
-
-        # Store the original title for filtering
-        item.setData(Qt.ItemDataRole.UserRole + 1, data.title)
-
-        return item
-
-    def filter_items(self, text: str) -> None:
-        """Filter notes based on search text"""
-        search_terms = text.lower().split()
-        for note in self._notes:
-            # Search in both title and full path
-            note_text = note.title.lower()
-            note_path = self._note_paths.get(note.id, "").lower() if self.use_full_path else ""
-
-            if all(term in note_text or term in note_path for term in search_terms):
-                item = self.create_list_item(note)
-                if item:
-                    self.results_list.addItem(item)
 
     def on_item_activated(self, item: QListWidgetItem) -> None:
         """Handle note selection"""
@@ -122,19 +29,10 @@ class NoteSelectPalette(PopupPalette):
         self.populate_notes()
         super().show_palette()
 
-    def on_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]) -> None:
-        """Preview the selected note if follow mode is enabled"""
-        if not current:
-            if not self.parent():
-                print("No current item or parent")
-            return
-
-        # Check if follow mode is enabled
-        if self.follow_mode:
-            note = current.data(Qt.ItemDataRole.UserRole)
-            if note:
-                # Update view without focusing tree
-                self.parent()._handle_view_request(note.id)
+    def preview_note(self, note_id: int) -> None:
+        """Preview the selected note without focusing the tree"""
+        if self.parent():
+            self.parent()._handle_view_request(note_id)
 
     def hide(self) -> None:
         """Restore original note when hiding if no selection was made"""
