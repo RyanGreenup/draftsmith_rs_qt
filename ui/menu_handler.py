@@ -115,3 +115,12 @@ class MenuHandler:
                 else None
             )
         )
+
+        # Connect note link insertion action
+        self.actions["insert_note_link"].triggered.connect(
+            lambda: (
+                self.main_window.tab_handler.tab_widget.currentWidget().show_note_link_palette()
+                if self.main_window.tab_handler.tab_widget.currentWidget()
+                else None
+            )
+        )
