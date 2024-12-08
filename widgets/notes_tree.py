@@ -479,3 +479,33 @@ class NotesTreeWidget(NavigableTree):
             event.accept()
         else:
             event.ignore()
+
+    def promote_note(self, item: QTreeWidgetItem) -> bool:
+        """
+        Promote a note by attaching it to its grandparent.
+        Returns True if promotion was successful, False otherwise.
+        """
+        if not item or not self.notes_model:
+            return False
+
+        # Get note data
+        note_data = item.data(0, Qt.ItemDataRole.UserRole)
+        if not note_data:
+            return False
+
+        # Get parent item
+        parent_item = item.parent()
+        if not parent_item:
+            # Already at root level, can't promote
+            return False
+
+        # Get grandparent item
+        grandparent_item = parent_item.parent()
+        
+        if grandparent_item:
+            # If there's a grandparent, attach to it
+            grandparent_note = grandparent_item.data(0, Qt.ItemDataRole.UserRole)
+            return self.notes_model.attach_note_to_parent(note_data.id, grandparent_note.id)
+        else:
+            # If no grandparent, detach from parent (move to root)
+            return self.notes_model.detach_note_from_parent(note_data.id)
