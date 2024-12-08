@@ -216,3 +216,33 @@ class NotesModel(QObject):
         except Exception as e:
             print(f"Error deleting note: {e}")
             return False
+
+    def attach_note_to_parent(self, child_id: int, parent_id: int) -> bool:
+        """
+        Attach a note as a child of another note
+        
+        Args:
+            child_id: ID of the note to attach as child
+            parent_id: ID of the parent note
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Verify both notes exist in our model
+            child = self.notes.get(child_id)
+            parent = self.notes.get(parent_id)
+            if not child or not parent:
+                return False
+
+            # Use the API to attach the note
+            self.note_api.attach_note_to_parent(child_id, parent_id)
+            
+            # Refresh the notes to get the updated structure
+            self.refresh_notes()
+            
+            return True
+
+        except Exception as e:
+            print(f"Error attaching note {child_id} to parent {parent_id}: {e}")
+            return False
