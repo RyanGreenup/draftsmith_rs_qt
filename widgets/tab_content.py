@@ -14,6 +14,7 @@ from widgets.markdown_editor import MarkdownEditor
 from widgets.right_sidebar import RightSidebar
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
+from widgets.note_select_palette import NoteSelectPalette
 import api
 from app_types import HierarchyLevel
 
