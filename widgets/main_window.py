@@ -302,3 +302,9 @@ class NoteApp(QMainWindow):
             note_id = current_tab.get_current_note_id()
             if note_id is not None:
                 current_tab._handle_save_request(note_id)
+
+    def _trigger_paste_onto_selected_tree_item(self) -> None:
+        """Trigger paste onto the currently selected tree item in the active tab"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            current_tab.paste_onto_selected_tree_item()
