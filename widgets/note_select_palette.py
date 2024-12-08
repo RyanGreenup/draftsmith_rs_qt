@@ -36,11 +36,8 @@ class NoteSelectPalette(PopupPalette):
         if not isinstance(data, Note) or not data.title:
             return None
 
-        # Create display text with note title and path
+        # Create display text with just the note title
         display_text = data.title
-        if data.path:
-            # Use a wider space for the note title and add a subtle separator
-            display_text = f"{data.title:<30} • {data.path}"
 
         item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, data)
