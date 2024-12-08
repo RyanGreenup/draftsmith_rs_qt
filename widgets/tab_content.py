@@ -300,6 +300,12 @@ class TabContent(QWidget):
         if self.note_link_palette:
             self.note_link_palette.show_palette()
 
+    def cut_selected_tree_item(self) -> None:
+        """Cut the currently selected item in the tree"""
+        current_item = self.left_sidebar.tree.currentItem()
+        if current_item:
+            self.left_sidebar.tree._handle_cut(current_item)
+
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
         # the user will want to rapidly create notes based on the tree but have the keybindings described in the menu
