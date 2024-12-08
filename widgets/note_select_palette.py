@@ -11,7 +11,7 @@ from api.client import NoteAPI
 class NoteSelectPalette(PopupPalette):
     """Popup palette for selecting notes by title"""
 
-    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None, use_full_path: bool = True) -> None:
+    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None, use_full_path: bool = False) -> None:
         super().__init__(parent)
         self.notes_model = notes_model
         self._notes: List[Note] = []
@@ -25,6 +25,11 @@ class NoteSelectPalette(PopupPalette):
         # For now I've left them modular
         # To change the default just trigger the signal in main_window.py at startup
         self.follow_mode = True
+
+        # Before this can be used, the api needs an endpoint to fetch
+        # all the breadcrumbs for all notes, otherwise it will be too slow
+        # Manually walking the tree will be less slow, but will add code complexity
+        # that should be offloaded to the API
         self.use_full_path = use_full_path
 
         # Connect selection change signal
