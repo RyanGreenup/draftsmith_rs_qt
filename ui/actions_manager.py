@@ -228,4 +228,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["paste_note"].setStatusTip("Paste the previously cut note")
     actions["paste_note"].setToolTip("Paste the previously cut note")
 
+    # Add promote note action
+    actions["promote_note"] = QAction("Pro&mote Note", parent)
+    actions["promote_note"].setShortcut("Ctrl+[")  # Vim-like shortcut for outdenting
+    actions["promote_note"].setStatusTip("Promote the selected note up one level")
+    actions["promote_note"].setToolTip("Promote the selected note up one level")
+
     return actions

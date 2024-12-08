@@ -143,3 +143,8 @@ class MenuHandler:
         self.actions["paste_note"].triggered.connect(
             self.main_window._trigger_paste_onto_selected_tree_item
         )
+
+        # Connect promote action
+        self.actions["promote_note"].triggered.connect(
+            self.main_window._trigger_promote_selected_tree_item
+        )
