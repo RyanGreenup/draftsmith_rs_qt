@@ -232,16 +232,18 @@ class NotesTreeWidget(NavigableTree):
     def _handle_cut(self, item):
         """Handle cutting a tree item"""
         # Clear previous cut item highlighting if exists
-        if self.cut_item and self.original_background:
-            self.cut_item.setBackground(0, self.original_background)
+        if self.cut_item:
+            self.cut_item.setBackground(0, None)  # Reset to default
 
         # Store new cut item
         self.cut_item = item
-        # Store original background - make sure to create a copy of the current background
-        self.original_background = item.background(0).color()
-        # Highlight cut item - use a lighter version of the highlight color
-        highlight_color = self.palette().color(QPalette.ColorRole.Highlight).lighter(150)
-        item.setBackground(0, highlight_color)
+        
+        # Get highlight color and make it lighter
+        highlight_color = self.palette().color(QPalette.ColorRole.Highlight)
+        lighter_color = highlight_color.lighter(150)
+        
+        # Apply the highlight
+        item.setBackground(0, lighter_color)
 
     def _handle_paste(self, target_item):
         """Handle pasting a cut item as child of target"""
@@ -271,9 +273,8 @@ class NotesTreeWidget(NavigableTree):
             
             if success:
                 # Clear cut state
-                self.cut_item.setBackground(0, self.original_background)
+                self.cut_item.setBackground(0, None)  # Reset to default
                 self.cut_item = None
-                self.original_background = None
 
     def update_tree(self, root_notes: List[Note]) -> None:
         """Update the tree widget to reflect the model's state"""
