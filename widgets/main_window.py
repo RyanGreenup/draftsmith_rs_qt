@@ -308,3 +308,9 @@ class NoteApp(QMainWindow):
         current_tab = self.tab_handler.tab_widget.currentWidget()
         if isinstance(current_tab, TabContent):
             current_tab.paste_onto_selected_tree_item()
+
+    def _trigger_cut_selected_tree_item(self) -> None:
+        """Trigger cut on the currently selected tree item in the active tab"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            current_tab.cut_selected_tree_item()
