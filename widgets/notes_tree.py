@@ -43,6 +43,10 @@ class NotesTreeWidget(NavigableTree):
         self.hover_item = None
         self.hover_animation = None
         self.hover_opacity = HoverOpacity()
+        
+        # Cut/paste tracking
+        self.cut_item = None  # Store reference to cut item
+        self.original_background = None  # Store original background color
 
     def set_model(self, model: "NotesModel"):
         """Set the notes model for this tree widget"""
@@ -225,8 +229,57 @@ class NotesTreeWidget(NavigableTree):
                 return note_data.id
         return None
 
+    def _handle_cut(self, item):
+        """Handle cutting a tree item"""
+        # Clear previous cut item highlighting if exists
+        if self.cut_item and self.original_background:
+            self.cut_item.setBackground(0, self.original_background)
+
+        # Store new cut item
+        self.cut_item = item
+        # Store original background
+        self.original_background = item.background(0)
+        # Highlight cut item
+        item.setBackground(0, self.palette().color(QPalette.ColorRole.Highlight).lighter())
+
+    def _handle_paste(self, target_item):
+        """Handle pasting a cut item as child of target"""
+        if not self.cut_item or not target_item or self.cut_item == target_item:
+            return
+
+        # Get note data
+        cut_note = self.cut_item.data(0, Qt.ItemDataRole.UserRole)
+        target_note = target_item.data(0, Qt.ItemDataRole.UserRole)
+
+        if not cut_note or not target_note:
+            return
+
+        # Don't allow pasting to own child
+        parent = target_item
+        while parent:
+            if parent == self.cut_item:
+                return
+            parent = parent.parent()
+
+        # Use the model to update the relationship
+        if self.notes_model:
+            success = self.notes_model.attach_note_to_parent(
+                cut_note.id,
+                target_note.id
+            )
+            
+            if success:
+                # Clear cut state
+                self.cut_item.setBackground(0, self.original_background)
+                self.cut_item = None
+                self.original_background = None
+
     def update_tree(self, root_notes: List[Note]) -> None:
         """Update the tree widget to reflect the model's state"""
+        # Clear cut state
+        self.cut_item = None
+        self.original_background = None
+        
         # Save current state before update
         state = self.save_state()
 
@@ -247,15 +300,24 @@ class NotesTreeWidget(NavigableTree):
         # Add a separator before note-specific actions
         menu.addSeparator()
 
-        # Add delete action
         current_item = self.currentItem()
         if current_item:
             note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
             if note_data:
-                # Create delete action directly instead of trying to access main window
+                # Add cut action
+                cut_action = menu.addAction("Cut")
+                cut_action.triggered.connect(lambda: self._handle_cut(current_item))
+
+                # Add paste action (only enabled if there's a cut item)
+                paste_action = menu.addAction("Paste")
+                paste_action.setEnabled(self.cut_item is not None)
+                paste_action.triggered.connect(lambda: self._handle_paste(current_item))
+
+                # Add separator before delete
+                menu.addSeparator()
+
+                # Create delete action
                 delete_action = menu.addAction("Delete Note")
-                # self.note_deleted is handled in TabContent._connect_signals
-                # which is is called in main_window referring to the current tab
                 delete_action.triggered.connect(
                     lambda: self.note_deleted.emit(note_data.id)
                 )
