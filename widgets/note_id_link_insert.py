@@ -9,6 +9,9 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+        # 3. The cursor position is not stored
+
         self.search_input.setPlaceholderText("Select note to link to...")
         self.original_cursor_position = None
 
@@ -19,21 +22,26 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
             # The parent is TabContent, which has direct access to the editor
             if hasattr(self.parent(), 'editor') and hasattr(self.parent().editor, 'editor'):
                 editor: QTextEdit = self.parent().editor.editor
-                
+
                 # Insert the note link at cursor position
                 link_text = f"[[{note.id}]]"
                 editor.insertPlainText(link_text)
-                
+
         self.hide()
 
     def show_palette(self) -> None:
         """Show the palette and store the current cursor position"""
+
+        # 1. The inserted text is injected into the last previewed note
+        # So for now we simply disable this and we'll fix it later.
+        self.follow_mode = False
+
         if self.parent():
             # The parent is TabContent, which has direct access to the editor
             if hasattr(self.parent(), 'editor') and hasattr(self.parent().editor, 'editor'):
                 editor: QTextEdit = self.parent().editor.editor
                 self.original_cursor_position = editor.textCursor().position()
-                
+
         self.populate_notes()
         super().show_palette()
 
@@ -52,5 +60,5 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
                     cursor = editor.textCursor()
                     cursor.setPosition(self.original_cursor_position)
                     editor.setTextCursor(cursor)
-        
+
         super().hide()
