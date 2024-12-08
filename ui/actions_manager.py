@@ -220,4 +220,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["cut_note"].setStatusTip("Cut the selected note")
     actions["cut_note"].setToolTip("Cut the selected note")
 
+    # Add paste note action
+    actions["paste_note"] = QAction("&Paste Note", parent)
+    actions["paste_note"].setShortcut("Ctrl+V")  # Standard paste shortcut
+    actions["paste_note"].setStatusTip("Paste the previously cut note")
+    actions["paste_note"].setToolTip("Paste the previously cut note")
+
     return actions

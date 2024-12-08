@@ -129,3 +129,8 @@ class MenuHandler:
         self.actions["cut_note"].triggered.connect(
             self.main_window._trigger_cut_selected_tree_item
         )
+
+        # Connect paste action
+        self.actions["paste_note"].triggered.connect(
+            self.main_window._trigger_paste_onto_selected_tree_item
+        )
