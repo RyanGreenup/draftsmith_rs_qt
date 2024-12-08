@@ -530,3 +530,37 @@ class NotesTreeWidget(NavigableTree):
         else:
             # If no grandparent, detach from parent (move to root)
             return self.notes_model.detach_note_from_parent(note_data.id)
+
+    def demote_note(self, item: QTreeWidgetItem) -> bool:
+        """
+        Demote a note by attaching it to the item visually above it.
+        Returns True if demotion was successful, False otherwise.
+        """
+        if not item or not self.notes_model:
+            return False
+
+        # Get note data
+        note_data = item.data(0, Qt.ItemDataRole.UserRole)
+        if not note_data:
+            return False
+
+        # Get item above
+        item_above = self.get_item_above(item)
+        if not item_above:
+            # No item above, can't demote
+            return False
+
+        # Get note data for item above
+        above_note = item_above.data(0, Qt.ItemDataRole.UserRole)
+        if not above_note:
+            return False
+
+        # Don't allow attaching to own descendant
+        parent = item_above
+        while parent:
+            if parent == item:
+                return False
+            parent = parent.parent()
+
+        # Attach to the item above
+        return self.notes_model.attach_note_to_parent(note_data.id, above_note.id)
