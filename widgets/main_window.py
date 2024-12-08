@@ -122,10 +122,7 @@ class NoteApp(QMainWindow):
         """Show the note link insertion palette for the current tab"""
         current_tab = self.tab_handler.tab_widget.currentWidget()
         if isinstance(current_tab, TabContent):
-            if not hasattr(current_tab, 'note_link_palette'):
-                # Initialize the palette if it doesn't exist
-                current_tab.note_link_palette = NoteLinkInsertPalette(self.notes_model, current_tab)
-            current_tab.note_link_palette.show_palette()
+            current_tab.show_note_link_palette()
 
     def focus_next_widget(self):
         """Simulate Tab key press to move focus to next widget"""

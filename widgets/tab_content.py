@@ -32,6 +32,7 @@ class TabContent(QWidget):
         self.view_actions: Optional[Dict[str, QAction]] = None
         self.base_url = base_url
         self.note_select_palette = None  # Will be initialized when model is set
+        self.note_link_palette = None  # Will be initialized when needed
 
         # Create components
         self.left_sidebar = LeftSidebar()
@@ -290,6 +291,14 @@ class TabContent(QWidget):
         """Show the note selection palette"""
         if self.notes_model and self.note_select_palette:
             self.note_select_palette.show_palette()
+
+    def show_note_link_palette(self) -> None:
+        """Show the note link insertion palette"""
+        if self.notes_model:
+            if not self.note_link_palette:
+                from widgets.note_id_link_insert import NoteLinkInsertPalette
+                self.note_link_palette = NoteLinkInsertPalette(self.notes_model, self)
+            self.note_link_palette.show_palette()
 
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
