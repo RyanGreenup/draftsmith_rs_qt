@@ -13,8 +13,8 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
         style.standardIcon(QStyle.StandardPixmap.SP_FileIcon), "&New", parent
     )
     actions["new"].setShortcut("Ctrl+N")
-    actions["new"].setStatusTip("Create a new note")
-    actions["new"].setToolTip("Create a new note")
+    actions["new"].setStatusTip("Create a new note as child")
+    actions["new"].setToolTip("Create a new note as child")
 
     actions["open"] = QAction(
         style.standardIcon(QStyle.StandardPixmap.SP_DialogOpenButton), "&Open", parent
