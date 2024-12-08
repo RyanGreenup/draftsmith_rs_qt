@@ -259,6 +259,11 @@ class NotesTreeWidget(NavigableTree):
                 delete_action.triggered.connect(
                     lambda: self.note_deleted.emit(note_data.id)
                 )
+                
+                # Add separator and note ID label at bottom
+                menu.addSeparator()
+                id_action = menu.addAction(f"Note ID: {note_data.id}")
+                id_action.setEnabled(False)  # Make it non-clickable
 
         return menu
 
