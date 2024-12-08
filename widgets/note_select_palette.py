@@ -64,10 +64,11 @@ class NoteSelectPalette(PopupPalette):
         if not isinstance(data, Note) or not data.title:
             return None
 
-        # Get note path from cache if using full paths
-        display_text = ""
+        # Get display text - either full path or just title
         if self.use_full_path:
-            display_text = self._note_paths.get(data.id, "")
+            display_text = self._note_paths.get(data.id, data.title)
+        else:
+            display_text = data.title
 
         item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, data)
