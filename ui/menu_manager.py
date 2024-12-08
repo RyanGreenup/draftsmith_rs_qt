@@ -36,6 +36,7 @@ def create_file_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     file_menu.addMenu(new_menu)
 
     file_menu.addAction(actions["open"])
+    file_menu.addAction(actions["show_note_palette"])  # Add the new action here
     file_menu.addAction(actions["save"])
     file_menu.addAction(actions["delete_note"])
     file_menu.addAction(actions["exit"])

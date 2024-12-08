@@ -106,3 +106,12 @@ class MenuHandler:
         self.actions["restore_tabs_state"].triggered.connect(
             self.main_window.tab_handler.restore_tabs_state
         )
+
+        # Connect note palette action
+        self.actions["show_note_palette"].triggered.connect(
+            lambda: (
+                self.main_window.tab_handler.tab_widget.currentWidget().show_note_select_palette()
+                if self.main_window.tab_handler.tab_widget.currentWidget()
+                else None
+            )
+        )
