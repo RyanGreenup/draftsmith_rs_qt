@@ -238,8 +238,8 @@ class NotesModel(QObject):
             # Use the API to attach the note
             self.note_api.attach_note_to_parent(child_id, parent_id)
             
-            # Refresh the notes to get the updated structure
-            self.refresh_notes()
+            # Refresh internal state and emit signal
+            self.refresh_notes()  # This emits notes_updated
             
             return True
 

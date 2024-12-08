@@ -46,7 +46,14 @@ class NotesTreeWidget(NavigableTree):
     def update_tree_from_model(self):
         """Callback for model updates to refresh the tree"""
         if self.notes_model is not None:
+            # Save state before update
+            state = self.save_state()
+            
+            # Update tree
             self.update_tree(self.notes_model.root_notes)
+            
+            # Restore state after update
+            self.restore_state(state)
 
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""
@@ -298,12 +305,19 @@ class NotesTreeWidget(NavigableTree):
 
         # Use the model to update the relationship
         if self.notes_model:
-            # Accept the event first - the view will update via notes_updated signal
-            event.accept()
-            self.notes_model.attach_note_to_parent(
+            # Save current state before the update
+            state = self.save_state()
+            
+            # Let model handle the update - it will emit notes_updated
+            success = self.notes_model.attach_note_to_parent(
                 dragged_note.id, 
                 target_note.id
             )
+            
+            if success:
+                event.accept()
+            else:
+                event.ignore()
         else:
             event.ignore()
 
