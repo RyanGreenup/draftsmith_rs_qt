@@ -5,6 +5,7 @@ description = "A QT client for the Draftsmith notetaking server"
 authors = ["Ryan Greenup"]
 license = "GPL"
 readme = "README.md"
+packages = [{include = "*", from="."}]
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.14"
@@ -23,3 +24,6 @@ python-levenshtein = "^0.26.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+draftsmith-qt = "main:app"
