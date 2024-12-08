@@ -612,6 +612,34 @@ class NoteAPI(API):
         
         return [NoteWithoutContent.model_validate(note) for note in notes]
 
+    def get_all_note_breadcrumbs(self) -> dict[int, list[NoteWithoutContent]]:
+        """
+        Get breadcrumb trails for all notes in a single request.
+        
+        Returns:
+            dict[int, list[NoteWithoutContent]]: Dictionary mapping note IDs to their breadcrumb trails
+            
+        Raises:
+            requests.exceptions.RequestException: If the request fails
+        """
+        response = requests.get(
+            f"{self.base_url}/notes/breadcrumbs",
+            headers={"Content-Type": "application/json"},
+        )
+
+        response.raise_for_status()
+        
+        # Clean up trailing whitespace in all titles
+        breadcrumbs = response.json()
+        for note_id, trail in breadcrumbs.items():
+            for note in trail:
+                note['title'] = note['title'].rstrip('\r\n')
+                
+        return {
+            int(note_id): [NoteWithoutContent.model_validate(note) for note in trail]
+            for note_id, trail in breadcrumbs.items()
+        }
+
     def get_note_path(self, note_id: int, separator: str = "/") -> str:
         """
         Get the full path of a note by joining the titles of its breadcrumb trail.
