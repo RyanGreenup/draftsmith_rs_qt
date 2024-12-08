@@ -47,8 +47,13 @@ class NoteSelectPalette(PopupPalette):
         if not isinstance(data, Note) or not data.title:
             return None
 
-        # Create display text with just the note title
-        display_text = data.title
+        # Get note path from parent window's notes model
+        note_path = ""
+        if self.parent():
+            note_path = self.parent().notes_model.note_api.get_note_path(data.id)
+            
+        # Create display text with path and title
+        display_text = f"{note_path}"
 
         item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, data)
@@ -57,6 +62,9 @@ class NoteSelectPalette(PopupPalette):
         font = QFont()
         font.setPointSize(11)
         item.setFont(font)
+        
+        # Store the original title for filtering
+        item.setData(Qt.ItemDataRole.UserRole + 1, data.title)
 
         return item
 
@@ -64,8 +72,13 @@ class NoteSelectPalette(PopupPalette):
         """Filter notes based on search text"""
         search_terms = text.lower().split()
         for note in self._notes:
+            # Search in both title and full path
             note_text = note.title.lower()
-            if all(term in note_text for term in search_terms):
+            note_path = ""
+            if self.parent():
+                note_path = self.parent().notes_model.note_api.get_note_path(note.id).lower()
+            
+            if all(term in note_text or term in note_path for term in search_terms):
                 item = self.create_list_item(note)
                 if item:
                     self.results_list.addItem(item)
