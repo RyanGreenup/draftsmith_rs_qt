@@ -268,6 +268,8 @@ class NotesTreeWidget(NavigableTree):
 
     def dropEvent(self, event):
         """Handle drop events for note reordering"""
+        event.setDropAction(Qt.DropAction.MoveAction)  # Force move action
+        
         # Get the target item (where we're dropping)
         target = self.itemAt(event.pos())
         if not target:
@@ -304,6 +306,8 @@ class NotesTreeWidget(NavigableTree):
             )
             if success:
                 event.accept()
+                # Prevent default handling
+                event.setAccepted(True)
             else:
                 event.ignore()
         else:
