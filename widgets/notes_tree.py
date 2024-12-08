@@ -274,24 +274,35 @@ class NotesTreeWidget(NavigableTree):
         super().mouseDoubleClickEvent(event)
 
     def dropEvent(self, event):
-        """Handle drop events for note reordering"""
+        """Handle drop events for note reordering and detaching"""
         # Get the target item (where we're dropping)
         target = self.itemAt(event.pos())
-        if not target:
-            event.ignore()
-            return
-
+        
         # Get the dragged item
         dragged = self.currentItem()
         if not dragged or dragged == target:
             event.ignore()
             return
 
-        # Get note data
+        # Get dragged note data
         dragged_note = dragged.data(0, Qt.ItemDataRole.UserRole)
+        if not dragged_note:
+            event.ignore()
+            return
+
+        # Prevent default drop handling
+        event.setDropAction(Qt.DropAction.IgnoreAction)
+        event.accept()
+
+        # If target is None, we're dropping to root level (detach)
+        if not target:
+            if self.notes_model:
+                self.notes_model.detach_note_from_parent(dragged_note.id)
+            return
+
+        # Handle normal attachment to another note
         target_note = target.data(0, Qt.ItemDataRole.UserRole)
-        
-        if not dragged_note or not target_note:
+        if not target_note:
             event.ignore()
             return
 
@@ -302,10 +313,6 @@ class NotesTreeWidget(NavigableTree):
                 event.ignore()
                 return
             parent = parent.parent()
-
-        # Prevent default drop handling
-        event.setDropAction(Qt.DropAction.IgnoreAction)
-        event.accept()
 
         # Use the model to update the relationship
         if self.notes_model:
