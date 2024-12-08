@@ -258,6 +258,23 @@ class NotesTreeWidget(NavigableTree):
         # Return the item at that index
         return self.itemFromIndex(above_index)
 
+    def select_item_above(self) -> bool:
+        """
+        Select the item that appears directly above the current item in the visual tree.
+        Returns True if selection was successful, False otherwise.
+        """
+        current_item = self.currentItem()
+        if not current_item:
+            return False
+            
+        item_above = self.get_item_above(current_item)
+        if not item_above:
+            return False
+            
+        self.setCurrentItem(item_above)
+        self.scrollToItem(item_above)
+        return True
+
     def _handle_cut(self, item):
         """Handle cutting a tree item"""
         # Store new cut item and trigger repaint
