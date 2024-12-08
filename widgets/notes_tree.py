@@ -237,6 +237,27 @@ class NotesTreeWidget(NavigableTree):
                 return note_data.id
         return None
 
+    def get_item_above(self, item: QTreeWidgetItem) -> Optional[QTreeWidgetItem]:
+        """
+        Get the item that appears directly above the given item in the visual tree.
+        Returns None if there is no item above.
+        """
+        if not item:
+            return None
+            
+        # Get the current visual index
+        current_index = self.indexFromItem(item)
+        if not current_index.isValid():
+            return None
+            
+        # Get the index of item above
+        above_index = self.indexAbove(current_index)
+        if not above_index.isValid():
+            return None
+            
+        # Return the item at that index
+        return self.itemFromIndex(above_index)
+
     def _handle_cut(self, item):
         """Handle cutting a tree item"""
         # Store new cut item and trigger repaint
