@@ -234,4 +234,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["promote_note"].setStatusTip("Promote the selected note up one level")
     actions["promote_note"].setToolTip("Promote the selected note up one level")
 
+    # Add demote note action
+    actions["demote_note"] = QAction("&Demote Note", parent)
+    actions["demote_note"].setShortcut("Ctrl+]")  # Vim-like shortcut for indenting
+    actions["demote_note"].setStatusTip("Demote the selected note down one level")
+    actions["demote_note"].setToolTip("Demote the selected note down one level")
+
     return actions

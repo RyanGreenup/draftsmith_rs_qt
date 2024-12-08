@@ -148,3 +148,8 @@ class MenuHandler:
         self.actions["promote_note"].triggered.connect(
             self.main_window._trigger_promote_selected_tree_item
         )
+
+        # Connect demote action
+        self.actions["demote_note"].triggered.connect(
+            self.main_window._trigger_demote_selected_tree_item
+        )
