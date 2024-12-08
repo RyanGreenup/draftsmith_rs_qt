@@ -14,7 +14,7 @@ class NoteSelectPalette(PopupPalette):
     def __init__(self, notes_model: NotesModel, 
                  parent: Optional[QMainWindow] = None, 
                  use_full_path: bool = False) -> None:
-        super().__init__(parent, min_width=800, max_height=600)  # Larger size for note selection
+        super().__init__(parent, min_width=800, max_height=1000)  # Increased from 600 to 1000
         self.notes_model = notes_model
         self._notes: List[Note] = []
         self._note_paths: dict[int, str] = {}  # Add cache for note paths
