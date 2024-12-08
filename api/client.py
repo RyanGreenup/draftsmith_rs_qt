@@ -584,6 +584,34 @@ class NoteAPI(API):
         response.raise_for_status()
         return [Note.model_validate(note) for note in response.json()]
 
+    def get_note_breadcrumbs(self, note_id: int) -> list[NoteWithoutContent]:
+        """
+        Get the breadcrumb trail for a note, from root to the current note.
+        The last item in the list is the current note.
+
+        Args:
+            note_id: The ID of the note to get breadcrumbs for
+
+        Returns:
+            list[NoteWithoutContent]: List of notes representing the path from root to current note
+
+        Raises:
+            requests.exceptions.RequestException: If the request fails
+        """
+        response = requests.get(
+            f"{self.base_url}/notes/{note_id}/breadcrumbs",
+            headers={"Content-Type": "application/json"},
+        )
+
+        response.raise_for_status()
+        
+        # Clean up any trailing whitespace characters in titles
+        notes = response.json()
+        for note in notes:
+            note['title'] = note['title'].rstrip('\r\n')
+        
+        return [NoteWithoutContent.model_validate(note) for note in notes]
+
     def get_link_edge_list(self) -> List[LinkEdge]:
         """Get all link edges between notes
 
