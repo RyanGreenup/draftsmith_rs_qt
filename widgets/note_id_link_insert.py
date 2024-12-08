@@ -16,10 +16,9 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
         """Handle note link insertion"""
         note = item.data(Qt.ItemDataRole.UserRole)
         if note and self.parent():
-            # Get the current tab's editor
-            current_tab = self.parent().get_current_tab()
-            if current_tab and hasattr(current_tab, 'editor') and hasattr(current_tab.editor, 'editor'):
-                editor: QTextEdit = current_tab.editor.editor
+            # The parent is TabContent, which has direct access to the editor
+            if hasattr(self.parent(), 'editor') and hasattr(self.parent().editor, 'editor'):
+                editor: QTextEdit = self.parent().editor.editor
                 
                 # Insert the note link at cursor position
                 link_text = f"[[{note.id}]]"
@@ -30,9 +29,9 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
     def show_palette(self) -> None:
         """Show the palette and store the current cursor position"""
         if self.parent():
-            current_tab = self.parent().get_current_tab()
-            if current_tab and hasattr(current_tab, 'editor') and hasattr(current_tab.editor, 'editor'):
-                editor: QTextEdit = current_tab.editor.editor
+            # The parent is TabContent, which has direct access to the editor
+            if hasattr(self.parent(), 'editor') and hasattr(self.parent().editor, 'editor'):
+                editor: QTextEdit = self.parent().editor.editor
                 self.original_cursor_position = editor.textCursor().position()
                 
         self.populate_notes()
@@ -47,9 +46,9 @@ class NoteLinkInsertPalette(PalettePopulatedWithNotes):
         """Restore cursor position if no selection was made"""
         if not self.results_list.currentItem() and self.original_cursor_position is not None:
             if self.parent():
-                current_tab = self.parent().get_current_tab()
-                if current_tab and hasattr(current_tab, 'editor') and hasattr(current_tab.editor, 'editor'):
-                    editor: QTextEdit = current_tab.editor.editor
+                # The parent is TabContent, which has direct access to the editor
+                if hasattr(self.parent(), 'editor') and hasattr(self.parent().editor, 'editor'):
+                    editor: QTextEdit = self.parent().editor.editor
                     cursor = editor.textCursor()
                     cursor.setPosition(self.original_cursor_position)
                     editor.setTextCursor(cursor)
