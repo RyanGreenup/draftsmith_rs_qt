@@ -268,15 +268,18 @@ class TabContent(QWidget):
         Deletes the item in the tree unless an int is passed, then it deletes the note with that id
         """
         if maybe_note_id is None:
-            note_id = (
-                self.left_sidebar.tree.currentItem().data(0, Qt.ItemDataRole.UserRole).id
-                )
+            current_item = self.left_sidebar.tree.currentItem()
+            if not current_item:
+                return
+            note_id = current_item.data(0, Qt.ItemDataRole.UserRole).id
         else:
             note_id = maybe_note_id
+            current_item = None
+
         try:
             if self.notes_model:
-                if self.left_sidebar.tree.currentItem() == note_id:
-                    # Select the item above the deleted note
+                # If we're deleting the currently selected item, select the one above first
+                if current_item and current_item.data(0, Qt.ItemDataRole.UserRole).id == note_id:
                     self.left_sidebar.tree.select_item_above()
                 # Delete the note through the model
                 self.notes_model.delete_note(note_id)
