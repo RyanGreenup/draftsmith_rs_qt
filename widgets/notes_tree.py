@@ -303,23 +303,20 @@ class NotesTreeWidget(NavigableTree):
                 return
             parent = parent.parent()
 
+        # Prevent default drop handling
+        event.setDropAction(Qt.DropAction.IgnoreAction)
+        event.accept()
+
         # Use the model to update the relationship
         if self.notes_model:
-            # Save current state before the update
-            state = self.save_state()
-            
-            # Let model handle the update - it will emit notes_updated
             success = self.notes_model.attach_note_to_parent(
                 dragged_note.id, 
                 target_note.id
             )
             
-            if success:
-                event.accept()
-            else:
-                event.ignore()
-        else:
-            event.ignore()
+            if not success:
+                # If the model update failed, we might want to show an error
+                return
 
     def dragEnterEvent(self, event):
         """Accept drag events only from within the tree"""
