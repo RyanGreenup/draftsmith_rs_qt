@@ -325,6 +325,16 @@ class TabContent(QWidget):
             return self.left_sidebar.tree.promote_note(current_item)
         return False
 
+    def demote_selected_tree_item(self) -> bool:
+        """
+        Demote the currently selected item in the tree.
+        Returns True if demotion was successful, False otherwise.
+        """
+        current_item = self.left_sidebar.tree.currentItem()
+        if current_item:
+            return self.left_sidebar.tree.demote_note(current_item)
+        return False
+
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
         # the user will want to rapidly create notes based on the tree but have the keybindings described in the menu
