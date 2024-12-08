@@ -63,8 +63,8 @@ class NoteSelectPalette(PopupPalette):
         """Handle note selection"""
         note = item.data(Qt.ItemDataRole.UserRole)
         if note and self.parent():
-            # Update the view to show the selected note
-            self.parent().set_current_note(note.id)
+            # Update the view to show the selected note 
+            self.notes_model.select_note(note.id)
         self.hide()
 
     def show_palette(self) -> None:
