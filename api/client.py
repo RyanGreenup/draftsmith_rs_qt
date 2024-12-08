@@ -612,6 +612,23 @@ class NoteAPI(API):
         
         return [NoteWithoutContent.model_validate(note) for note in notes]
 
+    def get_note_path(self, note_id: int, separator: str = "/") -> str:
+        """
+        Get the full path of a note by joining the titles of its breadcrumb trail.
+
+        Args:
+            note_id: The ID of the note to get the path for
+            separator: The separator to use between note titles (default: "/")
+
+        Returns:
+            str: The full path string (e.g. "Journals/2024/November/W 48/2024-11-25")
+
+        Raises:
+            requests.exceptions.RequestException: If the request fails
+        """
+        breadcrumbs = self.get_note_breadcrumbs(note_id)
+        return separator.join(note.title for note in breadcrumbs)
+
     def get_link_edge_list(self) -> List[LinkEdge]:
         """Get all link edges between notes
 
