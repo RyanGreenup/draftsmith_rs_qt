@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QMenuBar
 from PySide6.QtGui import QAction
 from typing import Dict, Any
-from app_types import HierarchyLevel
+from draftsmith_qt.app_types import HierarchyLevel
 
 
 class MenuHandler:
@@ -15,7 +15,7 @@ class MenuHandler:
         self.view_actions = {}  # Initialize view_actions dictionary
 
     def setup_menus(self):
-        from ui.menu_manager import create_file_menu, create_view_menu, create_tabs_menu
+        from draftsmith_qt.ui.menu_manager import create_file_menu, create_view_menu, create_tabs_menu
 
         # Setup File menu
         self.file_menu = create_file_menu(self.main_window, self.actions)

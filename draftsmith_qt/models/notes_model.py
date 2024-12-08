@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict, Set
-from api.client import (
+from draftsmith_qt.api.client import (
     NoteAPI,
     TagAPI,
     Note as APINote,
@@ -7,7 +7,7 @@ from api.client import (
     UpdateNoteRequest,
     Tag,
 )
-from models.note import Note
+from draftsmith_qt.models.note import Note
 from datetime import datetime
 from PySide6.QtCore import QObject, Signal
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
-from api.client import Tag
-from models.note import Note
+from draftsmith_qt.api.client import Tag
+from draftsmith_qt.models.note import Note
 
 
 @dataclass

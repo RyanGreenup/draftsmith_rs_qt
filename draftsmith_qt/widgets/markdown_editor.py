@@ -24,7 +24,7 @@ from PySide6.QtCore import (
 )
 import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
-from widgets.text_edit.neovim_integration_and_highlighting import MDEditor
+from draftsmith_qt.widgets.text_edit.neovim_integration_and_highlighting import MDEditor
 
 
 # Register custom schemes for the Web Engine Preview

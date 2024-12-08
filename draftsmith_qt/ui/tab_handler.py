@@ -1,10 +1,10 @@
-from widgets.tab_widget import NotesTabWidget
+from draftsmith_qt.widgets.tab_widget import NotesTabWidget
 import json
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 
-from widgets.tab_content import TabContent
+from draftsmith_qt.widgets.tab_content import TabContent
 
 
 class TabHandler:
