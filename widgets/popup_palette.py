@@ -114,6 +114,13 @@ class PopupPalette(QWidget):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard navigation"""
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            current_item = self.results_list.currentItem()
+            if current_item:
+                self.on_item_activated(current_item)
+            event.accept()
+            return
+            
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             current_row = self.results_list.currentRow()
 
