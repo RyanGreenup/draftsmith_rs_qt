@@ -323,3 +323,12 @@ class NoteApp(QMainWindow):
                 self.status_bar.showMessage("Note promoted", 3000)
             else:
                 self.status_bar.showMessage("Could not promote note", 3000)
+
+    def _trigger_demote_selected_tree_item(self) -> None:
+        """Demote the currently selected tree item in the active tab"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            if current_tab.demote_selected_tree_item():
+                self.status_bar.showMessage("Note demoted", 3000)
+            else:
+                self.status_bar.showMessage("Could not demote note", 3000)
