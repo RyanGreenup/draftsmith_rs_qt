@@ -237,10 +237,11 @@ class NotesTreeWidget(NavigableTree):
 
         # Store new cut item
         self.cut_item = item
-        # Store original background
-        self.original_background = item.background(0)
-        # Highlight cut item
-        item.setBackground(0, self.palette().color(QPalette.ColorRole.Highlight).lighter())
+        # Store original background - make sure to create a copy of the current background
+        self.original_background = item.background(0).color()
+        # Highlight cut item - use a lighter version of the highlight color
+        highlight_color = self.palette().color(QPalette.ColorRole.Highlight).lighter(150)
+        item.setBackground(0, highlight_color)
 
     def _handle_paste(self, target_item):
         """Handle pasting a cut item as child of target"""
