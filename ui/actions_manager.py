@@ -204,4 +204,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["show_note_palette"].setStatusTip("Search and open notes using fuzzy finder")
     actions["show_note_palette"].setToolTip("Search and open notes using fuzzy finder")
 
+    # Add Insert Link palette action
+    actions["show_link_palette"] = QAction("Insert &Link to Note...", parent)
+    actions["show_link_palette"].setShortcut("Ctrl+Shift+L")  # Different from note palette
+    actions["show_link_palette"].setStatusTip("Search and insert link to note using fuzzy finder")
+    actions["show_link_palette"].setToolTip("Search and insert link to note using fuzzy finder")
+
     return actions
