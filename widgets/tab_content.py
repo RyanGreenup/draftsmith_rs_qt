@@ -266,7 +266,9 @@ class TabContent(QWidget):
         """Handle note deletion request"""
         try:
             if self.notes_model:
-
+                if self.left_sidebar.tree.currentItem() == note_id:
+                    # Select the item above the deleted note
+                    self.left_sidebar.tree.select_item_above()
                 # Delete the note through the model
                 self.notes_model.delete_note(note_id)
 
