@@ -5,12 +5,13 @@ from PySide6.QtGui import QFont
 from .popup_palette import PopupPalette
 from models.note import Note
 from models.notes_model import NotesModel
+from api.client import NoteAPI
 
 
 class NoteSelectPalette(PopupPalette):
     """Popup palette for selecting notes by title"""
 
-    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None) -> None:
+    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None, use_full_path: bool = False) -> None:
         super().__init__(parent)
         self.notes_model = notes_model
         self._notes: List[Note] = []
@@ -23,6 +24,7 @@ class NoteSelectPalette(PopupPalette):
         # For now I've left them modular
         # To change the default just trigger the signal in main_window.py at startup
         self.follow_mode = True
+        self.use_full_path = use_full_path
 
         # Connect selection change signal
         self.results_list.currentItemChanged.connect(self.on_selection_changed)
@@ -49,9 +51,17 @@ class NoteSelectPalette(PopupPalette):
 
         # Get note path from parent window's notes model
         note_path = ""
-        if self.parent():
-            note_path = self.parent().notes_model.note_api.get_note_path(data.id)
-            
+        if self.use_full_path:
+            if self.parent():
+                try:
+                    base_url = self.parent().base_url  # type:ignore
+                    note_api = NoteAPI(base_url)
+                    note_path = note_api.get_note_path(data.id)
+                except AttributeError:
+                    print("Base URL not set for NoteSelectPalette")
+            else:
+                print("Parent window not set for NoteSelectPalette")
+
         # Create display text with path and title
         display_text = f"{note_path}"
 
@@ -62,7 +72,7 @@ class NoteSelectPalette(PopupPalette):
         font = QFont()
         font.setPointSize(11)
         item.setFont(font)
-        
+
         # Store the original title for filtering
         item.setData(Qt.ItemDataRole.UserRole + 1, data.title)
 
@@ -77,7 +87,7 @@ class NoteSelectPalette(PopupPalette):
             note_path = ""
             if self.parent():
                 note_path = self.parent().notes_model.note_api.get_note_path(note.id).lower()
-            
+
             if all(term in note_text or term in note_path for term in search_terms):
                 item = self.create_list_item(note)
                 if item:
