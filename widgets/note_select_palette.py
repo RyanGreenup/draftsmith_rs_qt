@@ -15,6 +15,10 @@ class NoteSelectPalette(PopupPalette):
         self.notes_model = notes_model
         self._notes: List[Note] = []
         self.search_input.setPlaceholderText("Type note title...")
+        self.original_note_id = None
+        
+        # Connect selection change signal
+        self.results_list.currentItemChanged.connect(self.on_selection_changed)
 
     def populate_notes(self) -> None:
         """Collect all notes from the model"""
@@ -69,5 +73,28 @@ class NoteSelectPalette(PopupPalette):
 
     def show_palette(self) -> None:
         """Show the palette with fresh note data"""
+        # Store current note ID before showing palette
+        if self.parent():
+            self.original_note_id = self.parent().get_current_note_id()
         self.populate_notes()
         super().show_palette()
+
+    def on_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]) -> None:
+        """Preview the selected note if follow mode is enabled"""
+        if not current or not self.parent():
+            return
+            
+        # Check if follow mode is enabled
+        follow_mode = self.parent().view_actions["toggle_follow_mode"].isChecked()
+        if follow_mode:
+            note = current.data(Qt.ItemDataRole.UserRole)
+            if note:
+                # Update view without focusing tree
+                self.parent()._handle_view_request(note.id)
+
+    def hide(self) -> None:
+        """Restore original note when hiding if no selection was made"""
+        if not self.results_list.currentItem() and self.original_note_id and self.parent():
+            # Restore original note
+            self.parent()._handle_view_request(self.original_note_id)
+        super().hide()
