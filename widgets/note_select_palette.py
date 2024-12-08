@@ -38,12 +38,15 @@ class NoteSelectPalette(PopupPalette):
         if self.use_full_path and self.parent():
             try:
                 note_api = self.parent().notes_model.note_api
-                breadcrumbs = note_api.get_all_note_breadcrumbs()
-                # Convert breadcrumbs to paths
-                self._note_paths = {
-                    note_id: "/".join(note.title for note in trail)
-                    for note_id, trail in breadcrumbs.items()
-                }
+                # Fetch breadcrumbs for each note individually
+                self._note_paths = {}
+                for note in self._notes:
+                    try:
+                        breadcrumbs = note_api.get_note_breadcrumbs(note.id)
+                        self._note_paths[note.id] = "/".join(note.title for note in breadcrumbs)
+                    except Exception as e:
+                        print(f"Failed to fetch breadcrumbs for note {note.id}: {e}")
+                        self._note_paths[note.id] = note.title
             except Exception as e:
                 print(f"Failed to fetch note paths: {e}")
                 self._note_paths = {}
