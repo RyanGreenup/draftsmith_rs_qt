@@ -2,6 +2,7 @@ from typing import List, Optional, Any
 from PySide6.QtWidgets import QListWidgetItem, QMainWindow
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
+from thefuzz import fuzz
 from .popup_palette import PopupPalette
 from models.note import Note
 from models.notes_model import NotesModel
@@ -96,18 +97,37 @@ class PalettePopulatedWithNotes(PopupPalette):
         return item
 
     def filter_items(self, text: str) -> None:
-        """Filter notes based on search text"""
-        search_terms = text.lower().split()
-        for note in self._notes:
-            note_text = note.title.lower()
-            note_path = (
-                self._note_paths.get(note.id, "").lower() if self.use_full_path else ""
-            )
-
-            if all(term in note_text or term in note_path for term in search_terms):
+        """Filter notes based on fuzzy search text"""
+        self.results_list.clear()
+        if not text:  # Show all items if search is empty
+            for note in self._notes:
                 item = self.create_list_item(note)
                 if item:
                     self.results_list.addItem(item)
+            return
+
+        # Store matches with their scores for sorting
+        matches = []
+        for note in self._notes:
+            note_text = note.title
+            if self.use_full_path:
+                note_text = self._note_paths.get(note.id, note.title)
+            
+            # Get the best match ratio using token_set_ratio (best for partial matches)
+            ratio = fuzz.token_set_ratio(text.lower(), note_text.lower())
+            
+            # Only include matches above a certain threshold (adjust as needed)
+            if ratio > 50:  # threshold of 50%
+                matches.append((ratio, note))
+        
+        # Sort by score descending
+        matches.sort(reverse=True, key=lambda x: x[0])
+        
+        # Add items in sorted order
+        for _, note in matches:
+            item = self.create_list_item(note)
+            if item:
+                self.results_list.addItem(item)
 
     def on_selection_changed(
         self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]
