@@ -61,9 +61,6 @@ class TabContent(QWidget):
 
     def _connect_signals(self):
         """Connect internal signals"""
-        # Editor signals
-        self.editor.save_requested.connect(self._handle_save_request)
-
         # Add connection for note deletion
         # What to do when the user has asked to delete a note
         self.left_sidebar.tree.note_deleted.connect(self._handle_note_deletion)
@@ -171,16 +168,12 @@ class TabContent(QWidget):
             # Update right sidebar
             self._update_right_sidebar(selection_data)
 
-    def _handle_save_request(self):
+    def _handle_save_request(self, note_id: int):
         """Internal handler for save requests"""
-        current_item = self.left_sidebar.tree.currentItem()
-        if current_item:
-            note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
-            if note_data:
-                content = self.editor.get_content()
-                if self.notes_model:
-                    if self.notes_model.update_note(note_data.id, content=content):
-                        self.note_saved.emit(note_data.id)
+        content = self.editor.get_content()
+        if self.notes_model:
+            if self.notes_model.update_note(note_id, content=content):
+                self.note_saved.emit(note_id)
 
     def _update_right_sidebar(self, selection_data):
         """Update right sidebar content when a note is selected"""

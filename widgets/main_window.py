@@ -315,4 +315,6 @@ class NoteApp(QMainWindow):
         """Trigger save on the currently active tab"""
         current_tab = self.tab_handler.tab_widget.currentWidget()
         if isinstance(current_tab, TabContent):
-            current_tab.editor.save_requested.emit()
+            note_id = current_tab.get_current_note_id()
+            if note_id is not None:
+                current_tab._handle_save_request(note_id)

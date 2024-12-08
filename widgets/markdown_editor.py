@@ -100,7 +100,6 @@ class NoteLinkPage(QWebEnginePage):
 
 
 class MarkdownEditor(QWidget):
-    save_requested = Signal()
     preview_requested = Signal()  # Pull the initial preview
     render_requested = Signal(str)  # Send up the content and get back the rendered HTML
     note_selected = Signal(int)  # Emitted when a note link is clicked
@@ -332,9 +331,6 @@ class MarkdownEditor(QWidget):
         maximize_editor_action.triggered.connect(self.maximize_editor)
         maximize_preview_action.triggered.connect(self.maximize_preview)
 
-    def save_content(self):
-        """Emit signal to request saving current content"""
-        self.save_requested.emit()
 
     def get_content(self) -> str:
         """Get current editor content"""
