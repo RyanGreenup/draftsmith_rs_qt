@@ -71,6 +71,9 @@ class TabHandler:
         if self._last_tree_state is not None:
             tab_content.left_sidebar.tree.restore_state(self._last_tree_state)
 
+        # Focus the tree after creation
+        tab_content.left_sidebar.tree.setFocus()
+
         return tab_content
 
     def _handle_note_saved(self, note_id: int):
