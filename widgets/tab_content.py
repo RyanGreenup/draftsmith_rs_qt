@@ -262,8 +262,17 @@ class TabContent(QWidget):
             actions["use_remote_rendering"],
         )
 
-    def _handle_note_deletion(self, note_id: int):
-        """Handle note deletion request"""
+    def _handle_note_deletion(self, maybe_note_id: Optional[int] = None):
+        """Handle note deletion request
+
+        Deletes the item in the tree unless an int is passed, then it deletes the note with that id
+        """
+        if maybe_note_id is None:
+            note_id = (
+                self.left_sidebar.tree.currentItem().data(0, Qt.ItemDataRole.UserRole).id
+                )
+        else:
+            note_id = maybe_note_id
         try:
             if self.notes_model:
                 if self.left_sidebar.tree.currentItem() == note_id:
