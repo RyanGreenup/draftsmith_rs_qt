@@ -11,8 +11,10 @@ from api.client import NoteAPI
 class NoteSelectPalette(PopupPalette):
     """Popup palette for selecting notes by title"""
 
-    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None, use_full_path: bool = False) -> None:
-        super().__init__(parent)
+    def __init__(self, notes_model: NotesModel, 
+                 parent: Optional[QMainWindow] = None, 
+                 use_full_path: bool = False) -> None:
+        super().__init__(parent, min_width=800, max_height=600)  # Larger size for note selection
         self.notes_model = notes_model
         self._notes: List[Note] = []
         self._note_paths: dict[int, str] = {}  # Add cache for note paths

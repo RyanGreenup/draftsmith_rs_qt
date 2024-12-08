@@ -15,11 +15,13 @@ from PySide6.QtGui import QKeyEvent, QColor, QPalette, QFont
 class PopupPalette(QWidget):
     """Base class for popup command palettes"""
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None,
+                 min_width: int = 500,
+                 max_height: int = 400) -> None:
         super().__init__(parent, Qt.WindowType.Popup)
         self.setObjectName("PopupPalette")
-        self.setMinimumWidth(500)  # Set minimum width
-        self.setMaximumHeight(400)  # Set maximum height
+        self.setMinimumWidth(min_width)  # Configurable minimum width
+        self.setMaximumHeight(max_height)  # Configurable maximum height
 
         # Set window background
         palette = self.palette()
