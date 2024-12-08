@@ -114,8 +114,11 @@ class TabContent(QWidget):
         self.left_sidebar.tree.set_model(notes_model)
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
-        # Initialize note select palette with view actions
+        # Initialize palettes with view actions
         self.note_select_palette = NoteSelectPalette(notes_model, self)
+        # Initialize note link palette
+        from widgets.note_id_link_insert import NoteLinkInsertPalette
+        self.note_link_palette = NoteLinkInsertPalette(notes_model, self)
 
     def set_navigation_model(
         self, navigation_model: NavigationModel, actions: Dict[str, QAction]
@@ -294,10 +297,7 @@ class TabContent(QWidget):
 
     def show_note_link_palette(self) -> None:
         """Show the note link insertion palette"""
-        if self.notes_model:
-            if not self.note_link_palette:
-                from widgets.note_id_link_insert import NoteLinkInsertPalette
-                self.note_link_palette = NoteLinkInsertPalette(self.notes_model, self)
+        if self.note_link_palette:
             self.note_link_palette.show_palette()
 
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
