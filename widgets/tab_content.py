@@ -257,23 +257,30 @@ class TabContent(QWidget):
         """Handle note deletion request"""
         try:
             if self.notes_model:
+
                 # Delete the note through the model
                 self.notes_model.delete_note(note_id)
 
-                # Clear the editor if this was the current note
-                # (though the note_deleted signal handler should handle this)
-                if self.current_note_id == note_id:
-                    self.current_note_id = None
-                    self.editor.set_content("")
 
         except Exception as e:
             print(f"Error deleting note: {e}")
 
     def _handle_note_deleted_signal(self, deleted_note_id: int):
         """Handle when a note is deleted by clearing view if needed"""
+        # TODO this does not work and nothing is selected
         if self.current_note_id == deleted_note_id:
-            self.current_note_id = None
-            self.editor.set_content("")
+            # Clear the editor if this was the current note
+            # (though the note_deleted signal handler should handle this)
+            if self.current_note_id == deleted_note_id:
+                # Get the previous item in the tree
+                if item := self.left_sidebar.tree.currentItem().parent().data(0, Qt.ItemDataRole.UserRole):
+                    self.current_note_id = item.id
+                else:
+                    self.current_note_id = None
+                    self.editor.set_content("")
+
+
+
 
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
