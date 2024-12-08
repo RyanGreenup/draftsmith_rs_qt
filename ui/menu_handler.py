@@ -124,3 +124,8 @@ class MenuHandler:
                 else None
             )
         )
+
+        # Connect cut action
+        self.actions["cut_note"].triggered.connect(
+            self.main_window._trigger_cut_selected_tree_item
+        )

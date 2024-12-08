@@ -214,4 +214,10 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     actions["insert_note_link"].setStatusTip("Insert a link to another note")
     actions["insert_note_link"].setToolTip("Insert a link to another note")
 
+    # Add cut note action
+    actions["cut_note"] = QAction("Cu&t Note", parent)
+    actions["cut_note"].setShortcut("Ctrl+X")  # Standard cut shortcut
+    actions["cut_note"].setStatusTip("Cut the selected note")
+    actions["cut_note"].setToolTip("Cut the selected note")
+
     return actions
