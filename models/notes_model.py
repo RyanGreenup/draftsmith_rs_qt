@@ -191,6 +191,10 @@ class NotesModel(QObject):
             # Emit signal for tree selection
             self.note_selected.emit(note, self.get_forward_links(note_id))
 
+    def get_all_notes(self) -> List[Note]:
+        """Get all notes in the system"""
+        return list(self.notes.values())
+
     def delete_note(self, note_id: int) -> bool:
         """Delete a note"""
         try:
