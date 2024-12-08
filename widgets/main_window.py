@@ -314,3 +314,12 @@ class NoteApp(QMainWindow):
         current_tab = self.tab_handler.tab_widget.currentWidget()
         if isinstance(current_tab, TabContent):
             current_tab.cut_selected_tree_item()
+
+    def _trigger_promote_selected_tree_item(self) -> None:
+        """Promote the currently selected tree item in the active tab"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            if current_tab.promote_selected_tree_item():
+                self.status_bar.showMessage("Note promoted", 3000)
+            else:
+                self.status_bar.showMessage("Could not promote note", 3000)
