@@ -315,6 +315,16 @@ class TabContent(QWidget):
         if current_item:
             self.left_sidebar.tree._handle_paste(current_item)
 
+    def promote_selected_tree_item(self) -> bool:
+        """
+        Promote the currently selected item in the tree.
+        Returns True if promotion was successful, False otherwise.
+        """
+        current_item = self.left_sidebar.tree.currentItem()
+        if current_item:
+            return self.left_sidebar.tree.promote_note(current_item)
+        return False
+
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
         # the user will want to rapidly create notes based on the tree but have the keybindings described in the menu
