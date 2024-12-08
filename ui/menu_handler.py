@@ -124,3 +124,12 @@ class MenuHandler:
                 else None
             )
         )
+
+        # Connect link palette action
+        self.actions["show_link_palette"].triggered.connect(
+            lambda: (
+                self.main_window.tab_handler.tab_widget.currentWidget().show_link_insert_palette()
+                if self.main_window.tab_handler.tab_widget.currentWidget()
+                else None
+            )
+        )

@@ -291,6 +291,13 @@ class TabContent(QWidget):
         if self.notes_model and self.note_select_palette:
             self.note_select_palette.show_palette()
 
+    def show_link_insert_palette(self):
+        """Show the link insertion palette"""
+        if not hasattr(self, '_link_palette'):
+            from widgets.insert_link_palette import InsertLinkPalette
+            self._link_palette = InsertLinkPalette(self.notes_model, self.parent())
+        self._link_palette.show_palette()
+
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
         # the user will want to rapidly create notes based on the tree but have the keybindings described in the menu
