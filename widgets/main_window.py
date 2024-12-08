@@ -282,14 +282,18 @@ class NoteApp(QMainWindow):
             apply_light_theme(self._zoom_level)
 
     def _trigger_delete_current_note(self):
-        """Trigger deletion of the currently viewed note"""
+        """Trigger deletion of the note selected in the tree
+
+        This does NOT delete the viewed note as users will typically work through the tree
+
+        """
         current_tab = self.tab_handler.tab_widget.currentWidget()
         if isinstance(current_tab, TabContent):
             # Get the current note ID from the tab
-            note_id = current_tab.get_current_note_id()
-            if note_id is not None:
-                # Use existing deletion logic through the tab
-                current_tab._handle_note_deletion(note_id)
+            # Use the tree instead
+            # note_id = current_tab.get_current_note_id()
+            # This method can take note_id if I change my mind later
+            current_tab._handle_note_deletion()
 
     def app(self):
         """Helper method to get QApplication instance"""
