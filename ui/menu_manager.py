@@ -64,6 +64,10 @@ def create_edit_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     edit_menu = QMenu("&Edit", parent)
     edit_menu.addAction(actions["cut_note"])
     edit_menu.addAction(actions["paste_note"])
+    
+    edit_menu.addSeparator()
+    edit_menu.addAction(actions["promote_note"])
+    edit_menu.addAction(actions["demote_note"])
     return edit_menu
 
 
