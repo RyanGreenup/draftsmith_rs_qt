@@ -268,8 +268,6 @@ class NotesTreeWidget(NavigableTree):
 
     def dropEvent(self, event):
         """Handle drop events for note reordering"""
-        event.setDropAction(Qt.DropAction.MoveAction)  # Force move action
-        
         # Get the target item (where we're dropping)
         target = self.itemAt(event.pos())
         if not target:
@@ -300,16 +298,12 @@ class NotesTreeWidget(NavigableTree):
 
         # Use the model to update the relationship
         if self.notes_model:
-            success = self.notes_model.attach_note_to_parent(
+            # Accept the event first - the view will update via notes_updated signal
+            event.accept()
+            self.notes_model.attach_note_to_parent(
                 dragged_note.id, 
                 target_note.id
             )
-            if success:
-                event.accept()
-                # Prevent default handling
-                event.setAccepted(True)
-            else:
-                event.ignore()
         else:
             event.ignore()
 
