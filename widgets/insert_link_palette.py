@@ -20,18 +20,18 @@ class InsertLinkPalette(NoteSelectPalette):
         """Handle note link insertion"""
         note = item.data(Qt.ItemDataRole.UserRole)
         if note and self.parent():
-            # Get the current tab's editor
-            if hasattr(self.parent(), 'current_tab') and hasattr(self.parent().current_tab, 'editor'):
-                editor: QTextEdit = self.parent().current_tab.editor.editor
-                # Insert the note link at cursor position
-                link_text = f"[[{note.id}]]"
-                editor.insertPlainText(link_text)
+            # Parent is now TabContent, which has direct access to the editor
+            editor = self.parent().editor.editor
+            # Insert the note link at cursor position
+            link_text = f"[[{note.id}]]"
+            editor.insertPlainText(link_text)
         self.hide()
 
     def show_palette(self) -> None:
         """Show the palette and store the current cursor position"""
-        if self.parent() and hasattr(self.parent(), 'current_tab'):
-            editor: QTextEdit = self.parent().current_tab.editor.editor
+        if self.parent():
+            # Parent is TabContent, direct access to editor
+            editor = self.parent().editor.editor
             self.original_cursor_position = editor.textCursor().position()
         
         self.populate_notes()
@@ -40,8 +40,9 @@ class InsertLinkPalette(NoteSelectPalette):
     def hide(self) -> None:
         """Restore cursor position if no selection was made"""
         if not self.results_list.currentItem() and self.original_cursor_position is not None:
-            if self.parent() and hasattr(self.parent(), 'current_tab'):
-                editor: QTextEdit = self.parent().current_tab.editor.editor
+            if self.parent():
+                # Parent is TabContent, direct access to editor
+                editor = self.parent().editor.editor
                 cursor = editor.textCursor()
                 cursor.setPosition(self.original_cursor_position)
                 editor.setTextCursor(cursor)

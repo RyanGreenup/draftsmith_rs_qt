@@ -295,7 +295,8 @@ class TabContent(QWidget):
         """Show the link insertion palette"""
         if not hasattr(self, '_link_palette'):
             from widgets.insert_link_palette import InsertLinkPalette
-            self._link_palette = InsertLinkPalette(self.notes_model, self.parent())
+            # Pass self instead of self.parent() so the palette can access the editor
+            self._link_palette = InsertLinkPalette(self.notes_model, self)
         self._link_palette.show_palette()
 
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
