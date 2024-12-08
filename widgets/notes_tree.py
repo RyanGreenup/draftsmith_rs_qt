@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
 from PySide6.QtCore import Qt, Signal, QMimeData
 from models.note import Note
 from models.notes_model import NotesModel
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtGui import QKeyEvent, QPalette
 from utils.key_constants import Key
 from widgets.navigable_tree import NavigableTree
 
@@ -24,6 +24,9 @@ class NotesTreeWidget(NavigableTree):
         self.notes_model: Optional[NotesModel] = None
         self.follow_mode: bool = True  # Default to true for backward compatibility
         self.itemSelectionChanged.connect(self._on_selection_changed)
+        
+        # Track hover item during drag
+        self.hover_item = None
 
     def set_model(self, model: "NotesModel"):
         """Set the notes model for this tree widget"""
@@ -262,6 +265,20 @@ class NotesTreeWidget(NavigableTree):
         for child in note.children:
             self._add_note_to_tree(child, item)
 
+    def paintEvent(self, event):
+        """Draw hover highlight during drag"""
+        super().paintEvent(event)
+        
+        if self.hover_item:
+            painter = QPainter(self.viewport())
+            rect = self.visualItemRect(self.hover_item)
+            
+            # Use a semi-transparent highlight color
+            color = self.palette().color(QPalette.ColorRole.Highlight)
+            color.setAlpha(40)  # Make it semi-transparent
+            
+            painter.fillRect(rect, color)
+
     def mouseDoubleClickEvent(self, event):
         """Handle double click events to focus the selected note"""
         current = self.currentItem()
@@ -272,6 +289,13 @@ class NotesTreeWidget(NavigableTree):
                 event.accept()
                 return
         super().mouseDoubleClickEvent(event)
+
+    def dragLeaveEvent(self, event):
+        """Clear hover state when drag leaves"""
+        if self.hover_item:
+            self.hover_item = None
+            self.viewport().update()
+        super().dragLeaveEvent(event)
 
     def dropEvent(self, event):
         """Handle drop events for note reordering and detaching"""
@@ -289,6 +313,10 @@ class NotesTreeWidget(NavigableTree):
         if not dragged_note:
             event.ignore()
             return
+            
+        # Clear hover state
+        self.hover_item = None
+        self.viewport().update()
 
         # Prevent default drop handling
         event.setDropAction(Qt.DropAction.IgnoreAction)
@@ -335,6 +363,11 @@ class NotesTreeWidget(NavigableTree):
     def dragMoveEvent(self, event):
         """Handle drag move events to control where drops are allowed"""
         if event.source() == self:
+            # Update hover item
+            new_hover = self.itemAt(event.pos())
+            if new_hover != self.hover_item:
+                self.hover_item = new_hover
+                self.viewport().update()
             event.accept()
         else:
             event.ignore()
