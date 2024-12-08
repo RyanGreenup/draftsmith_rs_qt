@@ -11,7 +11,7 @@ from api.client import NoteAPI
 class NoteSelectPalette(PopupPalette):
     """Popup palette for selecting notes by title"""
 
-    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None, use_full_path: bool = False) -> None:
+    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None, use_full_path: bool = True) -> None:
         super().__init__(parent)
         self.notes_model = notes_model
         self._notes: List[Note] = []
@@ -33,7 +33,7 @@ class NoteSelectPalette(PopupPalette):
     def populate_notes(self) -> None:
         """Collect all notes from the model and cache their paths if needed"""
         self._notes = self.notes_model.get_all_notes()
-        
+
         # Pre-fetch all note paths if using full paths
         if self.use_full_path and self.parent():
             try:
