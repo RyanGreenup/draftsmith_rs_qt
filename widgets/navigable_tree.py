@@ -118,23 +118,19 @@ class NavigableTree(QTreeWidget):
             return
         else:
             super().keyPressEvent(event)
-            
+
     def _create_context_menu(self) -> QMenu:
         """Create and return the context menu"""
         menu = QMenu(self)
-        
+
         # Add basic menu items - subclasses can override this method to add more items
         expand_action = menu.addAction("Expand")
         expand_action.triggered.connect(lambda: self.currentItem().setExpanded(True))
-        
+
         collapse_action = menu.addAction("Collapse")
         collapse_action.triggered.connect(lambda: self.currentItem().setExpanded(False))
-        
-        return menu
 
-    def _delete_note(self, note_id: int):
-        """Handle note deletion request"""
-        self.note_deleted.emit(note_id)
+        return menu
 
     def contextMenuEvent(self, event):
         """Handle right click events"""

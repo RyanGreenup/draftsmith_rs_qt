@@ -213,10 +213,10 @@ class NotesTreeWidget(NavigableTree):
     def _create_context_menu(self) -> QMenu:
         """Create and return the context menu with note-specific actions"""
         menu = super()._create_context_menu()
-        
+
         # Add a separator before note-specific actions
         menu.addSeparator()
-        
+
         # Add delete action
         current_item = self.currentItem()
         if current_item:
@@ -224,8 +224,12 @@ class NotesTreeWidget(NavigableTree):
             if note_data:
                 # Create delete action directly instead of trying to access main window
                 delete_action = menu.addAction("Delete Note")
-                delete_action.triggered.connect(lambda: self._delete_note(note_data.id))
-        
+                # self.note_deleted is handled in TabContent._connect_signals
+                # which is is called in main_window referring to the current tab
+                delete_action.triggered.connect(
+                    lambda: self.note_deleted.emit(note_data.id)
+                )
+
         return menu
 
     def _add_note_to_tree(
