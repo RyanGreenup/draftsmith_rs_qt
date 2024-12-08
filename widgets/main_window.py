@@ -220,6 +220,7 @@ class NoteApp(QMainWindow):
         # Update widgets
         self.main_content.left_sidebar.tree.follow_mode = new_state
         self.main_content.left_sidebar.search_sidebar.follow_mode = new_state
+        self.main_content.note_select_palette.follow_mode = new_state
 
         # Update status bar
         mode_status = "enabled" if new_state else "disabled"

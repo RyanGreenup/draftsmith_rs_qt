@@ -114,7 +114,7 @@ class TabContent(QWidget):
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
         # Initialize note select palette with view actions
-        self.note_select_palette = NoteSelectPalette(notes_model, self, self.view_actions)
+        self.note_select_palette = NoteSelectPalette(notes_model, self)
 
     def set_navigation_model(
         self, navigation_model: NavigationModel, actions: Dict[str, QAction]
@@ -265,7 +265,6 @@ class TabContent(QWidget):
                 # Delete the note through the model
                 self.notes_model.delete_note(note_id)
 
-
         except Exception as e:
             print(f"Error deleting note: {e}")
 
@@ -277,14 +276,15 @@ class TabContent(QWidget):
             # (though the note_deleted signal handler should handle this)
             if self.current_note_id == deleted_note_id:
                 # Get the previous item in the tree
-                if item := self.left_sidebar.tree.currentItem().parent().data(0, Qt.ItemDataRole.UserRole):
+                if (
+                    item := self.left_sidebar.tree.currentItem()
+                    .parent()
+                    .data(0, Qt.ItemDataRole.UserRole)
+                ):
                     self.current_note_id = item.id
                 else:
                     self.current_note_id = None
                     self.editor.set_content("")
-
-
-
 
     def show_note_select_palette(self):
         """Show the note selection palette"""

@@ -200,8 +200,12 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
 
     # Add FZF palette action
     actions["show_note_palette"] = QAction("&Find Note...", parent)
-    actions["show_note_palette"].setShortcut("Ctrl+Shift+O")  # Different from regular open
-    actions["show_note_palette"].setStatusTip("Search and open notes using fuzzy finder")
+    actions["show_note_palette"].setShortcut(
+        "Ctrl+Shift+O"
+    )  # Different from regular open
+    actions["show_note_palette"].setStatusTip(
+        "Search and open notes using fuzzy finder"
+    )
     actions["show_note_palette"].setToolTip("Search and open notes using fuzzy finder")
 
     return actions

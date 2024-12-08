@@ -15,9 +15,12 @@ from PySide6.QtGui import QKeyEvent, QColor, QPalette, QFont
 class PopupPalette(QWidget):
     """Base class for popup command palettes"""
 
-    def __init__(self, parent: Optional[QWidget] = None,
-                 min_width: int = 500,
-                 max_height: int = 400) -> None:
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        min_width: int = 500,
+        max_height: int = 400,
+    ) -> None:
         super().__init__(parent, Qt.WindowType.Popup)
         self.setObjectName("PopupPalette")
         self.setMinimumWidth(min_width)  # Configurable minimum width
@@ -122,7 +125,7 @@ class PopupPalette(QWidget):
                 self.on_item_activated(current_item)
             event.accept()
             return
-            
+
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             current_row = self.results_list.currentRow()
 

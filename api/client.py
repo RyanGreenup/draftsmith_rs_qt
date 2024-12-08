@@ -604,21 +604,21 @@ class NoteAPI(API):
         )
 
         response.raise_for_status()
-        
+
         # Clean up any trailing whitespace characters in titles
         notes = response.json()
         for note in notes:
-            note['title'] = note['title'].rstrip('\r\n')
-        
+            note["title"] = note["title"].rstrip("\r\n")
+
         return [NoteWithoutContent.model_validate(note) for note in notes]
 
     def get_all_note_breadcrumbs(self) -> dict[int, list[NoteWithoutContent]]:
         """
         Get breadcrumb trails for all notes in a single request.
-        
+
         Returns:
             dict[int, list[NoteWithoutContent]]: Dictionary mapping note IDs to their breadcrumb trails
-            
+
         Raises:
             requests.exceptions.RequestException: If the request fails
         """
@@ -628,13 +628,13 @@ class NoteAPI(API):
         )
 
         response.raise_for_status()
-        
+
         # Clean up trailing whitespace in all titles
         breadcrumbs = response.json()
         for note_id, trail in breadcrumbs.items():
             for note in trail:
-                note['title'] = note['title'].rstrip('\r\n')
-                
+                note["title"] = note["title"].rstrip("\r\n")
+
         return {
             int(note_id): [NoteWithoutContent.model_validate(note) for note in trail]
             for note_id, trail in breadcrumbs.items()

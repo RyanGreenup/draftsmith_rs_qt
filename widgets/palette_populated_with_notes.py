@@ -10,16 +10,31 @@ from models.notes_model import NotesModel
 class PalettePopulatedWithNotes(PopupPalette):
     """Base class for palettes that display a list of notes"""
 
-    def __init__(self, notes_model: NotesModel,
-                 parent: Optional[QMainWindow] = None,
-                 use_full_path: bool = False) -> None:
+    def __init__(
+        self,
+        notes_model: NotesModel,
+        parent: Optional[QMainWindow] = None,
+        use_full_path: bool = False,
+    ) -> None:
         super().__init__(parent, min_width=800, max_height=1000)
         self.notes_model = notes_model
         self._notes: List[Note] = []
         self._note_paths: dict[int, str] = {}
+
+        # Before this can be used, the api needs an endpoint to fetch
+        # all the breadcrumbs for all notes, otherwise it will be too slow
+        # Manually walking the tree will be less slow, but will add code complexity
+        # that should be offloaded to the API
         self.use_full_path = use_full_path
+
+        # Follow mode triggers a signal that is connected in main_window.py
+        # This signal updates this variable
+        # In the future, notes_tree and this palette may
+        # take a reference to main_window to directly inspect that variable
+        # For now I've left them modular
+        # To change the default just trigger the signal in main_window.py at startup
         self.follow_mode = True
-        
+
         # Connect selection change signal
         self.results_list.currentItemChanged.connect(self.on_selection_changed)
 
@@ -35,7 +50,9 @@ class PalettePopulatedWithNotes(PopupPalette):
                 for note in self._notes:
                     try:
                         breadcrumbs = note_api.get_note_breadcrumbs(note.id)
-                        self._note_paths[note.id] = "/".join(note.title for note in breadcrumbs)
+                        self._note_paths[note.id] = "/".join(
+                            note.title for note in breadcrumbs
+                        )
                     except Exception as e:
                         print(f"Failed to fetch breadcrumbs for note {note.id}: {e}")
                         self._note_paths[note.id] = note.title
@@ -83,14 +100,18 @@ class PalettePopulatedWithNotes(PopupPalette):
         search_terms = text.lower().split()
         for note in self._notes:
             note_text = note.title.lower()
-            note_path = self._note_paths.get(note.id, "").lower() if self.use_full_path else ""
+            note_path = (
+                self._note_paths.get(note.id, "").lower() if self.use_full_path else ""
+            )
 
             if all(term in note_text or term in note_path for term in search_terms):
                 item = self.create_list_item(note)
                 if item:
                     self.results_list.addItem(item)
 
-    def on_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]) -> None:
+    def on_selection_changed(
+        self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]
+    ) -> None:
         """Preview the selected note if follow mode is enabled"""
         if not current or not self.parent():
             return

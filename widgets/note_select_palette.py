@@ -12,7 +12,6 @@ class NoteSelectPalette(PalettePopulatedWithNotes):
         self.search_input.setPlaceholderText("Type note title...")
         self.original_note_id = None
 
-
     def on_item_activated(self, item: QListWidgetItem) -> None:
         """Handle note selection"""
         note = item.data(Qt.ItemDataRole.UserRole)
@@ -36,7 +35,11 @@ class NoteSelectPalette(PalettePopulatedWithNotes):
 
     def hide(self) -> None:
         """Restore original note when hiding if no selection was made"""
-        if not self.results_list.currentItem() and self.original_note_id and self.parent():
+        if (
+            not self.results_list.currentItem()
+            and self.original_note_id
+            and self.parent()
+        ):
             # Restore original note
             self.parent()._handle_view_request(self.original_note_id)
         super().hide()
