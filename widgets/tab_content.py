@@ -113,8 +113,8 @@ class TabContent(QWidget):
         self.left_sidebar.tree.set_model(notes_model)
         # Connect note selection to view updates
         self.notes_model.note_selected.connect(self._update_view)
-        # Initialize note select palette
-        self.note_select_palette = NoteSelectPalette(notes_model, self)
+        # Initialize note select palette with view actions
+        self.note_select_palette = NoteSelectPalette(notes_model, self, self.view_actions)
 
     def set_navigation_model(
         self, navigation_model: NavigationModel, actions: Dict[str, QAction]

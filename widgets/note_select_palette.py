@@ -10,12 +10,13 @@ from models.notes_model import NotesModel
 class NoteSelectPalette(PopupPalette):
     """Popup palette for selecting notes by title"""
 
-    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None) -> None:
+    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None, view_actions: Optional[Dict[str, QAction]] = None) -> None:
         super().__init__(parent)
         self.notes_model = notes_model
         self._notes: List[Note] = []
         self.search_input.setPlaceholderText("Type note title...")
         self.original_note_id = None
+        self.view_actions = view_actions
         
         # Connect selection change signal
         self.results_list.currentItemChanged.connect(self.on_selection_changed)
@@ -81,11 +82,11 @@ class NoteSelectPalette(PopupPalette):
 
     def on_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]) -> None:
         """Preview the selected note if follow mode is enabled"""
-        if not current or not self.parent():
+        if not current or not self.parent() or not self.view_actions:
             return
             
         # Check if follow mode is enabled
-        follow_mode = self.parent().view_actions["toggle_follow_mode"].isChecked()
+        follow_mode = self.view_actions["toggle_follow_mode"].isChecked()
         if follow_mode:
             note = current.data(Qt.ItemDataRole.UserRole)
             if note:
