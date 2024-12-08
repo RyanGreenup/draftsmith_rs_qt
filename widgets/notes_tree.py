@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QMimeData
 from models.note import Note
 from models.notes_model import NotesModel
 from PySide6.QtGui import QKeyEvent
@@ -17,6 +17,10 @@ class NotesTreeWidget(NavigableTree):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        # Enable drag and drop
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDragDropMode(QTreeWidget.DragDropMode.InternalMove)
         self.notes_model: Optional[NotesModel] = None
         self.follow_mode: bool = True  # Default to true for backward compatibility
         self.itemSelectionChanged.connect(self._on_selection_changed)
@@ -261,3 +265,60 @@ class NotesTreeWidget(NavigableTree):
                 event.accept()
                 return
         super().mouseDoubleClickEvent(event)
+
+    def dropEvent(self, event):
+        """Handle drop events for note reordering"""
+        # Get the target item (where we're dropping)
+        target = self.itemAt(event.pos())
+        if not target:
+            event.ignore()
+            return
+
+        # Get the dragged item
+        dragged = self.currentItem()
+        if not dragged or dragged == target:
+            event.ignore()
+            return
+
+        # Get note data
+        dragged_note = dragged.data(0, Qt.ItemDataRole.UserRole)
+        target_note = target.data(0, Qt.ItemDataRole.UserRole)
+        
+        if not dragged_note or not target_note:
+            event.ignore()
+            return
+
+        # Don't allow dropping on own child
+        parent = target
+        while parent:
+            if parent == dragged:
+                event.ignore()
+                return
+            parent = parent.parent()
+
+        # Use the model to update the relationship
+        if self.notes_model:
+            success = self.notes_model.attach_note_to_parent(
+                dragged_note.id, 
+                target_note.id
+            )
+            if success:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.ignore()
+
+    def dragEnterEvent(self, event):
+        """Accept drag events only from within the tree"""
+        if event.source() == self:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        """Handle drag move events to control where drops are allowed"""
+        if event.source() == self:
+            event.accept()
+        else:
+            event.ignore()
