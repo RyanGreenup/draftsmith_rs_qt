@@ -9,12 +9,33 @@ def create_actions(parent: Optional[QWidget] = None) -> Dict[str, QAction]:
     style = QApplication.style()
 
     # File actions
-    actions["new"] = QAction(
-        style.standardIcon(QStyle.StandardPixmap.SP_FileIcon), "&New", parent
+    def make_new_action(
+        display: str,
+        shortcut: str,
+        status_tip: str,
+        key: str,
+        parent: Optional[QWidget],
+    ):
+        actions[key] = QAction(
+            style.standardIcon(QStyle.StandardPixmap.SP_FileIcon), display, parent
+        )
+        actions[key].setShortcut(shortcut)
+        actions[key].setStatusTip(status_tip)
+        actions[key].setToolTip(status_tip)
+
+    make_new_action(
+        "&New", "Ctrl+Shift+N", "Create a new note at root level", "new_root", parent
     )
-    actions["new"].setShortcut("Ctrl+N")
-    actions["new"].setStatusTip("Create a new note as child")
-    actions["new"].setToolTip("Create a new note as child")
+    make_new_action(
+        "New &Child", "Ctrl+Return", "Create a new note as child", "new_child", parent
+    )
+    make_new_action(
+        "New &Sibling",
+        "Alt+Return",
+        "Create a new note as sibling",
+        "new_sibling",
+        parent,
+    )
 
     actions["open"] = QAction(
         style.standardIcon(QStyle.StandardPixmap.SP_DialogOpenButton), "&Open", parent

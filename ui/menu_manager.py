@@ -27,7 +27,14 @@ def create_file_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     """Create a File menu using existing actions"""
     file_menu = QMenu("&File", parent)
 
-    file_menu.addAction(actions["new"])
+    # file_menu.addAction(actions["new_root"])
+
+    new_menu = QMenu("New", parent)
+    new_menu.addAction(actions["new_root"])
+    new_menu.addAction(actions["new_child"])
+    new_menu.addAction(actions["new_sibling"])
+    file_menu.addMenu(new_menu)
+
     file_menu.addAction(actions["open"])
     file_menu.addAction(actions["save"])
     file_menu.addAction(actions["delete_note"])
@@ -48,6 +55,7 @@ def create_zoom_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     zoom_menu.addAction(actions["zoom_out"])
     zoom_menu.addAction(actions["zoom_reset"])
     return zoom_menu
+
 
 def create_view_menu(parent, actions: Dict[str, QAction]) -> QMenu:
     """Create a View menu using existing actions"""

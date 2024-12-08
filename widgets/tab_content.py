@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QSplitter
+from PySide6.QtWidgets import QApplication, QWidget, QSplitter
 from pydantic import BaseModel, Field
 from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
 from PySide6.QtNetwork import QNetworkRequest
@@ -8,12 +8,14 @@ from typing import Literal, Optional, Dict
 from pydantic import BaseModel
 
 import requests
+from models.note import Note
 from widgets.left_sidebar import LeftSidebar
 from widgets.markdown_editor import MarkdownEditor
 from widgets.right_sidebar import RightSidebar
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
 import api
+from app_types import HierarchyLevel
 
 
 class TabContent(QWidget):
@@ -272,3 +274,43 @@ class TabContent(QWidget):
         if self.current_note_id == deleted_note_id:
             self.current_note_id = None
             self.editor.set_content("")
+
+    def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
+        # Typically, we would act on the id of the view, however
+        # the user will want to rapidly create notes based on the tree but have the keybindings described in the menu
+        # rather than the complexity of keybindings for the tree and the view when rarely will a user want to create a child
+        # of the viewed note, usually they will want to create a child/sibling based on the item selected in the tree
+        # This would be the note_id of the view:
+        # note_id = self.get_current_note_id()
+
+        parent_id = None
+        match level:
+            case level.ROOT:
+                parent_id = None
+            case level.CHILD:
+                # This is the view of the UI, use the tree
+                # parent_id = self.get_current_note_id()
+                parent_id = (
+                    self.left_sidebar.tree.currentItem()
+                    .data(0, Qt.ItemDataRole.UserRole)
+                    .id
+                )
+            case level.SIBLING:
+                # Get from the tree
+                parent_id = (
+                    self.left_sidebar.tree.currentItem()
+                    .parent()
+                    .data(0, Qt.ItemDataRole.UserRole)
+                    .id
+                )
+
+        # Create new note
+        if self.notes_model:
+            new_note = self.notes_model.create_note(
+                title="New Note", content="", parent_id=parent_id
+            )
+
+            if new_note:
+                # Select the new note in tree
+                self.left_sidebar.tree.select_note_by_id(new_note.id)
+            return new_note

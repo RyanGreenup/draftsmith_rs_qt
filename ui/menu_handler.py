@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMenuBar
 from PySide6.QtGui import QAction
 from typing import Dict, Any
+from app_types import HierarchyLevel
 
 
 class MenuHandler:
@@ -37,8 +38,28 @@ class MenuHandler:
         self.actions["next_tab"].triggered.connect(self.main_window.next_tab)
         self.actions["prev_tab"].triggered.connect(self.main_window.previous_tab)
 
+        # Connect save action to current tab
+        self.actions["save"].triggered.connect(
+            self.main_window._trigger_save_current_tab
+        )
+
+        # Add connection for delete action
+        self.actions["delete_note"].triggered.connect(
+            self.main_window._trigger_delete_current_note
+        )
+
         # Connect file actions
-        self.actions["new"].triggered.connect(self.main_window.create_new_note)
+        self.actions["new_root"].triggered.connect(
+            lambda: self.main_window._trigger_create_new_note(HierarchyLevel.ROOT)
+        )
+
+        self.actions["new_child"].triggered.connect(
+            lambda: self.main_window._trigger_create_new_note(HierarchyLevel.CHILD)
+        )
+
+        self.actions["new_sibling"].triggered.connect(
+            lambda: self.main_window._trigger_create_new_note(HierarchyLevel.SIBLING)
+        )
 
         # Connect view actions
         self.actions["toggle_left_sidebar"].triggered.connect(

@@ -154,7 +154,7 @@ class NotesModel(QObject):
             else:
                 self.root_notes.append(note)
 
-            self.notes_updated.emit()
+            self.refresh_notes()
             return note
 
         except Exception as e:
@@ -197,16 +197,16 @@ class NotesModel(QObject):
             note = self.notes.get(note_id)
             if not note:
                 return False
-            
+
             # Delete from API
             self.note_api.delete_note(note_id)
-            
+
             # Emit deletion signal
             self.note_deleted.emit(note_id)
-            
+
             # Refresh internal state
             self.refresh_notes()
-            
+
             return True
 
         except Exception as e:

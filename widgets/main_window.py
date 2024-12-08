@@ -1,4 +1,5 @@
-from typing import Dict
+import enum
+from typing import Dict, Optional
 from models.selection_data import NoteSelectionData
 from PySide6.QtWidgets import QMainWindow, QStatusBar, QApplication
 from PySide6.QtGui import QAction
@@ -12,6 +13,7 @@ from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
 from widgets.tab_content import TabContent
 from app_config import apply_dark_theme, apply_light_theme
+from app_types import HierarchyLevel
 
 
 class NoteApp(QMainWindow):
@@ -62,16 +64,6 @@ class NoteApp(QMainWindow):
             self.menu_handler.actions["maximize_editor"],
             self.menu_handler.actions["maximize_preview"],
             self.menu_handler.actions["use_remote_rendering"],
-        )
-
-        # Connect save action to current tab
-        self.menu_handler.actions["save"].triggered.connect(
-            self._trigger_save_current_tab
-        )
-
-        # Add connection for delete action
-        self.menu_handler.actions["delete_note"].triggered.connect(
-            self._trigger_delete_current_note
         )
 
         self.setup_command_palette()
@@ -157,31 +149,15 @@ class NoteApp(QMainWindow):
     def previous_tab(self) -> None:
         self.tab_handler.previous_tab()
 
-    def create_new_note(self) -> None:
+    def _trigger_create_new_note(self, level: HierarchyLevel) -> None:
         """Create a new note and select it in the tree"""
-        # Get currently selected note as parent
-        current_item = self.main_content.left_sidebar.tree.currentItem()
-        parent_id = None
-        if current_item:
-            parent_data = current_item.data(0, Qt.ItemDataRole.UserRole)
-            if parent_data:
-                parent_id = parent_data.id
-
-        # Create new note
-        new_note = self.notes_model.create_note(
-            title="New Note", content="", parent_id=parent_id
-        )
-
-        if new_note:
-            if isinstance(self.main_content, TabContent):
-                self.notes_model.refresh_notes()
-                # Select the new note in tree
-                self.main_content.left_sidebar.tree.select_note_by_id(new_note.id)
-                # Focus the editor (Let's not do this, it makes it to quickly create a bunch?)
-                self.main_content.editor.editor.setFocus()
-                self.status_bar.showMessage("Created new note", 3000)
-        else:
-            self.status_bar.showMessage("Failed to create note", 3000)
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            if note := current_tab.handle_new_note_request(level):
+                id = note.id
+                self.status_bar.showMessage(f"Created new note: #{id}", 3000)
+            else:
+                self.status_bar.showMessage("Failed to create note", 3000)
 
     def save_current_note(self) -> None:
         """Save the current note's content"""
