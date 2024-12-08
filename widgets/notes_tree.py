@@ -1,12 +1,25 @@
 from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
-from PySide6.QtCore import Qt, Signal, QMimeData
+from PySide6.QtCore import Qt, Signal, QMimeData, QPropertyAnimation, QEasingCurve, Property, QObject
 from models.note import Note
 from models.notes_model import NotesModel
 from PySide6.QtGui import QKeyEvent, QPalette
 from utils.key_constants import Key
 from widgets.navigable_tree import NavigableTree
 
+
+class HoverOpacity(QObject):
+    def __init__(self):
+        super().__init__()
+        self._opacity = 0.0
+
+    @Property(float)
+    def opacity(self):
+        return self._opacity
+
+    @opacity.setter
+    def opacity(self, value):
+        self._opacity = value
 
 class NotesTreeWidget(NavigableTree):
     note_selected = Signal(int)  # Signal emitted when a note is selected
@@ -27,6 +40,8 @@ class NotesTreeWidget(NavigableTree):
         
         # Track hover item during drag
         self.hover_item = None
+        self.hover_animation = None
+        self.hover_opacity = HoverOpacity()
 
     def set_model(self, model: "NotesModel"):
         """Set the notes model for this tree widget"""
@@ -273,10 +288,9 @@ class NotesTreeWidget(NavigableTree):
             painter = QPainter(self.viewport())
             rect = self.visualItemRect(self.hover_item)
             
-            # Use a semi-transparent highlight color
+            # Use animated transparency for highlight color
             color = self.palette().color(QPalette.ColorRole.Highlight)
-            color.setAlpha(40)  # Make it semi-transparent
-            
+            color.setAlpha(int(self.hover_opacity.opacity * 255))
             painter.fillRect(rect, color)
 
     def mouseDoubleClickEvent(self, event):
@@ -367,6 +381,23 @@ class NotesTreeWidget(NavigableTree):
             new_hover = self.itemAt(event.pos())
             if new_hover != self.hover_item:
                 self.hover_item = new_hover
+                
+                # Start new hover animation
+                if self.hover_animation:
+                    self.hover_animation.stop()
+                    self.hover_animation.deleteLater()
+                
+                if new_hover:
+                    self.hover_animation = QPropertyAnimation(self.hover_opacity, b"opacity")
+                    self.hover_animation.setDuration(200)
+                    self.hover_animation.setStartValue(0.0)
+                    self.hover_animation.setEndValue(0.4)
+                    self.hover_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+                    self.hover_animation.valueChanged.connect(self.viewport().update)
+                    self.hover_animation.start()
+                else:
+                    self.hover_opacity._opacity = 0.0
+                
                 self.viewport().update()
             event.accept()
         else:
