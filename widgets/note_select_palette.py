@@ -10,21 +10,27 @@ from models.notes_model import NotesModel
 class NoteSelectPalette(PopupPalette):
     """Popup palette for selecting notes by title"""
 
-    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None, view_actions: Optional[Dict[str, QAction]] = None) -> None:
+    def __init__(self, notes_model: NotesModel, parent: Optional[QMainWindow] = None) -> None:
         super().__init__(parent)
         self.notes_model = notes_model
         self._notes: List[Note] = []
         self.search_input.setPlaceholderText("Type note title...")
         self.original_note_id = None
-        self.view_actions = view_actions
-        
+        # Follow mode triggers a signal that is connected in main_window.py
+        # This signal updates this variable
+        # In the future, notes_tree and this palette may
+        # take a reference to main_window to directly inspect that variable
+        # For now I've left them modular
+        # To change the default just trigger the signal in main_window.py at startup
+        self.follow_mode = True
+
         # Connect selection change signal
         self.results_list.currentItemChanged.connect(self.on_selection_changed)
 
     def populate_notes(self) -> None:
         """Collect all notes from the model"""
         self._notes = self.notes_model.get_all_notes()
-        
+
         # Clear and repopulate the results list
         self.results_list.clear()
         for note in self._notes:
@@ -82,12 +88,13 @@ class NoteSelectPalette(PopupPalette):
 
     def on_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]) -> None:
         """Preview the selected note if follow mode is enabled"""
-        if not current or not self.parent() or not self.view_actions:
+        if not current:
+            if not self.parent():
+                print("No current item or parent")
             return
-            
+
         # Check if follow mode is enabled
-        follow_mode = self.view_actions["toggle_follow_mode"].isChecked()
-        if follow_mode:
+        if self.follow_mode:
             note = current.data(Qt.ItemDataRole.UserRole)
             if note:
                 # Update view without focusing tree
