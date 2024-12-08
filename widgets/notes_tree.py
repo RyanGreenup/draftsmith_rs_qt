@@ -46,7 +46,6 @@ class NotesTreeWidget(NavigableTree):
         
         # Cut/paste tracking
         self.cut_item = None  # Store reference to cut item
-        self.original_background = None  # Store original background color
 
     def set_model(self, model: "NotesModel"):
         """Set the notes model for this tree widget"""
@@ -231,19 +230,9 @@ class NotesTreeWidget(NavigableTree):
 
     def _handle_cut(self, item):
         """Handle cutting a tree item"""
-        # Clear previous cut item highlighting if exists
-        if self.cut_item:
-            self.cut_item.setBackground(0, None)  # Reset to default
-
-        # Store new cut item
+        # Store new cut item and trigger repaint
         self.cut_item = item
-        
-        # Get highlight color and make it lighter
-        highlight_color = self.palette().color(QPalette.ColorRole.Highlight)
-        lighter_color = highlight_color.lighter(150)
-        
-        # Apply the highlight
-        item.setBackground(0, lighter_color)
+        self.viewport().update()
 
     def _handle_paste(self, target_item):
         """Handle pasting a cut item as child of target"""
@@ -272,9 +261,9 @@ class NotesTreeWidget(NavigableTree):
             )
             
             if success:
-                # Clear cut state
-                self.cut_item.setBackground(0, None)  # Reset to default
+                # Clear cut state and trigger repaint
                 self.cut_item = None
+                self.viewport().update()
 
     def update_tree(self, root_notes: List[Note]) -> None:
         """Update the tree widget to reflect the model's state"""
@@ -351,16 +340,25 @@ class NotesTreeWidget(NavigableTree):
             self._add_note_to_tree(child, item)
 
     def paintEvent(self, event):
-        """Draw hover highlight during drag"""
+        """Draw hover highlight during drag and cut item highlight"""
         super().paintEvent(event)
         
+        painter = QPainter(self.viewport())
+        
+        # Draw hover highlight
         if self.hover_item:
-            painter = QPainter(self.viewport())
             rect = self.visualItemRect(self.hover_item)
-            
-            # Use animated transparency for highlight color
             color = self.palette().color(QPalette.ColorRole.Highlight)
             color.setAlpha(int(self.hover_opacity.opacity * 255))
+            painter.fillRect(rect, color)
+            
+        # Draw cut item highlight
+        if self.cut_item:
+            rect = self.visualItemRect(self.cut_item)
+            color = self.palette().color(QPalette.ColorRole.Highlight)
+            # Make it more vibrant - increase saturation and brightness
+            color = color.lighter(130)
+            color.setAlpha(180)  # More solid alpha for cut items
             painter.fillRect(rect, color)
 
     def mouseDoubleClickEvent(self, event):
