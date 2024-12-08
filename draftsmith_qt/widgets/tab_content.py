@@ -1,23 +1,21 @@
-from PySide6.QtWidgets import QApplication, QWidget, QSplitter
-from pydantic import BaseModel, Field
 from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
-from PySide6.QtNetwork import QNetworkRequest
 from PySide6.QtGui import QAction
+from PySide6.QtNetwork import QNetworkRequest
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestJob
-from typing import Literal, Optional, Dict
+from PySide6.QtWidgets import QApplication, QWidget, QSplitter
+from drafsmith_qt.app_types import HierarchyLevel
+from drafsmith_qt.models.navigation_model import NavigationModel
+from drafsmith_qt.models.note import Note
+from drafsmith_qt.models.notes_model import NotesModel
 from pydantic import BaseModel
-
+from pydantic import BaseModel, Field
+from typing import Literal, Optional, Dict
+from drafsmith_qt.widgets.left_sidebar import LeftSidebar
+from drafsmith_qt.widgets.markdown_editor import MarkdownEditor
+from drafsmith_qt.widgets.note_select_palette import NoteSelectPalette
+from drafsmith_qt.widgets.right_sidebar import RightSidebar
+import drafsmith_qt.api
 import requests
-from models.note import Note
-from widgets.left_sidebar import LeftSidebar
-from widgets.markdown_editor import MarkdownEditor
-from widgets.right_sidebar import RightSidebar
-from models.notes_model import NotesModel
-from models.navigation_model import NavigationModel
-from widgets.note_select_palette import NoteSelectPalette
-import api
-from app_types import HierarchyLevel
-
 
 class TabContent(QWidget):
     """A complete view implementation for a note"""

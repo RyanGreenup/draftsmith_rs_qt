@@ -17,7 +17,7 @@ class SearchType(Enum):
 
 
 from PySide6.QtGui import QKeyEvent
-from widgets.right_sidebar import NavigableListWidget
+from draftsmith_qt.widgets.right_sidebar import NavigableListWidget
 
 SEARCH_DELAY = 200  # Delay in milliseconds for search debounce
 

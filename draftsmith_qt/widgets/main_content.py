@@ -4,8 +4,8 @@ from PySide6.QtCore import Qt
 from .markdown_editor import MarkdownEditor
 from .left_sidebar import LeftSidebar
 from .right_sidebar import RightSidebar
-from models.note import Note
-from api.client import TreeNote
+from draftsmith_qt.models.note import Note
+from draftsmith_qt.api.client import TreeNote
 
 
 class MainContent(QSplitter):

@@ -2,10 +2,10 @@ import typer
 from PySide6.QtWidgets import QApplication
 import signal
 import sys
-from ui.actions_manager import create_actions
-from ui.toolbar_manager import create_toolbar
-from widgets.main_window import NoteApp
-from app_config import apply_dark_theme, apply_light_theme
+from draftsmith_qt.ui.actions_manager import create_actions
+from draftsmith_qt.ui.toolbar_manager import create_toolbar
+from draftsmith_qt.widgets.main_window import NoteApp
+from draftsmith_qt.app_config import apply_dark_theme, apply_light_theme
 
 app = typer.Typer(pretty_exceptions_enable=False)
 

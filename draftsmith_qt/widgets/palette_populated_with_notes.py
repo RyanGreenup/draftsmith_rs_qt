@@ -4,8 +4,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from thefuzz import fuzz
 from .popup_palette import PopupPalette
-from models.note import Note
-from models.notes_model import NotesModel
+from draftsmith_qt.models.note import Note
+from draftsmith_qt.models.notes_model import NotesModel
 
 
 class PalettePopulatedWithNotes(PopupPalette):

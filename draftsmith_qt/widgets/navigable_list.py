@@ -2,7 +2,7 @@ from typing import Protocol
 from PySide6.QtWidgets import QListWidget
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent
-from utils.key_constants import Key
+from draftsmith_qt.utils.key_constants import Key
 
 
 class ReturnKeyHandler(Protocol):

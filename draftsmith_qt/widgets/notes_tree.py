@@ -1,11 +1,11 @@
 from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
 from PySide6.QtCore import Qt, Signal
-from models.note import Note
-from models.notes_model import NotesModel
+from draftsmith_qt.models.note import Note
+from draftsmith_qt.models.notes_model import NotesModel
 from PySide6.QtGui import QKeyEvent
-from utils.key_constants import Key
-from widgets.navigable_tree import NavigableTree
+from draftsmith_qt.utils.key_constants import Key
+from draftsmith_qt.widgets.navigable_tree import NavigableTree
 
 
 class NotesTreeWidget(NavigableTree):

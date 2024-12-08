@@ -11,9 +11,9 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent
-from models.note import Note
-from api.client import Tag
-from widgets.navigable_list import NavigableListWidget
+from draftsmith_qt.models.note import Note
+from draftsmith_qt.api.client import Tag
+from draftsmith_qt.widgets.navigable_list import NavigableListWidget
 
 
 class BacklinksWidget(NavigableListWidget):

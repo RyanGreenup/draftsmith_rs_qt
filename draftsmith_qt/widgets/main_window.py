@@ -1,21 +1,18 @@
-import enum
-from typing import Dict, Optional
-from models.selection_data import NoteSelectionData
-from PySide6.QtWidgets import QMainWindow, QStatusBar, QApplication
-from PySide6.QtGui import QAction
-from api.client import Tag
-from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtCore import Qt
-from models.note import Note
-from ui.menu_handler import MenuHandler
-from ui.tab_handler import TabHandler
-from models.notes_model import NotesModel
-from models.navigation_model import NavigationModel
-from widgets.tab_content import TabContent
-from widgets.note_id_link_insert import NoteLinkInsertPalette
-from app_config import apply_dark_theme, apply_light_theme
-from app_types import HierarchyLevel
-
+from PySide6.QtGui import QAction
+from PySide6.QtGui import QKeySequence, QShortcut
+from PySide6.QtWidgets import QMainWindow, QStatusBar, QApplication
+from draftsmith_qt.api.client import Tag
+from draftsmith_qt.app_config import apply_dark_theme, apply_light_theme
+from draftsmith_qt.app_types import HierarchyLevel
+from draftsmith_qt.models.navigation_model import NavigationModel
+from draftsmith_qt.models.note import Note
+from draftsmith_qt.models.notes_model import NotesModel
+from draftsmith_qt.models.selection_data import NoteSelectionData
+from typing import Dict
+from draftsmith_qt.ui.menu_handler import MenuHandler
+from draftsmith_qt.ui.tab_handler import TabHandler
+from draftsmith_qt.widgets.tab_content import TabContent
 
 class NoteApp(QMainWindow):
     def __init__(self, actions: Dict[str, QAction], api_url: str = "http://eir:37242"):

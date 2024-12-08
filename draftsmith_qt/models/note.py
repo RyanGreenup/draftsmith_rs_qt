@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional, Set
-from api.client import Note as APINote, TreeNote as APITreeNote, Tag as APITag
+from drafsmith_qt.api.client import Note as APINote, TreeNote as APITreeNote, Tag as APITag
 
 
 @dataclass
