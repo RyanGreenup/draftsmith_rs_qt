@@ -12,6 +12,7 @@ from ui.tab_handler import TabHandler
 from models.notes_model import NotesModel
 from models.navigation_model import NavigationModel
 from widgets.tab_content import TabContent
+from widgets.note_id_link_insert import NoteLinkInsertPalette
 from app_config import apply_dark_theme, apply_light_theme
 from app_types import HierarchyLevel
 
@@ -116,6 +117,15 @@ class NoteApp(QMainWindow):
         """Show the command palette and populate it with current menu actions"""
         self.command_palette.populate_actions(self.menuBar())
         self.command_palette.show_palette()
+
+    def show_note_link_palette(self) -> None:
+        """Show the note link insertion palette for the current tab"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            if not hasattr(current_tab, 'note_link_palette'):
+                # Initialize the palette if it doesn't exist
+                current_tab.note_link_palette = NoteLinkInsertPalette(self.notes_model, current_tab)
+            current_tab.note_link_palette.show_palette()
 
     def focus_next_widget(self):
         """Simulate Tab key press to move focus to next widget"""
