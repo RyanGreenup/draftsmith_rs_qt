@@ -1,7 +1,6 @@
 from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import Qt, Signal
-from models.notes_model import NotesModel
 from widgets.navigable_tree import NavigableTree
 from api.client import TreeTagWithNotes, Tag
 
@@ -11,10 +10,10 @@ class TagsTreeWidget(NavigableTree):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.notes_model: Optional[NotesModel] = None
+        self.notes_model: Optional[Any] = None
         self.itemSelectionChanged.connect(self._on_selection_changed)
 
-    def set_model(self, model: "NotesModel"):
+    def set_model(self, model: Any):
         """Set the notes model for this tree widget"""
         # First disconnect from old model if it exists
         if self.notes_model is not None:

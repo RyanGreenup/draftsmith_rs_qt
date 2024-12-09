@@ -11,7 +11,6 @@ from api.client import (
 from models.note import Note
 from datetime import datetime
 from PySide6.QtCore import QObject, Signal
-from widgets.tags_tree import TagsTreeWidget
 
 
 class NotesModel(QObject):
