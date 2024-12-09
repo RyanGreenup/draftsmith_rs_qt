@@ -187,19 +187,22 @@ class TabContent(QWidget):
 
     def _handle_save_request(self, note_id: int):
         """Internal handler for save requests"""
-        # Store current cursor position before save
+        # Store current cursor position and tree state before save
         cursor = self.editor.editor.textCursor()
         cursor_position = cursor.position()
+        tree_state = self.left_sidebar.tree.save_state()
         
         content = self.editor.get_content()
         if self.notes_model:
             # Store current note ID before save
             current_note_id = self.get_current_note_id()
             if self.notes_model.update_note(note_id, content=content):
-                # After save, ensure we're still viewing the same note
+                # After model refresh, restore UI state
                 if current_note_id is not None:
+                    # Restore tree state first
+                    self.left_sidebar.tree.restore_state(tree_state)
+                    # Then restore note selection and cursor
                     self.set_current_note(current_note_id)
-                    # Restore cursor position
                     cursor = self.editor.editor.textCursor()
                     cursor.setPosition(cursor_position)
                     self.editor.editor.setTextCursor(cursor)
