@@ -8,13 +8,14 @@ from widgets.tab_content import TabContent
 
 
 class TabHandler:
-    def __init__(self, main_window):
+    def __init__(self, main_window, view_actions):
         self.main_window = main_window
         self.tab_widget = NotesTabWidget(main_window)
         self._last_tree_state: Optional[Dict[str, Any]] = None
         self._tab_note_ids: Dict[int, int] = {}  # Map tab index to note ID
         self.state_file = Path.home() / ".config" / "draftsmith_qt" / "tab_state.json"
         self.api_url = main_window.api_url
+        self.view_actions = view_actions  # Store view actions for use in create_new_tab
 
     def setup_tabs(self):
         """Initialize tabs and set up central widget"""
@@ -44,6 +45,13 @@ class TabHandler:
         """Create a new tab with its own view implementation"""
         # Create new tab content
         tab_content = TabContent(base_url=self.api_url)
+
+        # Set up view actions
+        tab_content.editor.set_view_actions(
+            self.view_actions["maximize_editor"],
+            self.view_actions["maximize_preview"],
+            self.view_actions["use_remote_rendering"]
+        )
 
         # Connect to models
         tab_content.set_model(self.main_window.notes_model)

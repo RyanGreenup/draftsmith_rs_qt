@@ -45,7 +45,14 @@ class NoteApp(QMainWindow):
         self.menu_handler.view_actions["toggle_right_sidebar"] = self._actions[
             "toggle_right_sidebar"
         ]
-        self.tab_handler = TabHandler(self)
+        
+        # Create dict of view actions for tabs
+        self.tab_view_actions = {
+            "maximize_editor": self._actions["maximize_editor"],
+            "maximize_preview": self._actions["maximize_preview"],
+            "use_remote_rendering": self._actions["use_remote_rendering"],
+        }
+        self.tab_handler = TabHandler(self, self.tab_view_actions)
 
         # Setup components
         self.main_content = self.tab_handler.setup_tabs()
@@ -60,12 +67,6 @@ class NoteApp(QMainWindow):
         # Connect note selection to right sidebar updates
         self.notes_model.note_selected.connect(self.update_right_sidebar)
 
-        # Setup markdown view actions
-        self.main_content.editor.set_view_actions(
-            self.menu_handler.actions["maximize_editor"],
-            self.menu_handler.actions["maximize_preview"],
-            self.menu_handler.actions["use_remote_rendering"],
-        )
 
         self.setup_command_palette()
 
