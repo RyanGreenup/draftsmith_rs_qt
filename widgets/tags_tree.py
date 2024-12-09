@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, Set, List
+from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import Qt, Signal
 from models.notes_model import NotesModel
@@ -68,7 +68,7 @@ class TagsTreeWidget(NavigableTree):
         self.restore_state(state)
 
     def _add_tag_to_tree(
-        self, tag: TreeTagWithNotes, parent: QTreeWidgetItem | TagsTreeWidget
+        self, tag: TreeTagWithNotes, parent: Union[QTreeWidgetItem, 'TagsTreeWidget']
     ) -> None:
         """Add a tag and its children to the tree, reflecting model structure"""
         # Create item for current tag
