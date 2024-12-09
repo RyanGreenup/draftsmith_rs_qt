@@ -1349,3 +1349,17 @@ class AssetAPI(API):
         response = requests.get(endpoint)
         response.raise_for_status()
         return response
+    def handle_tag_selected(self, tag_id):
+        # This method should handle what happens when a tag is selected
+        # For example, you might want to filter notes by this tag
+        pass
+
+    def refresh_all_tabs(self):
+        for i in range(self.tab_widget.count()):
+            tab = self.tab_widget.widget(i)
+            notes_tree = tab.findChild(NotesTreeWidget)
+            tags_tree = tab.findChild(TagsTreeWidget)
+            if notes_tree:
+                notes_tree.update_tree_from_model()
+            if tags_tree:
+                tags_tree.update_tree_from_model()
