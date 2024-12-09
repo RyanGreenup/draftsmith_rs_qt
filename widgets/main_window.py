@@ -221,14 +221,16 @@ class NoteApp(QMainWindow):
 
     def toggle_follow_mode(self) -> None:
         """Toggle follow mode for tree and search widgets"""
-        # Get current state from tree widget
-        current_state = self.main_content.left_sidebar.tree.follow_mode
-        new_state = not current_state
+        # Get new state from action
+        new_state = self._actions["toggle_follow_mode"].isChecked()
 
-        # Update widgets
-        self.main_content.left_sidebar.tree.follow_mode = new_state
-        self.main_content.left_sidebar.search_sidebar.follow_mode = new_state
-        self.main_content.note_select_palette.follow_mode = new_state
+        # Update all tabs
+        for i in range(self.tab_handler.tab_widget.count()):
+            tab = self.tab_handler.tab_widget.widget(i)
+            if isinstance(tab, TabContent):
+                tab.left_sidebar.tree.follow_mode = new_state
+                tab.left_sidebar.search_sidebar.follow_mode = new_state
+                tab.note_select_palette.follow_mode = new_state
 
         # Update status bar
         mode_status = "enabled" if new_state else "disabled"

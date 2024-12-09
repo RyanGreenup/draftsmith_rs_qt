@@ -16,6 +16,7 @@ class TabHandler:
         self.state_file = Path.home() / ".config" / "draftsmith_qt" / "tab_state.json"
         self.api_url = main_window.api_url
         self.view_actions = view_actions  # Store view actions for use in create_new_tab
+        self.follow_mode_action = main_window._actions["toggle_follow_mode"]
 
     def setup_tabs(self):
         """Initialize tabs and set up central widget"""
@@ -58,6 +59,11 @@ class TabHandler:
         tab_content.set_navigation_model(
             self.main_window.navigation_model, self.main_window._actions
         )
+
+        # Set initial follow mode state
+        tab_content.left_sidebar.tree.follow_mode = self.follow_mode_action.isChecked()
+        tab_content.left_sidebar.search_sidebar.follow_mode = self.follow_mode_action.isChecked()
+        tab_content.note_select_palette.follow_mode = self.follow_mode_action.isChecked()
 
         # Connect save signal to status updates
         tab_content.note_saved.connect(self._handle_note_saved)
