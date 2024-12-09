@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox
 from PySide6.QtCore import Qt
 from .notes_tree import NotesTreeWidget
+from .tags_tree import TagsTreeWidget
 from .search_sidebar import SearchSidebar
 
 
@@ -8,7 +9,7 @@ class LeftSidebar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.tree = NotesTreeWidget()
-        self.tags_tree = NotesTreeWidget()
+        self.tags_tree = TagsTreeWidget()
         self.search_sidebar = SearchSidebar()
         self.tree_selector = QComboBox()
 
