@@ -7,6 +7,7 @@ from api.client import (
     UpdateNoteRequest,
     Tag,
     TreeTagWithNotes,
+    TreeNote,
 )
 from models.note import Note
 from datetime import datetime
