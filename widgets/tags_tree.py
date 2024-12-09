@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any, Set, List, Union
-from PySide6.QtWidgets import QTreeWidgetItem
+from PySide6.QtWidgets import QTreeWidgetItem, QStyle
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont, QColor
+from PySide6.QtGui import QFont, QColor, QIcon
 from widgets.navigable_tree import NavigableTree
 from api.client import TreeTagWithNotes, Tag, TreeNote
 
@@ -86,6 +86,10 @@ class TagsTreeWidget(NavigableTree):
         tag_item = QTreeWidgetItem()
         tag_item.setText(0, tag.name)
         tag_item.setData(0, Qt.ItemDataRole.UserRole, tag)
+
+        # Set the directory icon for the tag
+        icon = self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon)
+        tag_item.setIcon(0, icon)
 
         # Make tags bold
         font = tag_item.font(0)
