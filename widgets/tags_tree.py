@@ -75,6 +75,9 @@ class TagsTreeWidget(NavigableTree):
         # Expand all items to show notes
         self.expandAll()
 
+        # Debug print
+        print(f"Updated tree with {len(root_tags)} root tags")
+
     def _add_tag_to_tree(
         self, tag: TreeTagWithNotes, parent: Union[QTreeWidgetItem, 'TagsTreeWidget']
     ) -> None:
@@ -106,6 +109,9 @@ class TagsTreeWidget(NavigableTree):
         # Add children tags
         for child in tag.children:
             self._add_tag_to_tree(child, tag_item)
+
+        # Debug print
+        print(f"Added tag: {tag.name} with {len(tag.notes)} notes")
 
     def create_tag(self, name: str, parent_item: Optional[QTreeWidgetItem] = None):
         if self.notes_model:
