@@ -60,6 +60,7 @@ class NoteApp(QMainWindow):
 
         # Connect the model to the tree - do this before loading notes
         self.main_content.left_sidebar.tree.set_model(self.notes_model)
+        self.main_content.left_sidebar.tags_tree.set_model(self.notes_model)
 
         # Now load the notes
         self.notes_model.load_notes()  # Load notes at startup
@@ -67,6 +68,8 @@ class NoteApp(QMainWindow):
         # Connect note selection to right sidebar updates
         self.notes_model.note_selected.connect(self.update_right_sidebar)
 
+        # Connect model updates to refresh all tabs
+        self.notes_model.notes_updated.connect(self.refresh_all_tabs)
 
         self.setup_command_palette()
 
@@ -144,6 +147,21 @@ class NoteApp(QMainWindow):
             )
             self.main_content.right_sidebar.update_backlinks(selection_data.backlinks)
             self.main_content.right_sidebar.update_tags(selection_data.tags)
+
+    def handle_tag_selected(self, tag_id):
+        # This method should handle what happens when a tag is selected
+        # For example, you might want to filter notes by this tag
+        pass
+
+    def refresh_all_tabs(self):
+        for i in range(self.tab_handler.tab_widget.count()):
+            tab = self.tab_handler.tab_widget.widget(i)
+            notes_tree = tab.findChild(NotesTreeWidget)
+            tags_tree = tab.findChild(TagsTreeWidget)
+            if notes_tree:
+                notes_tree.update_tree_from_model()
+            if tags_tree:
+                tags_tree.update_tree_from_model()
 
     def new_tab(self) -> None:
         self.tab_handler.new_tab()
