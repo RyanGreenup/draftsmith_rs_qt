@@ -1,12 +1,14 @@
 from typing import Optional, Dict, Any, Set, List, Union
 from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QFont, QColor
 from widgets.navigable_tree import NavigableTree
-from api.client import TreeTagWithNotes, Tag
+from api.client import TreeTagWithNotes, Tag, TreeNote
 
 
 class TagsTreeWidget(NavigableTree):
     tag_selected = Signal(int)  # Signal emitted when a tag is selected
+    note_selected = Signal(int)  # Signal emitted when a note is selected
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -47,10 +49,13 @@ class TagsTreeWidget(NavigableTree):
         """Handle selection changes and notify model"""
         current = self.currentItem()
         if current and self.notes_model:
-            tag_data = current.data(0, Qt.ItemDataRole.UserRole)
-            if tag_data:
-                self.notes_model.select_tag(tag_data.id)
-                self.tag_selected.emit(tag_data.id)
+            item_data = current.data(0, Qt.ItemDataRole.UserRole)
+            if isinstance(item_data, TreeTagWithNotes):
+                self.notes_model.select_tag(item_data.id)
+                self.tag_selected.emit(item_data.id)
+            elif isinstance(item_data, TreeNote):
+                self.notes_model.select_note(item_data.id)
+                self.note_selected.emit(item_data.id)
 
     def update_tree(self, root_tags: List[TreeTagWithNotes]) -> None:
         """Update the tree widget to reflect the model's state"""
@@ -67,24 +72,40 @@ class TagsTreeWidget(NavigableTree):
         # Restore state after update
         self.restore_state(state)
 
+        # Expand all items to show notes
+        self.expandAll()
+
     def _add_tag_to_tree(
         self, tag: TreeTagWithNotes, parent: Union[QTreeWidgetItem, 'TagsTreeWidget']
     ) -> None:
-        """Add a tag and its children to the tree, reflecting model structure"""
+        """Add a tag, its children, and its notes to the tree"""
         # Create item for current tag
-        item = QTreeWidgetItem()
-        item.setText(0, tag.name)
-        item.setData(0, Qt.ItemDataRole.UserRole, tag)
+        tag_item = QTreeWidgetItem()
+        tag_item.setText(0, tag.name)
+        tag_item.setData(0, Qt.ItemDataRole.UserRole, tag)
+
+        # Make tags bold
+        font = tag_item.font(0)
+        font.setBold(True)
+        tag_item.setFont(0, font)
 
         # Add to parent
         if isinstance(parent, TagsTreeWidget):
-            parent.addTopLevelItem(item)
+            parent.addTopLevelItem(tag_item)
         else:
-            parent.addChild(item)
+            parent.addChild(tag_item)
 
-        # Add children, following model's structure
+        # Add notes under this tag
+        for note in tag.notes:
+            note_item = QTreeWidgetItem(tag_item)
+            note_item.setText(0, note.title)
+            note_item.setData(0, Qt.ItemDataRole.UserRole, note)
+            # Make notes a different color
+            note_item.setForeground(0, QColor(0, 128, 0))  # Green color
+
+        # Add children tags
         for child in tag.children:
-            self._add_tag_to_tree(child, item)
+            self._add_tag_to_tree(child, tag_item)
 
     def create_tag(self, name: str, parent_item: Optional[QTreeWidgetItem] = None):
         if self.notes_model:

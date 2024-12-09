@@ -197,12 +197,28 @@ class NotesModel(QObject):
         return list(self.notes.values())
 
     def get_tags_tree(self) -> List[TreeTagWithNotes]:
-        """Get the tree structure of tags"""
+        """Get the tree structure of tags with their associated notes"""
         try:
-            return self.tag_api.get_tags_tree()
+            tags_tree = self.tag_api.get_tags_tree()
+            # If the API doesn't return notes with tags, we need to fetch them here
+            for tag in tags_tree:
+                self._populate_notes_for_tag(tag)
+            return tags_tree
         except Exception as e:
             print(f"Error getting tags tree: {e}")
             return []
+
+    def _populate_notes_for_tag(self, tag: TreeTagWithNotes):
+        """Recursively populate notes for a tag and its children"""
+        # This is a placeholder. Implement the actual logic to fetch notes for a tag.
+        tag.notes = self.get_notes_for_tag(tag.id)
+        for child in tag.children:
+            self._populate_notes_for_tag(child)
+
+    def get_notes_for_tag(self, tag_id: int) -> List[TreeNote]:
+        """Get all notes associated with a tag"""
+        # This is a placeholder. Implement the actual API call or database query.
+        return []
 
     def select_tag(self, tag_id: int) -> None:
         """Handle tag selection"""
