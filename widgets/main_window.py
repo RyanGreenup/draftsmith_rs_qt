@@ -247,8 +247,11 @@ class NoteApp(QMainWindow):
         else:
             apply_light_theme(self._zoom_level)
 
-        if isinstance(self.main_content, TabContent):
-            self.main_content.editor.apply_dark_theme(self.is_dark_mode())
+        # Apply theme to all tabs
+        for i in range(self.tab_handler.tab_widget.count()):
+            tab = self.tab_handler.tab_widget.widget(i)
+            if isinstance(tab, TabContent):
+                tab.editor.apply_dark_theme(self.is_dark_mode())
 
         self.status_bar.showMessage("Theme changed", 3000)
 
