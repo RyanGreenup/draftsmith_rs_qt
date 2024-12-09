@@ -250,6 +250,15 @@ class NotesModel(QObject):
             print(f"Error creating tag: {e}")
             return None
 
+    def delete_tag(self, tag_id: int) -> bool:
+        try:
+            self.tag_api.delete_tag(tag_id)
+            self.refresh_notes()  # This will trigger a tree update
+            return True
+        except Exception as e:
+            print(f"Error deleting tag: {e}")
+            return False
+
     def get_tags_tree(self) -> List[TreeTagWithNotes]:
         """Get the tree structure of tags with their associated notes"""
         try:

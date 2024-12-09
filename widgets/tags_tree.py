@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, Set, List, Union
-from PySide6.QtWidgets import QTreeWidgetItem, QStyle
+from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QMenu, QInputDialog, QMessageBox
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont, QColor, QIcon
 from widgets.navigable_tree import NavigableTree
@@ -14,6 +14,8 @@ class TagsTreeWidget(NavigableTree):
         super().__init__(parent)
         self.notes_model: Optional[Any] = None
         self.itemSelectionChanged.connect(self._on_selection_changed)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_context_menu)
 
     def set_model(self, model: Any):
         """Set the notes model for this tree widget"""
@@ -32,6 +34,46 @@ class TagsTreeWidget(NavigableTree):
             self.notes_model.notes_updated.connect(self.update_tree_from_model)
             # Initial update
             self.update_tree(self.notes_model.get_tags_tree())
+
+    def show_context_menu(self, position):
+        item = self.itemAt(position)
+        context_menu = QMenu(self)
+        create_tag_action = context_menu.addAction("Create New Tag")
+        
+        delete_tag_action = None
+        if item and isinstance(item.data(0, Qt.ItemDataRole.UserRole), TreeTagWithNotes):
+            delete_tag_action = context_menu.addAction("Delete Tag")
+
+        action = context_menu.exec_(self.mapToGlobal(position))
+        
+        if action == create_tag_action:
+            self.create_new_tag(item)
+        elif action == delete_tag_action:
+            self.delete_tag(item)
+
+    def create_new_tag(self, parent_item):
+        name, ok = QInputDialog.getText(self, "Create New Tag", "Enter tag name:")
+        if ok and name and self.notes_model:
+            parent_id = None
+            if parent_item:
+                parent_tag = parent_item.data(0, Qt.ItemDataRole.UserRole)
+                parent_id = parent_tag.id if isinstance(parent_tag, TreeTagWithNotes) else None
+            
+            tag = self.notes_model.create_tag(name, parent_id)
+            if tag:
+                self.update_tree_from_model()
+
+    def delete_tag(self, item):
+        tag = item.data(0, Qt.ItemDataRole.UserRole)
+        if isinstance(tag, TreeTagWithNotes) and self.notes_model:
+            reply = QMessageBox.question(self, 'Delete Tag', 
+                                         f"Are you sure you want to delete the tag '{tag.name}'?",
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                if self.notes_model.delete_tag(tag.id):
+                    self.update_tree_from_model()
+                else:
+                    QMessageBox.warning(self, "Error", "Failed to delete tag.")
 
     def update_tree_from_model(self):
         """Callback for model updates to refresh the tree"""
