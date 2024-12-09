@@ -204,6 +204,7 @@ class NotesModel(QObject):
             # If the API doesn't return notes with tags, we need to fetch them here
             for tag in tags_tree:
                 self._populate_notes_for_tag(tag)
+            print(tags_tree)
             return tags_tree
         except Exception as e:
             print(f"Error getting tags tree: {e}")
