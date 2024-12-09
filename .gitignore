@@ -11,3 +11,4 @@ widgets/text_edit/__pycache__
 __pycache__
 .aider*
 .env
+venv
