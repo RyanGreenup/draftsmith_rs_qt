@@ -187,14 +187,22 @@ class TabContent(QWidget):
 
     def _handle_save_request(self, note_id: int):
         """Internal handler for save requests"""
+        # Store current cursor position before save
+        cursor = self.editor.editor.textCursor()
+        cursor_position = cursor.position()
+        
         content = self.editor.get_content()
         if self.notes_model:
             # Store current note ID before save
             current_note_id = self.get_current_note_id()
             if self.notes_model.update_note(note_id, content=content):
-                # Update this tab's view specifically
+                # After save, ensure we're still viewing the same note
                 if current_note_id is not None:
                     self.set_current_note(current_note_id)
+                    # Restore cursor position
+                    cursor = self.editor.editor.textCursor()
+                    cursor.setPosition(cursor_position)
+                    self.editor.editor.setTextCursor(cursor)
                 self.note_saved.emit(note_id)
 
     def _update_right_sidebar(self, selection_data):
