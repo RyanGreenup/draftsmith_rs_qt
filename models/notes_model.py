@@ -204,6 +204,23 @@ class NotesModel(QObject):
             print(f"Error getting tags tree: {e}")
             return []
 
+    def select_tag(self, tag_id: int) -> None:
+        """Handle tag selection"""
+        # This is a placeholder. Implement the logic for tag selection here.
+        # For example, you might want to fetch all notes associated with this tag.
+        pass
+
+    def create_tag(self, name: str, parent_id: Optional[int] = None) -> Optional[Tag]:
+        try:
+            tag = self.tag_api.create_tag(name)
+            if parent_id:
+                self.tag_api.attach_tag_to_parent(tag.id, parent_id)
+            self.refresh_notes()  # This will trigger a tree update
+            return tag
+        except Exception as e:
+            print(f"Error creating tag: {e}")
+            return None
+
     def delete_note(self, note_id: int) -> bool:
         """Delete a note"""
         try:

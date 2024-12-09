@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QTreeWidgetItem
 from PySide6.QtCore import Qt, Signal
 from models.notes_model import NotesModel
 from widgets.navigable_tree import NavigableTree
-from api.client import TreeTagWithNotes
+from api.client import TreeTagWithNotes, Tag
 
 
 class TagsTreeWidget(NavigableTree):
@@ -47,9 +47,10 @@ class TagsTreeWidget(NavigableTree):
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""
         current = self.currentItem()
-        if current:
+        if current and self.notes_model:
             tag_data = current.data(0, Qt.ItemDataRole.UserRole)
             if tag_data:
+                self.notes_model.select_tag(tag_data.id)
                 self.tag_selected.emit(tag_data.id)
 
     def update_tree(self, root_tags: List[TreeTagWithNotes]) -> None:
@@ -85,6 +86,16 @@ class TagsTreeWidget(NavigableTree):
         # Add children, following model's structure
         for child in tag.children:
             self._add_tag_to_tree(child, item)
+
+    def create_tag(self, name: str, parent_item: Optional[QTreeWidgetItem] = None):
+        if self.notes_model:
+            parent_id = None
+            if parent_item:
+                parent_tag = parent_item.data(0, Qt.ItemDataRole.UserRole)
+                parent_id = parent_tag.id if parent_tag else None
+            tag = self.notes_model.create_tag(name, parent_id)
+            if tag:
+                self.update_tree_from_model()
 
     def save_state(self) -> Dict[str, Any]:
         """Save the tree state, including expanded items and selected item."""
