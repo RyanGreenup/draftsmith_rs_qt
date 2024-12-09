@@ -210,23 +210,34 @@ class NotesModel(QObject):
             print(f"Error getting tags tree: {e}")
             return []
 
-    def _populate_notes_for_tag(self, tag: TreeTagWithNotes):
+    def _populate_notes_for_tag(self, tag: TreeTagWithNotes) -> TreeTagWithNotes:
         """Recursively populate notes for a tag and its children"""
-        # This is a placeholder. Implement the actual logic to fetch notes for a tag.
-        tag.notes = self.get_notes_for_tag(tag.id)
-        for child in tag.children:
-            self._populate_notes_for_tag(child)
+        notes = self.get_notes_for_tag(tag.id)
+        updated_children = [self._populate_notes_for_tag(child) for child in tag.children]
+        return TreeTagWithNotes(id=tag.id, name=tag.name, children=updated_children, notes=notes)
 
     def get_notes_for_tag(self, tag_id: int) -> List[TreeNote]:
         """Get all notes associated with a tag"""
-        # This is a placeholder. Implement the actual API call or database query.
-        return []
+        try:
+            # Get the note-tag relations
+            relations = self.tag_api.get_note_tag_relations()
+            # Filter relations for this tag
+            tag_note_ids = [rel.note_id for rel in relations if rel.tag_id == tag_id]
+            # Return TreeNote objects for these note IDs
+            return [TreeNote(id=note.id, title=note.title, content=note.content) 
+                    for note in self.notes.values() if note.id in tag_note_ids]
+        except Exception as e:
+            print(f"Error getting notes for tag {tag_id}: {e}")
+            return []
 
     def select_tag(self, tag_id: int) -> None:
         """Handle tag selection"""
-        # This is a placeholder. Implement the logic for tag selection here.
-        # For example, you might want to fetch all notes associated with this tag.
-        pass
+        try:
+            notes = self.get_notes_for_tag(tag_id)
+            # You might want to emit a signal here with the selected tag and its notes
+            print(f"Selected tag {tag_id} with {len(notes)} notes")
+        except Exception as e:
+            print(f"Error selecting tag {tag_id}: {e}")
 
     def create_tag(self, name: str, parent_id: Optional[int] = None) -> Optional[Tag]:
         try:
@@ -238,6 +249,17 @@ class NotesModel(QObject):
         except Exception as e:
             print(f"Error creating tag: {e}")
             return None
+
+    def get_tags_tree(self) -> List[TreeTagWithNotes]:
+        """Get the tree structure of tags with their associated notes"""
+        try:
+            tags_tree = self.tag_api.get_tags_tree()
+            updated_tags_tree = [self._populate_notes_for_tag(tag) for tag in tags_tree]
+            print(updated_tags_tree)
+            return updated_tags_tree
+        except Exception as e:
+            print(f"Error getting tags tree: {e}")
+            return []
 
     def delete_note(self, note_id: int) -> bool:
         """Delete a note"""
