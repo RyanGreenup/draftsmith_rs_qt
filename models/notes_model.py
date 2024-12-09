@@ -195,6 +195,14 @@ class NotesModel(QObject):
         """Get all notes in the system"""
         return list(self.notes.values())
 
+    def get_tags_tree(self) -> List[TreeTagWithNotes]:
+        """Get the tree structure of tags"""
+        try:
+            return self.tag_api.get_tags_tree()
+        except Exception as e:
+            print(f"Error getting tags tree: {e}")
+            return []
+
     def delete_note(self, note_id: int) -> bool:
         """Delete a note"""
         try:
