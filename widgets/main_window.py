@@ -15,6 +15,8 @@ from widgets.tab_content import TabContent
 from widgets.note_id_link_insert import NoteLinkInsertPalette
 from app_config import apply_dark_theme, apply_light_theme
 from app_types import HierarchyLevel
+from widgets.notes_tree import NotesTreeWidget
+from widgets.tags_tree import TagsTreeWidget
 
 
 class NoteApp(QMainWindow):
