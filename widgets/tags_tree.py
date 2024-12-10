@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, Set, List, Union
-from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QMenu, QMessageBox
+from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QMenu, QMessageBox, QTreeWidget
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QFont, QColor, QIcon
 from widgets.navigable_tree import NavigableTree
