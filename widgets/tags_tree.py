@@ -40,14 +40,18 @@ class TagsTreeWidget(NavigableTree):
         context_menu = QMenu(self)
         create_tag_action = context_menu.addAction("Create New Tag")
         
+        rename_tag_action = None
         delete_tag_action = None
         if item and isinstance(item.data(0, Qt.ItemDataRole.UserRole), TreeTagWithNotes):
+            rename_tag_action = context_menu.addAction("Rename Tag")
             delete_tag_action = context_menu.addAction("Delete Tag")
 
         action = context_menu.exec_(self.mapToGlobal(position))
         
         if action == create_tag_action:
             self.create_new_tag(item)
+        elif action == rename_tag_action:
+            self.rename_tag(item)
         elif action == delete_tag_action:
             self.delete_tag(item)
 
@@ -62,6 +66,17 @@ class TagsTreeWidget(NavigableTree):
             tag = self.notes_model.create_tag(name, parent_id)
             if tag:
                 self.update_tree_from_model()
+
+    def rename_tag(self, item):
+        tag = item.data(0, Qt.ItemDataRole.UserRole)
+        if isinstance(tag, TreeTagWithNotes) and self.notes_model:
+            new_name, ok = QInputDialog.getText(self, "Rename Tag", "Enter new tag name:", text=tag.name)
+            if ok and new_name and new_name != tag.name:
+                updated_tag = self.notes_model.update_tag(tag.id, new_name)
+                if updated_tag:
+                    self.update_tree_from_model()
+                else:
+                    QMessageBox.warning(self, "Error", "Failed to rename tag.")
 
     def delete_tag(self, item):
         tag = item.data(0, Qt.ItemDataRole.UserRole)
