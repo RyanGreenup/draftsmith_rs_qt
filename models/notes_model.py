@@ -301,6 +301,53 @@ class NotesModel(QObject):
             print(f"Error deleting note: {e}")
             return False
 
+    def attach_tag_to_parent(self, child_id: int, parent_id: int) -> bool:
+        """
+        Attach a tag as a child of another tag
+
+        Args:
+            child_id: ID of the tag to attach as child
+            parent_id: ID of the parent tag
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Use the API to attach the tag
+            self.tag_api.attach_tag_to_parent(child_id, parent_id)
+
+            # Refresh internal state and emit signal
+            self.refresh_notes()  # This emits notes_updated
+
+            return True
+
+        except Exception as e:
+            print(f"Error attaching tag {child_id} to parent {parent_id}: {e}")
+            return False
+
+    def detach_tag_from_parent(self, tag_id: int) -> bool:
+        """
+        Detach a tag from its parent
+
+        Args:
+            tag_id: ID of the tag to detach from its parent
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Use the API to detach the tag
+            self.tag_api.detach_tag_from_parent(tag_id)
+
+            # Refresh internal state and emit signal
+            self.refresh_notes()  # This emits notes_updated
+
+            return True
+
+        except Exception as e:
+            print(f"Error detaching tag {tag_id} from parent: {e}")
+            return False
+
     def attach_note_to_parent(self, child_id: int, parent_id: int) -> bool:
         """
         Attach a note as a child of another note
