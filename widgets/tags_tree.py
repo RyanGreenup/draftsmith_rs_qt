@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any, Set, List, Union
-from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QMenu, QInputDialog, QMessageBox
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QMenu, QMessageBox
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QFont, QColor, QIcon
 from widgets.navigable_tree import NavigableTree
 from api.client import TreeTagWithNotes, Tag, TreeNote
@@ -16,6 +16,14 @@ class TagsTreeWidget(NavigableTree):
         self.itemSelectionChanged.connect(self._on_selection_changed)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
+        self.itemChanged.connect(self.on_item_changed)
+        self.editing_item = None
+
+    def edit_item_in_place(self, item, column=0):
+        self.editing_item = item
+        self.openPersistentEditor(item, column)
+        self.editItem(item, column)
+        QTimer.singleShot(0, lambda: self.setCurrentItem(item))
 
     def set_model(self, model: Any):
         """Set the notes model for this tree widget"""
@@ -56,27 +64,41 @@ class TagsTreeWidget(NavigableTree):
             self.delete_tag(item)
 
     def create_new_tag(self, parent_item):
-        name, ok = QInputDialog.getText(self, "Create New Tag", "Enter tag name:")
-        if ok and name and self.notes_model:
-            parent_id = None
-            if parent_item:
-                parent_tag = parent_item.data(0, Qt.ItemDataRole.UserRole)
-                parent_id = parent_tag.id if isinstance(parent_tag, TreeTagWithNotes) else None
-            
-            tag = self.notes_model.create_tag(name, parent_id)
-            if tag:
-                self.update_tree_from_model()
+        new_item = QTreeWidgetItem(["New Tag"])
+        if parent_item:
+            parent_item.addChild(new_item)
+            parent_item.setExpanded(True)
+        else:
+            self.addTopLevelItem(new_item)
+        
+        new_item.setData(0, Qt.ItemDataRole.UserRole, TreeTagWithNotes(id=-1, name="New Tag", children=[], notes=[]))
+        self.edit_item_in_place(new_item)
 
     def rename_tag(self, item):
-        tag = item.data(0, Qt.ItemDataRole.UserRole)
-        if isinstance(tag, TreeTagWithNotes) and self.notes_model:
-            new_name, ok = QInputDialog.getText(self, "Rename Tag", "Enter new tag name:", text=tag.name)
-            if ok and new_name and new_name != tag.name:
-                updated_tag = self.notes_model.update_tag(tag.id, new_name)
-                if updated_tag:
-                    self.update_tree_from_model()
-                else:
-                    QMessageBox.warning(self, "Error", "Failed to rename tag.")
+        if isinstance(item.data(0, Qt.ItemDataRole.UserRole), TreeTagWithNotes):
+            self.edit_item_in_place(item)
+
+    def on_item_changed(self, item, column):
+        if item == self.editing_item:
+            self.editing_item = None
+            tag_data = item.data(0, Qt.ItemDataRole.UserRole)
+            new_name = item.text(column)
+            
+            if isinstance(tag_data, TreeTagWithNotes):
+                if tag_data.id == -1:  # New tag
+                    created_tag = self.notes_model.create_tag(new_name, parent_id=item.parent().data(0, Qt.ItemDataRole.UserRole).id if item.parent() else None)
+                    if created_tag:
+                        item.setData(0, Qt.ItemDataRole.UserRole, created_tag)
+                    else:
+                        QMessageBox.warning(self, "Error", "Failed to create tag.")
+                        self.takeTopLevelItem(self.indexOfTopLevelItem(item))
+                else:  # Existing tag
+                    updated_tag = self.notes_model.update_tag(tag_data.id, new_name)
+                    if not updated_tag:
+                        QMessageBox.warning(self, "Error", "Failed to rename tag.")
+                        item.setText(column, tag_data.name)  # Revert to old name
+            
+            self.update_tree_from_model()
 
     def delete_tag(self, item):
         tag = item.data(0, Qt.ItemDataRole.UserRole)
