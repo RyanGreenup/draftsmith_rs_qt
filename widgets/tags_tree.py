@@ -18,6 +18,10 @@ class TagsTreeWidget(NavigableTree):
         self.customContextMenuRequested.connect(self.show_context_menu)
         self.itemChanged.connect(self.on_item_changed)
         self.editing_item = None
+        # Enable drag and drop
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDragDropMode(QTreeWidget.DragDropMode.InternalMove)
 
     def edit_item_in_place(self, item, column=0):
         self.editing_item = item
@@ -41,7 +45,7 @@ class TagsTreeWidget(NavigableTree):
         if self.notes_model is not None:
             self.notes_model.notes_updated.connect(self.update_tree_from_model)
             # Initial update
-            self.update_tree(self.notes_model.get_tags_tree())
+            self.update_tree_from_model()
 
     def show_context_menu(self, position):
         item = self.itemAt(position)
@@ -136,6 +140,61 @@ class TagsTreeWidget(NavigableTree):
 
             # Restore state after update
             self.restore_state(state)
+
+    def dragEnterEvent(self, event):
+        if event.source() == self:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.source() == self:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.source() == self:
+            # Get the dragged item and the target item
+            dragged_item = self.currentItem()
+            target_item = self.itemAt(event.pos())
+
+            if not dragged_item or dragged_item == target_item:
+                event.ignore()
+                return
+
+            # Get tag data
+            dragged_tag = dragged_item.data(0, Qt.ItemDataRole.UserRole)
+            target_tag = target_item.data(0, Qt.ItemDataRole.UserRole) if target_item else None
+
+            if not isinstance(dragged_tag, TreeTagWithNotes):
+                event.ignore()
+                return
+
+            # Prevent default drop handling
+            event.setDropAction(Qt.DropAction.IgnoreAction)
+            event.accept()
+
+            # If target is None or not a TreeTagWithNotes, we're dropping to root level (detach)
+            if not target_tag or not isinstance(target_tag, TreeTagWithNotes):
+                if self.notes_model:
+                    self.notes_model.detach_tag_from_parent(dragged_tag.id)
+            else:
+                # Don't allow dropping on own child
+                parent = target_item
+                while parent:
+                    if parent == dragged_item:
+                        return
+                    parent = parent.parent()
+
+                # Use the model to update the relationship
+                if self.notes_model:
+                    self.notes_model.attach_tag_to_parent(dragged_tag.id, target_tag.id)
+
+            # Refresh the tree
+            self.update_tree_from_model()
+        else:
+            event.ignore()
 
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""
