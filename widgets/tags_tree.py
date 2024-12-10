@@ -29,7 +29,7 @@ class TagsTreeWidget(NavigableTree):
         self.editItem(item, column)
         QTimer.singleShot(0, lambda: self.setCurrentItem(item))
 
-    def set_model(self, model: Any):
+    def set_model(self, model: NotesModel):
         """Set the notes model for this tree widget"""
         # First disconnect from old model if it exists
         if self.notes_model is not None:
@@ -155,7 +155,6 @@ class TagsTreeWidget(NavigableTree):
 
     def dropEvent(self, event):
         if event.source() == self:
-            # Get the dragged item and the target item
             dragged_item = self.currentItem()
             target_item = self.itemAt(event.pos())
 
@@ -163,38 +162,50 @@ class TagsTreeWidget(NavigableTree):
                 event.ignore()
                 return
 
-            # Get tag data
-            dragged_tag = dragged_item.data(0, Qt.ItemDataRole.UserRole)
-            target_tag = target_item.data(0, Qt.ItemDataRole.UserRole) if target_item else None
+            dragged_data = dragged_item.data(0, Qt.ItemDataRole.UserRole)
+            target_data = target_item.data(0, Qt.ItemDataRole.UserRole) if target_item else None
 
-            if not isinstance(dragged_tag, TreeTagWithNotes):
-                event.ignore()
-                return
-
-            # Prevent default drop handling
             event.setDropAction(Qt.DropAction.IgnoreAction)
             event.accept()
 
-            # If target is None or not a TreeTagWithNotes, we're dropping to root level (detach)
-            if not target_tag or not isinstance(target_tag, TreeTagWithNotes):
-                if self.notes_model:
-                    self.notes_model.detach_tag_from_parent(dragged_tag.id)
-            else:
-                # Don't allow dropping on own child
-                parent = target_item
-                while parent:
-                    if parent == dragged_item:
-                        return
-                    parent = parent.parent()
+            if isinstance(dragged_data, TreeTagWithNotes):
+                self._handle_tag_drop(dragged_data, target_data)
+            elif isinstance(dragged_data, TreeNote):
+                self._handle_note_drop(dragged_data, target_data)
 
-                # Use the model to update the relationship
-                if self.notes_model:
-                    self.notes_model.attach_tag_to_parent(dragged_tag.id, target_tag.id)
-
-            # Refresh the tree
             self.update_tree_from_model()
         else:
             event.ignore()
+
+    def _handle_tag_drop(self, dragged_tag: TreeTagWithNotes, target_data: Optional[Union[TreeTagWithNotes, TreeNote]]):
+        if not target_data or isinstance(target_data, TreeNote):
+            # Detach tag from parent if dropped on empty area or a note
+            if self.notes_model:
+                self.notes_model.detach_tag_from_parent(dragged_tag.id)
+        elif isinstance(target_data, TreeTagWithNotes):
+            # Don't allow dropping on own child
+            parent = self.itemAt(self.mapFromGlobal(self.cursor().pos()))
+            while parent:
+                if parent.data(0, Qt.ItemDataRole.UserRole) == dragged_tag:
+                    return
+                parent = parent.parent()
+
+            # Attach tag to new parent
+            if self.notes_model:
+                self.notes_model.attach_tag_to_parent(dragged_tag.id, target_data.id)
+
+    def _handle_note_drop(self, dragged_note: TreeNote, target_data: Optional[Union[TreeTagWithNotes, TreeNote]]):
+        if isinstance(target_data, TreeTagWithNotes):
+            # Attach note to new tag
+            if self.notes_model:
+                self.notes_model.attach_tag_to_note(dragged_note.id, target_data.id)
+        elif isinstance(target_data, TreeNote):
+            # If dropped on another note, we'll ignore it
+            pass
+        else:
+            # If dropped on empty area, detach it from all tags
+            if self.notes_model:
+                self.notes_model.detach_note_from_all_tags(dragged_note.id)
 
     def _on_selection_changed(self):
         """Handle selection changes and notify model"""

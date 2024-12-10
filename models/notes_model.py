@@ -453,3 +453,30 @@ class NotesModel(QObject):
         except Exception as e:
             print(f"Error detaching tag {tag_id} from note {note_id}: {e}")
             return False
+
+    def detach_note_from_all_tags(self, note_id: int) -> bool:
+        """
+        Detach a note from all its tags
+
+        Args:
+            note_id: ID of the note to detach from all tags
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Get all tags for the note
+            note_tags = self.get_note_tags(note_id)
+            
+            # Detach the note from each tag
+            for tag in note_tags:
+                self.tag_api.detach_tag_from_note(note_id, tag.id)
+
+            # Refresh internal state and emit signal
+            self.refresh_notes()  # This emits notes_updated
+
+            return True
+
+        except Exception as e:
+            print(f"Error detaching note {note_id} from all tags: {e}")
+            return False
