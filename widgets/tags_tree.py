@@ -46,6 +46,19 @@ class TagsTreeWidget(NavigableTree):
     def show_context_menu(self, position):
         item = self.itemAt(position)
         context_menu = QMenu(self)
+        
+        # Add ID label if item exists
+        if item:
+            item_data = item.data(0, Qt.ItemDataRole.UserRole)
+            if isinstance(item_data, TreeTagWithNotes):
+                id_label = context_menu.addAction(f"Tag ID: {item_data.id}")
+            elif isinstance(item_data, TreeNote):
+                id_label = context_menu.addAction(f"Note ID: {item_data.id}")
+            else:
+                id_label = context_menu.addAction("Unknown item type")
+            id_label.setEnabled(False)  # Make the label non-clickable
+            context_menu.addSeparator()  # Add a separator after the ID label
+        
         create_tag_action = context_menu.addAction("Create New Tag")
         
         rename_tag_action = None
