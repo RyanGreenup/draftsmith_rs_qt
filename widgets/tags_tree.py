@@ -68,9 +68,13 @@ class TagsTreeWidget(NavigableTree):
         
         rename_tag_action = None
         delete_tag_action = None
-        if item and isinstance(item.data(0, Qt.ItemDataRole.UserRole), TreeTagWithNotes):
-            rename_tag_action = context_menu.addAction("Rename Tag")
-            delete_tag_action = context_menu.addAction("Delete Tag")
+        untag_action = None
+        if item:
+            if isinstance(item.data(0, Qt.ItemDataRole.UserRole), TreeTagWithNotes):
+                rename_tag_action = context_menu.addAction("Rename Tag")
+                delete_tag_action = context_menu.addAction("Delete Tag")
+            elif isinstance(item.data(0, Qt.ItemDataRole.UserRole), TreeNote):
+                untag_action = context_menu.addAction("Untag")
 
         action = context_menu.exec_(self.mapToGlobal(position))
         
@@ -80,6 +84,22 @@ class TagsTreeWidget(NavigableTree):
             self.rename_tag(item)
         elif action == delete_tag_action:
             self.delete_tag(item)
+        elif action == untag_action:
+            self.untag_note(item)
+
+    def untag_note(self, item):
+        note_data = item.data(0, Qt.ItemDataRole.UserRole)
+        if isinstance(note_data, TreeNote):
+            parent_item = item.parent()
+            if parent_item:
+                tag_data = parent_item.data(0, Qt.ItemDataRole.UserRole)
+                if isinstance(tag_data, TreeTagWithNotes):
+                    if self.notes_model:
+                        success = self.notes_model.detach_tag_from_note(note_data.id, tag_data.id)
+                        if success:
+                            self.update_tree_from_model()
+                        else:
+                            QMessageBox.warning(self, "Error", "Failed to untag note.")
 
     def create_new_tag(self, parent_item):
         new_item = QTreeWidgetItem(["New Tag"])
