@@ -403,10 +403,11 @@ class TagsTreeWidget(NavigableTree):
         """Add an 'Untagged' item at the root level with all untagged notes"""
         print("Entering _add_untagged_notes method")
         if self.notes_model:
-            print("notes_model exists, getting untagged notes")
+            print("notes_model exists, getting all notes")
             try:
-                untagged_notes = self.notes_model.get_untagged_notes()
-                print(f"Retrieved {len(untagged_notes)} untagged notes")
+                all_notes = self.notes_model.get_all_notes()
+                untagged_notes = [note for note in all_notes if not note.tags]
+                print(f"Retrieved {len(untagged_notes)} untagged notes out of {len(all_notes)} total notes")
                 for note in untagged_notes:
                     print(f"Untagged note: id={note.id}, title={note.title}")
             except Exception as e:
