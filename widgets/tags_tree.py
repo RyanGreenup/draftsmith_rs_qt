@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QFont, QColor, QIcon
 from widgets.navigable_tree import NavigableTree
 from api.client import TreeTagWithNotes, Tag, TreeNote
+from models.notes_model import NotesModel
 
 
 class TagsTreeWidget(NavigableTree):
