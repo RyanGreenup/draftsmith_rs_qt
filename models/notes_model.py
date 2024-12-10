@@ -504,3 +504,22 @@ class NotesModel(QObject):
         except Exception as e:
             print(f"Error detaching tag {tag_id} from note {note_id}: {e}")
             return False
+    def get_untagged_notes(self) -> List[TreeNote]:
+        """
+        Get all notes that are not associated with any tag
+
+        Returns:
+            List[TreeNote]: List of untagged notes
+        """
+        try:
+            all_notes = self.note_api.get_notes()
+            tagged_note_ids = set()
+            for tag in self.get_tags_tree():
+                tagged_note_ids.update(note.id for note in tag.notes)
+            
+            untagged_notes = [TreeNote(id=note.id, title=note.title) 
+                              for note in all_notes if note.id not in tagged_note_ids]
+            return untagged_notes
+        except Exception as e:
+            print(f"Error getting untagged notes: {e}")
+            return []

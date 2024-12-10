@@ -234,8 +234,12 @@ class TagsTreeWidget(NavigableTree):
         if current and self.notes_model:
             item_data = current.data(0, Qt.ItemDataRole.UserRole)
             if isinstance(item_data, TreeTagWithNotes):
-                self.notes_model.select_tag(item_data.id)
-                self.tag_selected.emit(item_data.id)
+                if item_data.id == -1:  # Untagged item
+                    self.notes_model.select_tag(None)  # Deselect all tags
+                    self.tag_selected.emit(-1)  # Emit a special signal for untagged
+                else:
+                    self.notes_model.select_tag(item_data.id)
+                    self.tag_selected.emit(item_data.id)
             elif isinstance(item_data, TreeNote):
                 self.notes_model.select_note(item_data.id)
                 self.note_selected.emit(item_data.id)
@@ -252,6 +256,9 @@ class TagsTreeWidget(NavigableTree):
         for tag in root_tags:
             self._add_tag_to_tree(tag, self)
 
+        # Add "Untagged" item at the root level
+        self._add_untagged_notes()
+
         # Restore state after update
         self.restore_state(state)
 
@@ -259,7 +266,7 @@ class TagsTreeWidget(NavigableTree):
         self.expandAll()
 
         # Debug print
-        print(f"Updated tree with {len(root_tags)} root tags")
+        print(f"Updated tree with {len(root_tags)} root tags and untagged notes")
 
     def _add_tag_to_tree(
         self, tag: TreeTagWithNotes, parent: Union[QTreeWidgetItem, 'TagsTreeWidget']
@@ -392,3 +399,30 @@ class TagsTreeWidget(NavigableTree):
         for i in range(self.topLevelItemCount()):
             if find_and_select_item(self.topLevelItem(i)):
                 break
+    def _add_untagged_notes(self):
+        """Add an 'Untagged' item at the root level with all untagged notes"""
+        if self.notes_model:
+            untagged_notes = self.notes_model.get_untagged_notes()
+            if untagged_notes:
+                untagged_item = QTreeWidgetItem(self)
+                untagged_item.setText(0, "Untagged")
+                untagged_item.setData(0, Qt.ItemDataRole.UserRole, TreeTagWithNotes(id=-1, name="Untagged", children=[], notes=[]))
+                
+                # Set the directory icon for the untagged item
+                icon = self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon)
+                untagged_item.setIcon(0, icon)
+
+                # Make "Untagged" bold
+                font = untagged_item.font(0)
+                font.setBold(True)
+                untagged_item.setFont(0, font)
+
+                for note in untagged_notes:
+                    note_item = QTreeWidgetItem(untagged_item)
+                    note_item.setText(0, note.title)
+                    note_item.setData(0, Qt.ItemDataRole.UserRole, note)
+                    # Make notes a different color
+                    note_item.setForeground(0, QColor(0, 128, 0))  # Green color
+
+                # Debug print
+                print(f"Added 'Untagged' item with {len(untagged_notes)} notes")
