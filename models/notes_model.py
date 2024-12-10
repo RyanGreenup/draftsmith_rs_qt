@@ -405,3 +405,51 @@ class NotesModel(QObject):
         except Exception as e:
             print(f"Error detaching note {note_id} from parent: {e}")
             return False
+
+    def attach_tag_to_note(self, note_id: int, tag_id: int) -> bool:
+        """
+        Attach a tag to a note
+
+        Args:
+            note_id: ID of the note
+            tag_id: ID of the tag to attach
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Use the API to attach the tag to the note
+            self.tag_api.attach_tag_to_note(note_id, tag_id)
+
+            # Refresh internal state and emit signal
+            self.refresh_notes()  # This emits notes_updated
+
+            return True
+
+        except Exception as e:
+            print(f"Error attaching tag {tag_id} to note {note_id}: {e}")
+            return False
+
+    def detach_tag_from_note(self, note_id: int, tag_id: int) -> bool:
+        """
+        Detach a tag from a note
+
+        Args:
+            note_id: ID of the note
+            tag_id: ID of the tag to detach
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Use the API to detach the tag from the note
+            self.tag_api.detach_tag_from_note(note_id, tag_id)
+
+            # Refresh internal state and emit signal
+            self.refresh_notes()  # This emits notes_updated
+
+            return True
+
+        except Exception as e:
+            print(f"Error detaching tag {tag_id} from note {note_id}: {e}")
+            return False
