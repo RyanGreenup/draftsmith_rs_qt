@@ -157,7 +157,10 @@ class NotesTreeModel(QAbstractItemModel):
             elif node.node_type == 'page':
                 return node.data["name"]  # Access dict with key
             else:  # note
-                return node.data.title
+                # Handle both dictionary and object cases
+                if isinstance(node.data, dict):
+                    return node.data.get('title', 'Untitled')
+                return getattr(node.data, 'title', 'Untitled')
 
         elif role == Qt.DecorationRole:
             style = QApplication.style()
