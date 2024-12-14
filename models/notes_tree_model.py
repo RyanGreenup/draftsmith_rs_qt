@@ -365,6 +365,10 @@ class NotesTreeModel(QAbstractItemModel):
                     source_node = source_index.internalPointer()
                     
                     # Store expanded states BEFORE anything else
+                    print("Storing expanded states...")
+                    expanded_states = {}
+                    self._store_expanded_state(source_node, expanded_states)
+                    print(f"Expanded states stored: {expanded_states}")
                     expanded_states = {}
                     self._store_expanded_state(source_node, expanded_states)
                     
@@ -391,7 +395,9 @@ class NotesTreeModel(QAbstractItemModel):
                     new_index = self.createIndex(insert_pos, 0, node_to_move)
                 
                     # Restore expanded states after the move
+                    print("Restoring expanded states...")
                     self._restore_expanded_state(node_to_move, expanded_states)
+                    print(f"Expanded states restored: {expanded_states}")
                     
                     # Ensure the new node is expanded if it was previously
                     if expanded_states.get(f"tag_{child_id}", False):
