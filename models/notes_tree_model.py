@@ -1,5 +1,6 @@
-from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, QMimeData, QByteArray
 from PySide6.QtGui import QIcon
+from typing import List
 from PySide6.QtWidgets import QStyle, QApplication
 from typing import Optional, Any, List
 from api.client import (
@@ -191,16 +192,81 @@ class NotesTreeModel(QAbstractItemModel):
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         if not index.isValid():
-            return Qt.NoItemFlags
-
+            return Qt.ItemIsDropEnabled  # Allow drops on the root
+            
         flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
-        # Don't allow editing of page nodes (All Notes, Untagged Notes)
+        
         node = index.internalPointer()
-        if node.node_type != 'page':
+        if node.node_type != 'page':  # Don't allow editing of page nodes
             flags |= Qt.ItemIsEditable
-
+            
+        # Add drag & drop flags
+        if node.node_type in ['note', 'tag']:  # Allow dragging notes and tags
+            flags |= Qt.ItemIsDragEnabled
+        if node.node_type in ['note', 'tag']:  # Allow dropping on notes and tags
+            flags |= Qt.ItemIsDropEnabled
+            
         return flags
+
+    def supportedDropActions(self) -> Qt.DropActions:
+        return Qt.MoveAction
+
+    def mimeTypes(self) -> List[str]:
+        return ['application/x-notestreemodeldata']
+
+    def mimeData(self, indexes: List[QModelIndex]) -> QMimeData:
+        if not indexes:
+            return None
+            
+        mime_data = QMimeData()
+        node = indexes[0].internalPointer()
+        # Store the node type and ID in the mime data
+        data = f"{node.node_type}:{node.data.id if hasattr(node.data, 'id') else ''}"
+        mime_data.setData('application/x-notestreemodeldata', QByteArray(data.encode()))
+        return mime_data
+
+    def canDropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, 
+                        column: int, parent: QModelIndex) -> bool:
+        if not data.hasFormat('application/x-notestreemodeldata'):
+            return False
+            
+        # Get the target node
+        target_node = parent.internalPointer() if parent.isValid() else self.root_node
+        
+        # Get the source node type
+        source_data = bytes(data.data('application/x-notestreemodeldata')).decode()
+        source_type = source_data.split(':')[0]
+        
+        # Allow drops based on rules:
+        # 1. Notes can be dropped on tags
+        # 2. Notes can be dropped on other notes (to create subpages)
+        # 3. Tags can be dropped on other tags
+        if source_type == 'note':
+            return target_node.node_type in ['tag', 'note']
+        elif source_type == 'tag':
+            return target_node.node_type == 'tag'
+        
+        return False
+
+    def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int,
+                     column: int, parent: QModelIndex) -> bool:
+        if not self.canDropMimeData(data, action, row, column, parent):
+            return False
+            
+        source_data = bytes(data.data('application/x-notestreemodeldata')).decode()
+        source_type, source_id = source_data.split(':')
+        target_node = parent.internalPointer() if parent.isValid() else self.root_node
+        
+        # Print the action that would occur
+        if source_type == 'note':
+            if target_node.node_type == 'tag':
+                print(f"Attaching note {source_id} to tag {target_node.data.id}")
+            else:  # target is note
+                print(f"Attaching note {source_id} as subpage of note {target_node.data.id}")
+        elif source_type == 'tag':
+            print(f"Attaching tag {source_id} to parent tag {target_node.data.id}")
+        
+        return True
 
     def _get_sort_key(self, node):
         """Get the key to use for sorting nodes"""
