@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QTreeView, QWidget, QVBoxLayout, QComboBox
+from PySide6.QtWidgets import QTreeView, QWidget, QVBoxLayout, QComboBox, QMenu
 from PySide6.QtCore import Qt
 from .notes_tree import NotesTreeWidget
 from .search_sidebar import SearchSidebar
@@ -12,6 +12,11 @@ class LeftSidebar(QWidget):
         self.tags_tree = QTreeView()
         model = NotesTreeModel(self)
         self.tags_tree.setModel(model)
+        
+        # Add context menu support
+        self.tags_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tags_tree.customContextMenuRequested.connect(self._show_tags_context_menu)
+        
         self.search_sidebar = SearchSidebar()
         self.tree_selector = QComboBox()
 
@@ -52,6 +57,25 @@ class LeftSidebar(QWidget):
             self.tree.hide()
             self.tags_tree.hide()
             self.search_sidebar.show()
+
+    def _show_tags_context_menu(self, position):
+        index = self.tags_tree.indexAt(position)
+        if not index.isValid():
+            return
+            
+        # Get the node to check its type
+        node = index.internalPointer()
+        if node.node_type == 'special':
+            return  # Don't show menu for special items
+            
+        menu = QMenu(self)
+        rename_action = menu.addAction("Rename")
+        
+        # Show context menu at cursor position
+        action = menu.exec_(self.tags_tree.viewport().mapToGlobal(position))
+        
+        if action == rename_action:
+            self.tags_tree.edit(index)  # Use Qt's built-in editing
 
     def focus_search(self):
         """Focus the search input and switch to search view"""
