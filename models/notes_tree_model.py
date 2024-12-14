@@ -2,7 +2,7 @@ from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QStyle, QApplication
 from typing import Optional, Any, List
-from api.client import TagAPI, TreeTagWithNotes
+from api.client import TagAPI, NoteAPI, TreeTagWithNotes, TreeNote
 
 class TreeNode:
     def __init__(self, data, parent=None, node_type='tag'):
@@ -32,18 +32,34 @@ class NotesTreeModel(QAbstractItemModel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.root_node = TreeNode(None)
-        # TODO this needs to be changed
-        self.tag_api = TagAPI("http://vidar:37242")  # Replace with actual base URL
+        # TODO: Update base URL handling
+        base_url = "http://vidar:37242"
+        self.tag_api = TagAPI(base_url)
+        self.note_api = NoteAPI(base_url)  # Add note API
         self.setup_data()
 
     def setup_data(self):
         try:
+            # Get both tag tree and notes tree
+            # TODO: In the future, the API may be updated to include inherited tags in the tag tree
+            # based on user feedback. For now, we'll display both hierarchies.
             tags_tree: List[TreeTagWithNotes] = self.tag_api.get_tags_tree()
+            notes_tree: List[TreeNote] = self.note_api.get_notes_tree()
+            
+            # Process tag hierarchy
             print(f"Received {len(tags_tree)} top-level tags")
             for tag in tags_tree:
                 self._process_tag(tag, self.root_node)
+
+            # Add root notes that aren't under any tags
+            # Create a special "All Notes" node
+            all_notes_node = TreeNode({"name": "All Notes"}, self.root_node, 'special')
+            self.root_node.append_child(all_notes_node)
+            for note in notes_tree:
+                self._process_note(note, all_notes_node)
+
         except Exception as e:
-            print(f"Error loading tags: {e}")
+            print(f"Error loading data: {e}")
 
     def _process_tag(self, tag_data, parent_node):
         # Create tag node
@@ -116,6 +132,8 @@ class NotesTreeModel(QAbstractItemModel):
             style = QApplication.style()
             if node.node_type == 'tag':
                 return style.standardIcon(QStyle.StandardPixmap.SP_DirIcon)
+            elif node.node_type == 'special':
+                return style.standardIcon(QStyle.StandardPixmap.SP_DirLinkIcon)
             else:  # note
                 return style.standardIcon(QStyle.StandardPixmap.SP_FileIcon)
 
