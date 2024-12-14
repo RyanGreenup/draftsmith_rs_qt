@@ -332,13 +332,6 @@ class NotesTreeModel(QAbstractItemModel):
                     # Store the target node where the drop occurred
                     drop_target_instance = target_node
 
-                    # Perform the API call
-                    self.note_api.attach_note_to_parent(
-                        child_note_id,
-                        parent_note_id,
-                        hierarchy_type="block"
-                    )
-
                     # Find the source note node
                     source_index = self._find_index_by_id(child_note_id, 'note')
                     if not source_index.isValid():
@@ -348,14 +341,50 @@ class NotesTreeModel(QAbstractItemModel):
                     note_node = source_index.internalPointer()
                     note_data = note_node.data
 
-                    # Remove from old position
+                    # If this note was a subpage of another note, find all instances and remove it
                     old_parent = source_index.parent()
-                    old_parent_node = old_parent.internalPointer() if old_parent.isValid() else self.root_node
-                    row = source_index.row()
+                    if old_parent.isValid():
+                        old_parent_node = old_parent.internalPointer()
+                        if old_parent_node.node_type == 'note':
+                            old_parent_id = old_parent_node.data.id
+                            
+                            # Find all instances of the old parent note
+                            def find_old_parent_instances(search_node):
+                                instances = []
+                                if (search_node.node_type == 'note' and 
+                                    hasattr(search_node.data, 'id') and 
+                                    search_node.data.id == old_parent_id):
+                                    instances.append(search_node)
+                                for child in search_node.children:
+                                    instances.extend(find_old_parent_instances(child))
+                                return instances
 
-                    self.beginRemoveRows(old_parent, row, row)
-                    old_parent_node.children.pop(row)
-                    self.endRemoveRows()
+                            old_parent_instances = find_old_parent_instances(self.root_node)
+                            
+                            # Remove the note from each instance of the old parent
+                            for parent_instance in old_parent_instances:
+                                for i, child in enumerate(parent_instance.children):
+                                    if (child.node_type == 'note' and 
+                                        hasattr(child.data, 'id') and 
+                                        child.data.id == child_note_id):
+                                        parent_index = self.createIndex(parent_instance.row(), 0, parent_instance)
+                                        self.beginRemoveRows(parent_index, i, i)
+                                        parent_instance.children.pop(i)
+                                        self.endRemoveRows()
+                                        break
+                        else:
+                            # Just remove from current position if not under another note
+                            row = source_index.row()
+                            self.beginRemoveRows(old_parent, row, row)
+                            old_parent_node.children.pop(row)
+                            self.endRemoveRows()
+
+                    # Now perform the API call to attach to new parent
+                    self.note_api.attach_note_to_parent(
+                        child_note_id,
+                        parent_note_id,
+                        hierarchy_type="block"
+                    )
 
                     # Find all instances of the target (parent) note and add the child to each
                     def find_parent_instances(search_node):
