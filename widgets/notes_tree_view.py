@@ -164,8 +164,8 @@ class NotesTreeView(QTreeView):
 
                 return
 
-        # Handle note creation under another note
-        if creating_note and parent_node and parent_node.node_type == 'note':
+            # Handle note creation under another note
+            if creating_note and parent_node and parent_node.node_type == 'note':
             # Create new note
             response = self.model.note_api.note_create("", "")
             tree_note = TreeNote(
