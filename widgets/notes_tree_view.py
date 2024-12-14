@@ -166,11 +166,11 @@ class NotesTreeView(QTreeView):
 
             # Handle note creation under another note
             if creating_note and parent_node and parent_node.node_type == 'note':
-            # Create new note
-            response = self.model.note_api.note_create("", "")
-            tree_note = TreeNote(
-                id=response['id'],
-                title=response.get('title', ''),
+                # Create new note
+                response = self.model.note_api.note_create("", "")
+                tree_note = TreeNote(
+                    id=response['id'],
+                    title=response.get('title', ''),
                 tags=[],
                 children=[],
                 content=''
