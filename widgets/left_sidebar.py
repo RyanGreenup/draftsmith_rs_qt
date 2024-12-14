@@ -147,6 +147,32 @@ class LeftSidebar(QWidget):
                 return
                 
         try:
+            # Special handling for root-level tag creation
+            if not creating_note and not parent_node:
+                # Find the position before "All Notes"
+                insert_position = 0
+                for i in range(model.root_node.child_count()):
+                    if model.root_node.child(i).node_type == 'page':
+                        insert_position = i
+                        break
+                    
+                # Create new tag
+                new_tag = model.tag_api.create_tag(title)
+                
+                # Insert at the correct position
+                model.beginInsertRows(QModelIndex(), insert_position, insert_position)
+                new_node = TreeNode(new_tag, model.root_node, 'tag')
+                
+                # Insert into children list at specific position
+                model.root_node.children.insert(insert_position, new_node)
+                model.endInsertRows()
+                
+                # Select and focus the new tag
+                new_index = model.createIndex(insert_position, 0, new_node)
+                self.tags_tree.setCurrentIndex(new_index)
+                self.tags_tree.setFocus()
+                return
+
             if creating_note and not parent_node:
                 # Find "All Notes" and "Untagged Notes" nodes
                 all_notes_node = None
