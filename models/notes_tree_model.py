@@ -47,11 +47,11 @@ class NotesTreeModel(QAbstractItemModel):
         # Create tag node
         node = TreeNode(tag_data, parent_node, 'tag')
         parent_node.append_child(node)
-        
+
         # Process child tags
         for child in tag_data.children:
             self._process_tag(child, node)
-        
+
         # Process notes belonging to this tag
         for note in tag_data.notes:
             self._process_note(note, node)
@@ -60,7 +60,7 @@ class NotesTreeModel(QAbstractItemModel):
         # Create note node
         node = TreeNode(note_data, parent_node, 'note')
         parent_node.append_child(node)
-        
+
         # Process child notes (subpages)
         for child in note_data.children:
             self._process_note(child, node)
@@ -106,7 +106,7 @@ class NotesTreeModel(QAbstractItemModel):
 
         if role == Qt.DisplayRole:
             if node.node_type == 'tag':
-                return f"{node.data.name} ({len(node.data.notes)})"
+                return f"{node.data.name}"
             else:  # note
                 return node.data.title
 
