@@ -49,10 +49,10 @@ class NotesTreeView(QTreeView):
                     if node.parent and node.parent != self.model.root_node:
                         promote_action = menu.addAction("Promote")
 
-                    # Add demote action if there's a next sibling
-                    next_sibling = self._get_next_sibling(index)
+                    # Add demote action if there's a previous sibling to become the parent
+                    prev_sibling = self._get_previous_sibling(index)
                     demote_action = menu.addAction("Demote")
-                    if not next_sibling:
+                    if not prev_sibling:
                         demote_action.setEnabled(False)
 
                     menu.addSeparator()
@@ -433,14 +433,14 @@ class NotesTreeView(QTreeView):
         except Exception as e:
             raise Exception(f"Failed to delete item: {str(e)}")
 
-    def _get_next_sibling(self, index):
-        """Get the next sibling node in the tree"""
+    def _get_previous_sibling(self, index):
+        """Get the previous sibling node in the tree"""
         parent = self.model.parent(index)
-        next_row = index.row() + 1
-        next_index = self.model.index(next_row, 0, parent)
+        prev_row = index.row() - 1
+        prev_index = self.model.index(prev_row, 0, parent)
 
-        if next_index.isValid():
-            return next_index.internalPointer()
+        if prev_index.isValid():
+            return prev_index.internalPointer()
         return None
 
     def _promote_item(self, node, index):
