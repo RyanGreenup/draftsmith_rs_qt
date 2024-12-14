@@ -45,6 +45,7 @@ class NotesTreeModel(QAbstractItemModel):
         self.tag_api = TagAPI(base_url)
         self.note_api = NoteAPI(base_url)  # Add note API
         self.complete_notes_tree = []  # Store complete notes hierarchy
+        self._view = None  # Store reference to view
         self.setup_data()
 
     def setup_data(self):
@@ -538,6 +539,43 @@ class NotesTreeModel(QAbstractItemModel):
         self.contextMenuRequested.emit(index, menu)
         return menu
 
+    def _store_expanded_state(self, node: TreeNode, expanded_states: dict) -> None:
+        """Recursively store the expanded state of a node and its children"""
+        if hasattr(node.data, 'id'):
+            node_id = f"{node.node_type}_{node.data.id}"
+            expanded_states[node_id] = self.is_expanded(node)
+            
+        for child in node.children:
+            self._store_expanded_state(child, expanded_states)
+
+    def _restore_expanded_state(self, node: TreeNode, expanded_states: dict) -> None:
+        """Recursively restore the expanded state of a node and its children"""
+        if hasattr(node.data, 'id'):
+            node_id = f"{node.node_type}_{node.data.id}"
+            if node_id in expanded_states:
+                self.set_expanded(node, expanded_states[node_id])
+                
+        for child in node.children:
+            self._restore_expanded_state(child, expanded_states)
+
+    def is_expanded(self, node: TreeNode) -> bool:
+        """Check if a node is expanded in the view"""
+        if not hasattr(self, '_view'):
+            return False
+        index = self.createIndex(node.row(), 0, node)
+        return self._view.isExpanded(index)
+
+    def set_expanded(self, node: TreeNode, expanded: bool) -> None:
+        """Set the expanded state of a node in the view"""
+        if not hasattr(self, '_view'):
+            return
+        index = self.createIndex(node.row(), 0, node)
+        self._view.setExpanded(index, expanded)
+
+    def set_view(self, view) -> None:
+        """Set the associated view for expansion state tracking"""
+        self._view = view
+
     def detach_tag_from_parent(self, index: QModelIndex) -> None:
         """Detach a tag from its parent tag"""
         if not index.isValid():
@@ -550,6 +588,10 @@ class NotesTreeModel(QAbstractItemModel):
             return
             
         try:
+            # Store expanded states before moving
+            expanded_states = {}
+            self._store_expanded_state(node, expanded_states)
+            
             # Call API to detach tag
             tag_id = int(node.data.id)
             parent_tag_id = int(parent_node.data.id)
@@ -558,18 +600,23 @@ class NotesTreeModel(QAbstractItemModel):
             # Remove tag from current position
             row = index.row()
             self.beginRemoveRows(index.parent(), row, row)
-            node_to_move = parent_node.children.pop(row)  # Store the node instead of just removing it
+            node_to_move = parent_node.children.pop(row)
             self.endRemoveRows()
             
             # Move to root level, preserving all children
             insert_pos = self._find_insert_position(self.root_node, node)
             self.beginInsertRows(QModelIndex(), insert_pos, insert_pos)
-            node_to_move.parent = self.root_node  # Update parent reference
-            self.root_node.children.insert(insert_pos, node_to_move)  # Insert the existing node with its children
+            node_to_move.parent = self.root_node
+            self.root_node.children.insert(insert_pos, node_to_move)
             self.endInsertRows()
 
-            # Create and emit new index for focusing
+            # Create new index for focusing
             new_index = self.createIndex(insert_pos, 0, node_to_move)
+            
+            # Restore expanded states
+            self._restore_expanded_state(node_to_move, expanded_states)
+            
+            # Emit signal for focusing
             self.tagMoved.emit(new_index)
                 
         except Exception as e:
