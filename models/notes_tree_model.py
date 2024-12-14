@@ -1,6 +1,6 @@
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
 from typing import Optional, Any
-from client import TagAPI
+from api.client import TagAPI
 
 class TreeNode:
     def __init__(self, data, parent=None):
@@ -29,7 +29,8 @@ class NotesTreeModel(QAbstractItemModel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.root_node = TreeNode(None)
-        self.tag_api = TagAPI("http://localhost:8000")  # Replace with actual base URL
+        # TODO this needs to be changed
+        self.tag_api = TagAPI("http://vidar:37242")  # Replace with actual base URL
         self.setup_data()
 
     def setup_data(self):
@@ -52,7 +53,7 @@ class NotesTreeModel(QAbstractItemModel):
 
         parent_node = self.root_node if not parent.isValid() else parent.internalPointer()
         child_node = parent_node.child(row)
-        
+
         if child_node:
             return self.createIndex(row, column, child_node)
         return QModelIndex()
