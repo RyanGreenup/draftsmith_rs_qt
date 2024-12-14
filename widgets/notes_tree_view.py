@@ -443,52 +443,118 @@ class NotesTreeView(QTreeView):
             return next_index.internalPointer()
         return None
 
-    def _demote_item(self, node, index):
-        """Handle demotion of items to become children of their next sibling"""
+    def _promote_item(self, node, index):
+        """Handle promotion of items to their grandparent level"""
         try:
-            # Get the next sibling
-            next_sibling = self._get_next_sibling(index)
-            if not next_sibling:
-                return
-
             current_parent = node.parent
+            grandparent = current_parent.parent if current_parent else None
 
-            # First remove from current parent
-            parent_index = self.model.parent(index)
-            self.model.beginRemoveRows(parent_index, index.row(), index.row())
-            current_parent.children.remove(node)
-            self.model.endRemoveRows()
+            if node.node_type == 'note' and current_parent and current_parent.node_type == 'note':
+                # Store the note's data before removing it
+                note_data = node.data
+                
+                # Detach from current parent via API
+                self.model.note_api.detach_note_from_parent(node.data.id)
 
-            if node.node_type == 'tag':
-                # Detach from current parent if it's a tag
-                if current_parent and current_parent.node_type == 'tag':
-                    self.model.tag_api.detach_tag_from_parent(node.data.id)
+                # Find all instances of the parent note and remove this subpage from each
+                def find_parent_instances(search_node):
+                    instances = []
+                    if (search_node.node_type == 'note' and 
+                        hasattr(search_node.data, 'id') and 
+                        search_node.data.id == current_parent.data.id):
+                        instances.append(search_node)
+                    for child in search_node.children:
+                        instances.extend(find_parent_instances(child))
+                    return instances
 
-                # Attach to new parent (tag or note)
-                self.model.tag_api.attach_tag_to_parent(
-                    node.data.id,
-                    next_sibling.data.id
-                )
-                new_index = self.model.insert_node(node, next_sibling)
+                parent_instances = find_parent_instances(self.model.root_node)
 
-            else:  # note
-                # Detach from current parent if it's a note
-                if current_parent and current_parent.node_type == 'note':
-                    self.model.note_api.detach_note_from_parent(node.data.id)
+                # Remove the subpage from each instance of the parent
+                for parent_instance in parent_instances:
+                    # Find the subpage in this parent's children
+                    for i, child in enumerate(parent_instance.children):
+                        if (child.node_type == 'note' and 
+                            hasattr(child.data, 'id') and 
+                            child.data.id == node.data.id):
+                            # Remove from this parent instance
+                            parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
+                            self.model.beginRemoveRows(parent_index, i, i)
+                            parent_instance.children.pop(i)
+                            self.model.endRemoveRows()
+                            break
 
-                # Attach to new parent
-                self.model.note_api.attach_note_to_parent(
-                    node.data.id,
-                    next_sibling.data.id,
-                    hierarchy_type="block"
-                )
-                new_index = self.model.insert_node(node, next_sibling)
+                # Handle the rest of the promotion logic as before
+                if grandparent and grandparent != self.model.root_node and grandparent.node_type == 'note':
+                    # Attach to grandparent note
+                    self.model.note_api.attach_note_to_parent(
+                        note_data.id,
+                        grandparent.data.id,
+                        hierarchy_type="block"
+                    )
+                    new_node = TreeNode(note_data, None, 'note')
+                    new_index = self.model.insert_node(new_node, grandparent)
+                else:
+                    # Get current note's tags
+                    note_tags = note_data.tags if hasattr(note_data, 'tags') else []
 
-            # Select the demoted item in its new location
-            self.setCurrentIndex(new_index)
-            self.setFocus()
+                    # If the note has tags, find the appropriate tag node(s)
+                    tag_nodes = []
+                    if note_tags:
+                        def find_tag_nodes(search_node, tag_ids):
+                            if search_node.node_type == 'tag' and hasattr(search_node.data, 'id'):
+                                if search_node.data.id in tag_ids:
+                                    tag_nodes.append(search_node)
+                            for child in search_node.children:
+                                find_tag_nodes(child, tag_ids)
+
+                        tag_ids = [tag.id for tag in note_tags]
+                        find_tag_nodes(self.model.root_node, tag_ids)
+
+                        # Add note under each of its tag nodes
+                        for tag_node in tag_nodes:
+                            new_node = TreeNode(note_data, None, 'note')
+                            new_index = self.model.insert_node(new_node, tag_node)
+
+                    # Also add to "Untagged Notes" if no tags
+                    if not note_tags:
+                        untagged_notes_node = None
+                        for child in self.model.root_node.children:
+                            if child.node_type == 'page' and child.data["name"] == "Untagged Notes":
+                                untagged_notes_node = child
+                                break
+
+                        if untagged_notes_node:
+                            new_node = TreeNode(note_data, None, 'note')
+                            new_index = self.model.insert_node(new_node, untagged_notes_node)
+
+                # Select the promoted item in its new location
+                if new_index:
+                    self.setCurrentIndex(new_index)
+                    self.setFocus()
+
+            else:
+                # First remove from current parent
+                parent_index = self.model.parent(index)
+                self.model.beginRemoveRows(parent_index, index.row(), index.row())
+                current_parent.children.remove(node)
+                self.model.endRemoveRows()
+
+                if node.node_type == 'tag':
+                    # Detach from current parent if it's a tag
+                    if current_parent and current_parent.node_type == 'tag':
+                        self.model.tag_api.detach_tag_from_parent(node.data.id)
+
+                    # Attach to grandparent if it exists and is a tag
+                    if grandparent and grandparent != self.model.root_node and grandparent.node_type == 'tag':
+                        self.model.tag_api.attach_tag_to_parent(node.data.id, grandparent.data.id)
+                        new_index = self.model.insert_node(node, grandparent)
+                    else:
+                        # If no valid grandparent, move to root level
+                        new_index = self.model.insert_node(node, self.model.root_node)
+
+                    # Select the promoted item in its new location
+                    self.setCurrentIndex(new_index)
+                    self.setFocus()
 
         except Exception as e:
-            # If anything fails, try to revert to original position
-            new_index = self.model.insert_node(node, current_parent)
-            raise Exception(f"Failed to demote item: {str(e)}")
+            raise Exception(f"Failed to promote item: {str(e)}")
