@@ -120,7 +120,11 @@ class LeftSidebar(QWidget):
 
         # Show context menu at cursor position
         action = menu.exec_(self.tags_tree.viewport().mapToGlobal(position))
-
+        
+        # If no action was selected (e.g. Esc pressed), just return
+        if action is None:
+            return
+            
         try:
             if not index.isValid():
                 # Handle root level actions with simplified menu
