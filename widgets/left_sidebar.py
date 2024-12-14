@@ -66,42 +66,50 @@ class LeftSidebar(QWidget):
         node = None
         
         if index.isValid():
+            # Existing item selected - show full menu
             node = index.internalPointer()
             if node.node_type != 'page':  # Don't show edit options for special items
                 rename_action = menu.addAction("Rename")
                 delete_action = menu.addAction("Delete")
                 menu.addSeparator()
-        
-        # Determine labels based on context
-        if node and node.node_type == 'note':
-            new_label = "New Note"
-            child_label = "New Subpage"
-            sibling_label = "New Sibling Page"
+            
+            # Determine labels based on context
+            if node and node.node_type == 'note':
+                new_label = "New Note"
+                child_label = "New Subpage"
+                sibling_label = "New Sibling Page"
+            else:
+                new_label = "New Tag"
+                child_label = "New Child Tag"
+                sibling_label = "New Sibling Tag"
+            
+            new_action = menu.addAction(new_label)
+            new_child_action = menu.addAction(child_label)
+            new_sibling_action = menu.addAction(sibling_label)
+            
+            # Add "New Note Under Tag" option when right-clicking a tag
+            new_note_under_tag_action = None
+            if node and node.node_type == 'tag':
+                menu.addSeparator()
+                new_note_under_tag_action = menu.addAction("New Note Under Tag")
         else:
-            new_label = "New Tag"
-            child_label = "New Child Tag"
-            sibling_label = "New Sibling Tag"
-        
-        new_action = menu.addAction(new_label)
-        new_child_action = menu.addAction(child_label)
-        new_sibling_action = menu.addAction(sibling_label)
-        
-        # Add "New Note Under Tag" option when right-clicking a tag
-        new_note_under_tag_action = None
-        if node and node.node_type == 'tag':
-            menu.addSeparator()
-            new_note_under_tag_action = menu.addAction("New Note Under Tag")
+            # No item selected - show simplified menu
+            new_tag_action = menu.addAction("New Tag")
+            new_note_action = menu.addAction("New Note")
         
         # Show context menu at cursor position
         action = menu.exec_(self.tags_tree.viewport().mapToGlobal(position))
         
         try:
             if not index.isValid():
-                # Handle root level actions
-                if action == new_action:
+                # Handle root level actions with simplified menu
+                if action == new_tag_action:
                     self._create_new_item(model, None, is_child=False)
+                elif action == new_note_action:
+                    self._create_new_item(model, None, is_child=False, force_note=True)
                 return
                 
+            # Handle actions for existing items
             if action == rename_action:
                 self.tags_tree.edit(index)
             elif action == delete_action:
@@ -114,7 +122,6 @@ class LeftSidebar(QWidget):
                 parent_node = node.parent
                 self._create_new_item(model, parent_node, is_child=True)
             elif action == new_note_under_tag_action:
-                # Create a new note and attach it to the selected tag
                 self._create_new_item(model, node, is_child=True, force_note=True)
                 
         except Exception as e:
