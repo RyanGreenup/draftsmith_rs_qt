@@ -198,20 +198,23 @@ class NotesTreeView(QTreeView):
                 return instances
 
             parent_instances = add_to_parent_instances(self.model.root_node)
-            first_new_index = None
+            focused_new_index = None
 
             # Add the new note to each instance of the parent
             for parent_instance in parent_instances:
                 new_child_node = TreeNode(tree_note, None, 'note')
                 new_index = self.model.insert_node(new_child_node, parent_instance)
-                if first_new_index is None:
-                    first_new_index = new_index
+                
+                # If this is the parent instance where the action was initiated,
+                # store this index to focus
+                if parent_instance == parent_node:
+                    focused_new_index = new_index
 
-            # Focus the first instance of the new note
-            if first_new_index:
-                self.setCurrentIndex(first_new_index)
+            # Focus the new note under the specific parent where it was created
+            if focused_new_index:
+                self.setCurrentIndex(focused_new_index)
                 self.setFocus()
-                self.edit(first_new_index)
+                self.edit(focused_new_index)
             
             return
 
