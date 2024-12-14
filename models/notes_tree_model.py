@@ -558,15 +558,19 @@ class NotesTreeModel(QAbstractItemModel):
             # Remove tag from current position
             row = index.row()
             self.beginRemoveRows(index.parent(), row, row)
-            parent_node.children.pop(row)
+            node_to_move = parent_node.children.pop(row)  # Store the node instead of just removing it
             self.endRemoveRows()
             
-            # Move to root level
+            # Move to root level, preserving all children
             insert_pos = self._find_insert_position(self.root_node, node)
             self.beginInsertRows(QModelIndex(), insert_pos, insert_pos)
-            new_node = TreeNode(node.data, self.root_node, 'tag')
-            self.root_node.children.insert(insert_pos, new_node)
+            node_to_move.parent = self.root_node  # Update parent reference
+            self.root_node.children.insert(insert_pos, node_to_move)  # Insert the existing node with its children
             self.endInsertRows()
+
+            # Create and emit new index for focusing
+            new_index = self.createIndex(insert_pos, 0, node_to_move)
+            self.tagMoved.emit(new_index)
                 
         except Exception as e:
             print(f"Error detaching tag from parent: {e}")
