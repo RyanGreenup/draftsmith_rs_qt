@@ -269,8 +269,11 @@ class LeftSidebar(QWidget):
                 # Detach from current parent
                 model.note_api.detach_note_from_parent(node.data.id)
                 
-                # Attach to grandparent if it exists and is a note
+                # Get current note's tags
+                note_tags = node.data.tags if hasattr(node.data, 'tags') else []
+                
                 if grandparent and grandparent != model.root_node and grandparent.node_type == 'note':
+                    # Attach to grandparent note
                     model.note_api.attach_note_to_parent(
                         node.data.id,
                         grandparent.data.id,
@@ -278,23 +281,53 @@ class LeftSidebar(QWidget):
                     )
                     new_index = model.insert_node(node, grandparent)
                 else:
-                    # If no valid grandparent, move to "Untagged Notes" section
-                    untagged_notes_node = None
+                    # If the note has tags, find the appropriate tag node(s)
+                    tag_nodes = []
+                    if note_tags:
+                        def find_tag_nodes(search_node, tag_ids):
+                            if search_node.node_type == 'tag' and hasattr(search_node.data, 'id'):
+                                if search_node.data.id in tag_ids:
+                                    tag_nodes.append(search_node)
+                            for child in search_node.children:
+                                find_tag_nodes(child, tag_ids)
+                        
+                        tag_ids = [tag.id for tag in note_tags]
+                        find_tag_nodes(model.root_node, tag_ids)
+                        
+                        # Add note under each of its tag nodes
+                        for tag_node in tag_nodes:
+                            new_index = model.insert_node(node, tag_node)
+                    
+                    # Also add to "Untagged Notes" if no tags
+                    if not note_tags:
+                        untagged_notes_node = None
+                        for child in model.root_node.children:
+                            if child.node_type == 'page' and child.data["name"] == "Untagged Notes":
+                                untagged_notes_node = child
+                                break
+                        
+                        if untagged_notes_node:
+                            new_index = model.insert_node(node, untagged_notes_node)
+                    
+                    # Always add to "All Notes" section
+                    all_notes_node = None
                     for child in model.root_node.children:
-                        if child.node_type == 'page' and child.data["name"] == "Untagged Notes":
-                            untagged_notes_node = child
+                        if child.node_type == 'page' and child.data["name"] == "All Notes":
+                            all_notes_node = child
                             break
                     
-                    if untagged_notes_node:
-                        new_index = model.insert_node(node, untagged_notes_node)
-                    else:
-                        new_index = model.insert_node(node, model.root_node)
-            
-            # Select the promoted item in its new location
-            self.tags_tree.setCurrentIndex(new_index)
-            self.tags_tree.setFocus()
+                    if all_notes_node:
+                        new_index = model.insert_node(node, all_notes_node)
+                
+                # Select the promoted item in its new location
+                if new_index:
+                    self.tags_tree.setCurrentIndex(new_index)
+                    self.tags_tree.setFocus()
             
         except Exception as e:
+            # If anything fails, try to revert to original position
+            if current_parent:
+                new_index = model.insert_node(node, current_parent)
             raise Exception(f"Failed to promote item: {str(e)}")
 
     def _delete_item(self, model, node, index):
