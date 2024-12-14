@@ -164,6 +164,48 @@ class NotesTreeView(QTreeView):
 
                 return
 
+        # Handle note creation under another note
+        if creating_note and parent_node and parent_node.node_type == 'note':
+            # Create new note
+            response = self.model.note_api.note_create("", "")
+            tree_note = TreeNote(
+                id=response['id'],
+                title=response.get('title', ''),
+                tags=[],
+                children=[],
+                content=''
+            )
+
+            # Attach it to parent note
+            self.model.note_api.attach_note_to_parent(
+                tree_note.id,
+                parent_node.data.id,
+                hierarchy_type="block"
+            )
+
+            # Create new node
+            new_node = TreeNode(tree_note, None, 'note')
+
+            # Add to parent in tree
+            new_index = self.model.insert_node(new_node, parent_node)
+
+            # Also add to All Notes section
+            all_notes_node = None
+            for node in self.model.root_node.children:
+                if node.node_type == 'page' and node.data["name"] == "All Notes":
+                    all_notes_node = node
+                    break
+
+            if all_notes_node:
+                new_node = TreeNode(tree_note, None, 'note')
+                self.model.insert_node(new_node, all_notes_node)
+
+            # Focus the new note under its parent
+            self.setCurrentIndex(new_index)
+            self.setFocus()
+            self.edit(new_index)
+            return
+
             # Handle all other cases
             target_parent = parent_node if is_child else self.model.root_node
 
