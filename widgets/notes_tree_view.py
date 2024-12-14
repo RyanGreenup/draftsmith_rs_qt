@@ -186,24 +186,33 @@ class NotesTreeView(QTreeView):
             # Create new node
             new_node = TreeNode(tree_note, None, 'note')
 
-            # Add to parent in tree
-            new_index = self.model.insert_node(new_node, parent_node)
+            # Find all instances of the parent note in the tree and add the child to each
+            def add_to_parent_instances(search_node):
+                instances = []
+                if (search_node.node_type == 'note' and 
+                    hasattr(search_node.data, 'id') and 
+                    search_node.data.id == parent_node.data.id):
+                    instances.append(search_node)
+                for child in search_node.children:
+                    instances.extend(add_to_parent_instances(child))
+                return instances
 
-            # Also add to All Notes section
-            all_notes_node = None
-            for node in self.model.root_node.children:
-                if node.node_type == 'page' and node.data["name"] == "All Notes":
-                    all_notes_node = node
-                    break
+            parent_instances = add_to_parent_instances(self.model.root_node)
+            first_new_index = None
 
-            if all_notes_node:
-                new_node = TreeNode(tree_note, None, 'note')
-                self.model.insert_node(new_node, all_notes_node)
+            # Add the new note to each instance of the parent
+            for parent_instance in parent_instances:
+                new_child_node = TreeNode(tree_note, None, 'note')
+                new_index = self.model.insert_node(new_child_node, parent_instance)
+                if first_new_index is None:
+                    first_new_index = new_index
 
-            # Focus the new note under its parent
-            self.setCurrentIndex(new_index)
-            self.setFocus()
-            self.edit(new_index)
+            # Focus the first instance of the new note
+            if first_new_index:
+                self.setCurrentIndex(first_new_index)
+                self.setFocus()
+                self.edit(first_new_index)
+            
             return
 
             # Handle all other cases
