@@ -1,12 +1,14 @@
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
+from PySide6.QtGui import QIcon
 from typing import Optional, Any, List
 from api.client import TagAPI, TreeTagWithNotes
 
 class TreeNode:
-    def __init__(self, data, parent=None):
+    def __init__(self, data, parent=None, node_type='tag'):
         self.data = data
         self.parent = parent
         self.children = []
+        self.node_type = node_type  # 'tag' or 'note'
 
     def append_child(self, child):
         child.parent = self
@@ -42,10 +44,26 @@ class NotesTreeModel(QAbstractItemModel):
             print(f"Error loading tags: {e}")
 
     def _process_tag(self, tag_data, parent_node):
-        node = TreeNode(tag_data, parent_node)
+        # Create tag node
+        node = TreeNode(tag_data, parent_node, 'tag')
         parent_node.append_child(node)
+        
+        # Process child tags
         for child in tag_data.children:
             self._process_tag(child, node)
+        
+        # Process notes belonging to this tag
+        for note in tag_data.notes:
+            self._process_note(note, node)
+
+    def _process_note(self, note_data, parent_node):
+        # Create note node
+        node = TreeNode(note_data, parent_node, 'note')
+        parent_node.append_child(node)
+        
+        # Process child notes (subpages)
+        for child in note_data.children:
+            self._process_note(child, node)
 
     def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
@@ -87,7 +105,16 @@ class NotesTreeModel(QAbstractItemModel):
         node = index.internalPointer()
 
         if role == Qt.DisplayRole:
-            return f"{node.data.name}"
+            if node.node_type == 'tag':
+                return f"{node.data.name} ({len(node.data.notes)})"
+            else:  # note
+                return node.data.title
+
+        elif role == Qt.DecorationRole:
+            if node.node_type == 'tag':
+                return QIcon.fromTheme("tag")  # Or path to your tag icon
+            else:  # note
+                return QIcon.fromTheme("text-x-generic")  # Or path to your note icon
 
         return None
 
