@@ -44,8 +44,8 @@ class NotesTreeModel(QAbstractItemModel):
             # TODO: In the future, the API may be updated to include inherited tags in the tag tree
             # based on user feedback. For now, we'll display both hierarchies.
             tags_tree: List[TreeTagWithNotes] = self.tag_api.get_tags_tree()
-            notes_tree: List[TreeNote] = self.note_api.get_notes_tree()
-            
+            notes_tree: List[TreeNote] = self.note_api.get_notes_tree(exclude_content=True)
+
             # Process tag hierarchy
             print(f"Received {len(tags_tree)} top-level tags")
             for tag in tags_tree:
