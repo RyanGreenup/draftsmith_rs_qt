@@ -48,7 +48,6 @@ class NotesTreeModel(QAbstractItemModel):
             tags_tree: List[TreeTagWithNotes] = self.tag_api.get_tags_tree()
 
             # Process tag hierarchy
-            print(f"Received {len(tags_tree)} top-level tags")
             for tag in tags_tree:
                 self._process_tag(tag, self.root_node)
 
@@ -65,8 +64,8 @@ class NotesTreeModel(QAbstractItemModel):
             # Find and process untagged root notes
             for note in self.complete_notes_tree:
                 if not note.tags and not self._is_subpage(note):
-                    print(f"---------------> {note.tags} ==> {not note.tags} ({note.title})")
-                    self._process_note(note, untagged_notes_node)
+                    if not note.tags:
+                        self._process_note(note, untagged_notes_node)
 
         except Exception as e:
             print(f"Error loading data: {e}")
