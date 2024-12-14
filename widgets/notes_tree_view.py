@@ -109,7 +109,7 @@ class NotesTreeView(QTreeView):
             elif action == demote_action:
                 self._demote_item(node, index)
             elif action == new_action:
-                self._create_new_item(None, is_child=False)
+                self._create_new_item(None, is_child=False, force_note=(node.node_type == 'note'))
             elif action == new_child_action:
                 self._create_new_item(node, is_child=True)
             elif action == new_sibling_action:
