@@ -162,11 +162,16 @@ class LeftSidebar(QWidget):
                 new_node = TreeNode(response, target_parent, 'note')
                 
                 if parent_node:
-                    model.note_api.attach_note_to_parent(
-                        new_id,
-                        parent_node.data.id,
-                        hierarchy_type="block"
-                    )
+                    if parent_node.node_type == 'tag':
+                        # If parent is a tag, use attach_tag_to_note
+                        model.tag_api.attach_tag_to_note(new_id, parent_node.data.id)
+                    else:
+                        # If parent is a note, use attach_note_to_parent
+                        model.note_api.attach_note_to_parent(
+                            new_id,
+                            parent_node.data.id,
+                            hierarchy_type="block"
+                        )
             else:
                 # Create new tag
                 new_tag = model.tag_api.create_tag(title)
