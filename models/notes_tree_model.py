@@ -536,21 +536,22 @@ class NotesTreeModel(QAbstractItemModel):
         menu = QMenu()
         node = index.internalPointer()
 
-        # Show detach option for notes under tags
-        if (node.node_type == 'note' and
-            node.parent and
-            node.parent.node_type == 'tag'):
+        if node is not None:
+            # Show detach option for notes under tags
+            if (node.node_type == 'note' and
+                node.parent and
+                node.parent.node_type == 'tag'):
 
-            detach_action = menu.addAction("Detach from tag")
-            detach_action.triggered.connect(lambda: self.detach_note_from_tag(index))
+                detach_action = menu.addAction("Detach from tag")
+                detach_action.triggered.connect(lambda: self.detach_note_from_tag(index))
 
-        # Show detach option for tags under other tags
-        elif (node.node_type == 'tag' and
-              node.parent and
-              node.parent.node_type == 'tag'):
+            # Show detach option for tags under other tags
+            elif (node.node_type == 'tag' and
+                  node.parent and
+                  node.parent.node_type == 'tag'):
 
-            detach_action = menu.addAction("Detach from parent tag")
-            detach_action.triggered.connect(lambda: self.detach_tag_from_parent(index))
+                detach_action = menu.addAction("Detach from parent tag")
+                detach_action.triggered.connect(lambda: self.detach_tag_from_parent(index))
 
         self.contextMenuRequested.emit(index, menu)
         return menu
