@@ -2,7 +2,7 @@ from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QStyle, QApplication
 from typing import Optional, Any, List
-from api.client import TagAPI, NoteAPI, TreeTagWithNotes, TreeNote
+from api.client import TagAPI, NoteAPI, TreeTagWithNotes, TreeNote, UpdateNoteRequest
 
 class TreeNode:
     def __init__(self, data, parent=None, node_type='tag'):
@@ -174,6 +174,50 @@ class NotesTreeModel(QAbstractItemModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return "Tags"
         return None
+
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+        if not index.isValid():
+            return Qt.NoItemFlags
+            
+        flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        
+        # Don't allow editing of special nodes (All Notes, Untagged Notes)
+        node = index.internalPointer()
+        if node.node_type != 'special':
+            flags |= Qt.ItemIsEditable
+            
+        return flags
+
+    def setData(self, index: QModelIndex, value: Any, role: int = Qt.EditRole) -> bool:
+        if not index.isValid() or role != Qt.EditRole:
+            return False
+
+        node = index.internalPointer()
+        new_name = str(value).strip()
+        
+        if not new_name:  # Don't allow empty names
+            return False
+            
+        try:
+            if node.node_type == 'tag':
+                # Update tag name
+                updated_tag = self.tag_api.update_tag(node.data.id, new_name)
+                node.data.name = updated_tag.name
+            elif node.node_type == 'note':
+                # Update note title
+                request = UpdateNoteRequest(title=new_name)
+                updated_note = self.note_api.update_note(node.data.id, request)
+                node.data.title = updated_note.title
+            else:
+                return False
+                
+            # Notify views that data has changed
+            self.dataChanged.emit(index, index, [Qt.DisplayRole, Qt.EditRole])
+            return True
+            
+        except Exception as e:
+            print(f"Error updating item: {e}")
+            return False
 
     def _is_subpage(self, note: TreeNote) -> bool:
         """Check if this note is referenced as a child in the complete notes tree"""
