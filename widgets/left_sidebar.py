@@ -13,6 +13,7 @@ class LeftSidebar(QWidget):
         self.tags_tree = QTreeView()
         model = NotesTreeModel(self)
         self.tags_tree.setModel(model)
+        model.tagMoved.connect(self._focus_moved_tag)
         self.tags_tree.setDragEnabled(True)
         self.tags_tree.setAcceptDrops(True)
         self.tags_tree.setDragDropMode(QTreeView.DragDropMode.DragDrop)
@@ -334,6 +335,11 @@ class LeftSidebar(QWidget):
             if current_parent:
                 new_index = model.insert_node(node, current_parent)
             raise Exception(f"Failed to promote item: {str(e)}")
+
+    def _focus_moved_tag(self, index):
+        """Focus and select a tag after it's been moved"""
+        self.tags_tree.setCurrentIndex(index)
+        self.tags_tree.setFocus()
 
     def _delete_item(self, model, node, index):
         """Handle deletion of items"""

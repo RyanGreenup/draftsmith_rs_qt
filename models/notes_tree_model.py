@@ -35,6 +35,7 @@ class TreeNode:
 
 class NotesTreeModel(QAbstractItemModel):
     contextMenuRequested = Signal(QModelIndex, 'QMenu')
+    tagMoved = Signal(QModelIndex)
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -378,6 +379,10 @@ class NotesTreeModel(QAbstractItemModel):
                     node_to_move.parent = target_node
                     target_node.children.insert(insert_pos, node_to_move)
                     self.endInsertRows()
+
+                    # Create and emit the new index for focusing
+                    new_index = self.createIndex(insert_pos, 0, node_to_move)
+                    self.tagMoved.emit(new_index)
                     
                     return True
                     
