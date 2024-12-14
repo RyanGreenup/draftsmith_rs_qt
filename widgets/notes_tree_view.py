@@ -197,14 +197,15 @@ class NotesTreeView(QTreeView):
                         parent_node.data.id
                     )
 
-            # Insert node in sorted position
-            new_index = self.model.insert_node(new_node, target_parent)
-            self.setCurrentIndex(new_index)
-            self.setFocus()
+                # Use model's insert_node method for proper sorting
+                target_parent = parent_node if is_child else self.model.root_node
+                new_index = self.model.insert_node(new_node, target_parent)
+                self.setCurrentIndex(new_index)
+                self.setFocus()
 
-            # Enter edit mode to allow the user to set the tag name
-            if not creating_note:
-                self.edit(new_index)
+                # Enter edit mode to allow the user to set the tag name
+                if not creating_note:
+                    self.edit(new_index)
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to create item: {str(e)}")
