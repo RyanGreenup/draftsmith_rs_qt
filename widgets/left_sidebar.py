@@ -158,16 +158,22 @@ class LeftSidebar(QWidget):
                         elif node.data["name"] == "Untagged Notes":
                             untagged_notes_node = node
 
-                # Create the note
+                # Create the note and convert response to TreeNote
                 response = model.note_api.note_create("", "")
-                new_id = response['id']
+                tree_note = TreeNote(
+                    id=response['id'],
+                    title=response.get('title', ''),
+                    tags=[],
+                    children=[],
+                    content=''
+                )
                 
                 # Add to All Notes
                 if all_notes_node:
                     insert_pos = all_notes_node.child_count()
                     parent_index = model.createIndex(all_notes_node.row(), 0, all_notes_node)
                     model.beginInsertRows(parent_index, insert_pos, insert_pos)
-                    new_node = TreeNode(response, all_notes_node, 'note')
+                    new_node = TreeNode(tree_note, all_notes_node, 'note')
                     all_notes_node.append_child(new_node)
                     model.endInsertRows()
                 
@@ -176,7 +182,7 @@ class LeftSidebar(QWidget):
                     insert_pos = untagged_notes_node.child_count()
                     parent_index = model.createIndex(untagged_notes_node.row(), 0, untagged_notes_node)
                     model.beginInsertRows(parent_index, insert_pos, insert_pos)
-                    new_node = TreeNode(response, untagged_notes_node, 'note')
+                    new_node = TreeNode(tree_note, untagged_notes_node, 'note')
                     untagged_notes_node.append_child(new_node)
                     model.endInsertRows()
                     
@@ -199,26 +205,31 @@ class LeftSidebar(QWidget):
             
             if creating_note:
                 response = model.note_api.note_create("", "")
-                new_id = response['id']
-                new_node = TreeNode(response, target_parent, 'note')
+                tree_note = TreeNote(
+                    id=response['id'],
+                    title=response.get('title', ''),
+                    tags=[],
+                    children=[],
+                    content=''
+                )
+                new_node = TreeNode(tree_note, target_parent, 'note')
                 
                 if parent_node:
                     if parent_node.node_type == 'tag':
-                        model.tag_api.attach_tag_to_note(new_id, parent_node.data.id)
+                        model.tag_api.attach_tag_to_note(tree_note.id, parent_node.data.id)
                     else:
                         model.note_api.attach_note_to_parent(
-                            new_id,
+                            tree_note.id,
                             parent_node.data.id,
                             hierarchy_type="block"
                         )
             else:
                 new_tag = model.tag_api.create_tag(title)
-                new_id = new_tag.id
                 new_node = TreeNode(new_tag, target_parent, 'tag')
                 
                 if parent_node and parent_node.node_type == 'tag':
                     model.tag_api.attach_tag_to_parent(
-                        new_id,
+                        new_tag.id,
                         parent_node.data.id
                     )
             

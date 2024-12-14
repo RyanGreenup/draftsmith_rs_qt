@@ -2,7 +2,10 @@ from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QStyle, QApplication
 from typing import Optional, Any, List
-from api.client import TagAPI, NoteAPI, TreeTagWithNotes, TreeNote, UpdateNoteRequest
+from api.client import (
+    TagAPI, NoteAPI, TreeTagWithNotes, TreeNote,
+    UpdateNoteRequest
+)
 
 class TreeNode:
     def __init__(self, data, parent=None, node_type='tag'):
