@@ -514,7 +514,7 @@ class NotesTreeModel(QAbstractItemModel):
         menu = QMenu()
         node = index.internalPointer()
         
-        # Show detach option only for notes under tags
+        # Show detach option for notes under tags
         if (node.node_type == 'note' and 
             node.parent and 
             node.parent.node_type == 'tag'):
@@ -522,8 +522,49 @@ class NotesTreeModel(QAbstractItemModel):
             detach_action = menu.addAction("Detach from tag")
             detach_action.triggered.connect(lambda: self.detach_note_from_tag(index))
         
+        # Show detach option for tags under other tags
+        elif (node.node_type == 'tag' and 
+              node.parent and 
+              node.parent.node_type == 'tag'):
+            
+            detach_action = menu.addAction("Detach from parent tag")
+            detach_action.triggered.connect(lambda: self.detach_tag_from_parent(index))
+        
         self.contextMenuRequested.emit(index, menu)
         return menu
+
+    def detach_tag_from_parent(self, index: QModelIndex) -> None:
+        """Detach a tag from its parent tag"""
+        if not index.isValid():
+            return
+            
+        node = index.internalPointer()
+        parent_node = node.parent
+        
+        if not (node.node_type == 'tag' and parent_node and parent_node.node_type == 'tag'):
+            return
+            
+        try:
+            # Call API to detach tag
+            tag_id = int(node.data.id)
+            parent_tag_id = int(parent_node.data.id)
+            self.tag_api.detach_tag_from_parent(tag_id)
+            
+            # Remove tag from current position
+            row = index.row()
+            self.beginRemoveRows(index.parent(), row, row)
+            parent_node.children.pop(row)
+            self.endRemoveRows()
+            
+            # Move to root level
+            insert_pos = self._find_insert_position(self.root_node, node)
+            self.beginInsertRows(QModelIndex(), insert_pos, insert_pos)
+            new_node = TreeNode(node.data, self.root_node, 'tag')
+            self.root_node.children.insert(insert_pos, new_node)
+            self.endInsertRows()
+                
+        except Exception as e:
+            print(f"Error detaching tag from parent: {e}")
 
     def detach_note_from_tag(self, index: QModelIndex) -> None:
         """Detach a note from its parent tag"""
