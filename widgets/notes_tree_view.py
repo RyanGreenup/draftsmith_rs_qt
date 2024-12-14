@@ -62,7 +62,7 @@ class NotesTreeView(QTreeView):
             # Determine labels based on context
             if node and node.node_type == 'note':
                 new_label = "New Note"
-                child_label = "New Subpage"
+                child_label = "New Child Note"
                 sibling_label = "New Sibling Page"
             else:
                 new_label = "New Tag"
