@@ -125,6 +125,8 @@ class NotesTreeModel(QAbstractItemModel):
         if role == Qt.DisplayRole:
             if node.node_type == 'tag':
                 return f"{node.data.name}"
+            elif node.node_type == 'special':
+                return node.data["name"]  # Access dict with key
             else:  # note
                 return node.data.title
 
