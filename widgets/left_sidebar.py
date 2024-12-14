@@ -194,6 +194,14 @@ class LeftSidebar(QWidget):
             # End insert operation
             model.endInsertRows()
             
+            # Get the index of the newly created item
+            new_index = model.createIndex(insert_position, 0, new_node)
+            
+            # Select and focus the new item if it's a note
+            if creating_note:
+                self.tags_tree.setCurrentIndex(new_index)
+                self.tags_tree.setFocus()
+            
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Failed to create item: {str(e)}")
