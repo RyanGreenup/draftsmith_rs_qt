@@ -258,8 +258,32 @@ class NotesTreeModel(QAbstractItemModel):
         try:
             if source_type == 'note':
                 if target_node.node_type == 'tag':
-                    # TODO: Implement note to tag attachment
-                    print(f"Attaching note {source_id} to tag {target_node.data.id}")
+                    # Convert IDs to integers
+                    note_id = int(source_id)
+                    tag_id = int(target_node.data.id)
+                    
+                    # Perform the API call
+                    self.tag_api.attach_tag_to_note(note_id, tag_id)
+                    
+                    # Find the source note node
+                    source_index = self._find_index_by_id(note_id, 'note')
+                    if not source_index.isValid():
+                        return False
+                        
+                    # Get the note data
+                    note_node = source_index.internalPointer()
+                    
+                    # Create a new node for the note under the tag
+                    insert_pos = self._find_insert_position(target_node, note_node)
+                    
+                    # Insert the note node under the tag
+                    self.beginInsertRows(parent, insert_pos, insert_pos)
+                    new_note_node = TreeNode(note_node.data, target_node, 'note')
+                    target_node.children.insert(insert_pos, new_note_node)
+                    self.endInsertRows()
+                    
+                    return True
+                    
                 else:  # target is note
                     # TODO: Implement note to note (subpage) attachment
                     print(f"Attaching note {source_id} as subpage of note {target_node.data.id}")
