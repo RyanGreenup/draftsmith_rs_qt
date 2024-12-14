@@ -355,14 +355,80 @@ class NotesTreeView(QTreeView):
         try:
             if node.node_type == 'tag':
                 self.model.tag_api.delete_tag(node.data.id)
+                
+                # Remove from tree
+                parent_index = self.model.parent(index)
+                self.model.beginRemoveRows(parent_index, index.row(), index.row())
+                node.parent.children.remove(node)
+                self.model.endRemoveRows()
+                
             else:  # note
-                self.model.note_api.delete_note(node.data.id)
-
-            # Remove from tree
-            parent_index = self.model.parent(index)
-            self.model.beginRemoveRows(parent_index, index.row(), index.row())
-            node.parent.children.remove(node)
-            self.model.endRemoveRows()
+                # Store the row number for focusing later
+                current_row = index.row()
+                
+                # If this is a subpage (has a parent note)
+                if node.parent and node.parent.node_type == 'note':
+                    parent_note_id = node.parent.data.id
+                    
+                    # Delete the note via API
+                    self.model.note_api.delete_note(node.data.id)
+                    
+                    # Find all instances of the parent note and remove this subpage from each
+                    def find_parent_instances(search_node):
+                        instances = []
+                        if (search_node.node_type == 'note' and 
+                            hasattr(search_node.data, 'id') and 
+                            search_node.data.id == parent_note_id):
+                            instances.append(search_node)
+                        for child in search_node.children:
+                            instances.extend(find_parent_instances(child))
+                        return instances
+                    
+                    parent_instances = find_parent_instances(self.model.root_node)
+                    
+                    # Remove the subpage from each instance of the parent
+                    for parent_instance in parent_instances:
+                        # Find the subpage in this parent's children
+                        for i, child in enumerate(parent_instance.children):
+                            if (child.node_type == 'note' and 
+                                hasattr(child.data, 'id') and 
+                                child.data.id == node.data.id):
+                                # Remove from this parent instance
+                                parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
+                                self.model.beginRemoveRows(parent_index, i, i)
+                                parent_instance.children.pop(i)
+                                self.model.endRemoveRows()
+                                break
+                    
+                    # Focus the item above the deleted one in the original location
+                    if current_row > 0:
+                        parent_index = self.model.parent(index)
+                        above_index = self.model.index(current_row - 1, 0, parent_index)
+                        if above_index.isValid():
+                            self.setCurrentIndex(above_index)
+                            self.setFocus()
+                    else:
+                        # If it was the first item, focus the parent
+                        parent_index = self.model.parent(index)
+                        if parent_index.isValid():
+                            self.setCurrentIndex(parent_index)
+                            self.setFocus()
+                    
+                else:  # Regular note (not a subpage)
+                    self.model.note_api.delete_note(node.data.id)
+                    
+                    # Remove from tree
+                    parent_index = self.model.parent(index)
+                    self.model.beginRemoveRows(parent_index, index.row(), index.row())
+                    node.parent.children.remove(node)
+                    self.model.endRemoveRows()
+                    
+                    # Focus the item above
+                    if current_row > 0:
+                        above_index = self.model.index(current_row - 1, 0, parent_index)
+                        if above_index.isValid():
+                            self.setCurrentIndex(above_index)
+                            self.setFocus()
 
         except Exception as e:
             raise Exception(f"Failed to delete item: {str(e)}")
