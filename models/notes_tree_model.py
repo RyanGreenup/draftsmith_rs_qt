@@ -43,7 +43,7 @@ class NotesTreeModel(QAbstractItemModel):
         try:
             # First get complete notes tree for reference
             self.complete_notes_tree = self.note_api.get_notes_tree(exclude_content=True)
-            
+
             # Then get tag tree
             tags_tree: List[TreeTagWithNotes] = self.tag_api.get_tags_tree()
 
@@ -63,7 +63,11 @@ class NotesTreeModel(QAbstractItemModel):
             print(f"Error loading data: {e}")
 
     def _find_note_in_tree(self, note_id: str, notes: List[TreeNote]) -> Optional[TreeNote]:
-        """Recursively find a note by ID in the complete notes tree"""
+        """Recursively find a note by ID in the complete notes tree
+
+        This is a work around until the API provides an endpoint to get the tags, notes and the notes subpages.
+
+        """
         for note in notes:
             if note.id == note_id:
                 return note
