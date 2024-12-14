@@ -285,8 +285,42 @@ class NotesTreeModel(QAbstractItemModel):
                     return True
                     
                 else:  # target is note
-                    # TODO: Implement note to note (subpage) attachment
-                    print(f"Attaching note {source_id} as subpage of note {target_node.data.id}")
+                    # Convert IDs to integers
+                    child_note_id = int(source_id)
+                    parent_note_id = int(target_node.data.id)
+                    
+                    # Perform the API call
+                    self.note_api.attach_note_to_parent(
+                        child_note_id,
+                        parent_note_id,
+                        hierarchy_type="block"
+                    )
+                    
+                    # Find the source note node
+                    source_index = self._find_index_by_id(child_note_id, 'note')
+                    if not source_index.isValid():
+                        return False
+                        
+                    # Get the source note node
+                    note_node = source_index.internalPointer()
+                    
+                    # Remove from old position
+                    old_parent = source_index.parent()
+                    old_parent_node = old_parent.internalPointer() if old_parent.isValid() else self.root_node
+                    row = source_index.row()
+                    
+                    self.beginRemoveRows(old_parent, row, row)
+                    node_to_move = old_parent_node.children.pop(row)
+                    self.endRemoveRows()
+                    
+                    # Insert at new position under target note
+                    insert_pos = self._find_insert_position(target_node, node_to_move)
+                    self.beginInsertRows(parent, insert_pos, insert_pos)
+                    node_to_move.parent = target_node
+                    target_node.children.insert(insert_pos, node_to_move)
+                    self.endInsertRows()
+                    
+                    return True
             elif source_type == 'tag':
                 if target_node.node_type == 'tag':
                     # Convert IDs to integers
