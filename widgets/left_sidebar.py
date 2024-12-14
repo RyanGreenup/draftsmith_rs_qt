@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QTreeView, QWidget, QVBoxLayout, QComboBox, QMenu
 from PySide6.QtCore import Qt
 from .notes_tree import NotesTreeWidget
 from .search_sidebar import SearchSidebar
-from models.notes_tree_model import NotesTreeModel
+from models.notes_tree_model import NotesTreeModel, TreeNode
 
 
 class LeftSidebar(QWidget):
