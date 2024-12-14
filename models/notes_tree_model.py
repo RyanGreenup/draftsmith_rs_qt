@@ -61,10 +61,11 @@ class NotesTreeModel(QAbstractItemModel):
             # Add "Untagged Notes" section
             untagged_notes_node = TreeNode({"name": "Untagged Notes"}, self.root_node, 'special')
             self.root_node.append_child(untagged_notes_node)
-            
+
             # Find and process untagged root notes
             for note in self.complete_notes_tree:
                 if not note.tags and not self._is_subpage(note):
+                    print(f"---------------> {note.tags} ==> {not note.tags} ({note.title})")
                     self._process_note(note, untagged_notes_node)
 
         except Exception as e:
@@ -185,5 +186,5 @@ class NotesTreeModel(QAbstractItemModel):
                     if check_children([child]):
                         return True
             return False
-        
+
         return check_children(self.complete_notes_tree)
