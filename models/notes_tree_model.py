@@ -52,12 +52,20 @@ class NotesTreeModel(QAbstractItemModel):
             for tag in tags_tree:
                 self._process_tag(tag, self.root_node)
 
-            # Add root notes that aren't under any tags
-            # Create a special "All Notes" node
+            # Add "All Notes" section
             all_notes_node = TreeNode({"name": "All Notes"}, self.root_node, 'special')
             self.root_node.append_child(all_notes_node)
             for note in self.complete_notes_tree:
                 self._process_note(note, all_notes_node)
+
+            # Add "Untagged Notes" section
+            untagged_notes_node = TreeNode({"name": "Untagged Notes"}, self.root_node, 'special')
+            self.root_node.append_child(untagged_notes_node)
+            
+            # Find and process untagged root notes
+            for note in self.complete_notes_tree:
+                if not note.tags and not self._is_subpage(note):
+                    self._process_note(note, untagged_notes_node)
 
         except Exception as e:
             print(f"Error loading data: {e}")
@@ -166,3 +174,16 @@ class NotesTreeModel(QAbstractItemModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return "Tags"
         return None
+
+    def _is_subpage(self, note: TreeNote) -> bool:
+        """Check if this note is referenced as a child in the complete notes tree"""
+        def check_children(parent_notes: List[TreeNote]) -> bool:
+            for parent in parent_notes:
+                for child in parent.children:
+                    if child.id == note.id:
+                        return True
+                    if check_children([child]):
+                        return True
+            return False
+        
+        return check_children(self.complete_notes_tree)
