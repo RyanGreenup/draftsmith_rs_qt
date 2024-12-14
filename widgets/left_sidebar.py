@@ -22,7 +22,6 @@ class LeftSidebar(QWidget):
         self.tree.setHeaderLabel("Notes")
         self.tree.setMinimumWidth(100)
 
-        self.tags_tree.setHeaderLabel("Tags")
         self.tags_tree.setMinimumWidth(100)
         self.tags_tree.hide()  # Initially hidden
 
