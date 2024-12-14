@@ -329,6 +329,9 @@ class NotesTreeModel(QAbstractItemModel):
                     child_note_id = int(source_id)
                     parent_note_id = int(target_node.data.id)
 
+                    # Store the target node where the drop occurred
+                    drop_target_instance = target_node
+
                     # Perform the API call
                     self.note_api.attach_note_to_parent(
                         child_note_id,
@@ -366,7 +369,7 @@ class NotesTreeModel(QAbstractItemModel):
                         return instances
 
                     parent_instances = find_parent_instances(self.root_node)
-                    last_new_index = None
+                    focus_index = None
 
                     # Add the note to each instance of the parent
                     for parent_instance in parent_instances:
@@ -382,14 +385,14 @@ class NotesTreeModel(QAbstractItemModel):
                         parent_instance.children.insert(insert_pos, new_note_node)
                         self.endInsertRows()
                         
-                        # Store the last created index for focusing
-                        last_new_index = self.createIndex(insert_pos, 0, new_note_node)
+                        # Store the index only if this is the instance where the drop occurred
+                        if parent_instance is drop_target_instance:
+                            focus_index = self.createIndex(insert_pos, 0, new_note_node)
 
-                    # Focus the last created instance (typically the one where the drop occurred)
-                    if last_new_index:
-                        if self._view:
-                            self._view.setCurrentIndex(last_new_index)
-                            self._view.setFocus()
+                    # Focus only the instance where the drop occurred
+                    if focus_index and self._view:
+                        self._view.setCurrentIndex(focus_index)
+                        self._view.setFocus()
 
                     return True
             elif source_type == 'tag':
