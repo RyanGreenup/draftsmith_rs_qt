@@ -64,10 +64,8 @@ class NotesTreeModel(QAbstractItemModel):
         parent_node.append_child(node)
 
         # Process child notes (subpages)
-        if hasattr(note_data, 'children') and note_data.children:
-            print(f"Processing {len(note_data.children)} children for note: {note_data.title}")
-            for child in note_data.children:
-                self._process_note(child, node)
+        for child in note_data.children:
+            self._process_note(child, node)
 
     def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
