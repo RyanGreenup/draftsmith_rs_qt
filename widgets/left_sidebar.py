@@ -309,15 +309,7 @@ class LeftSidebar(QWidget):
                         if untagged_notes_node:
                             new_index = model.insert_node(node, untagged_notes_node)
                     
-                    # Always add to "All Notes" section
-                    all_notes_node = None
-                    for child in model.root_node.children:
-                        if child.node_type == 'page' and child.data["name"] == "All Notes":
-                            all_notes_node = child
-                            break
-                    
-                    if all_notes_node:
-                        new_index = model.insert_node(node, all_notes_node)
+                    # Note is already in "All Notes", no need to add it again
                 
                 # Select the promoted item in its new location
                 if new_index:
