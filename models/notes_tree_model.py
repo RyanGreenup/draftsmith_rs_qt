@@ -1,6 +1,6 @@
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
-from typing import Optional, Any
-from api.client import TagAPI
+from typing import Optional, Any, List
+from api.client import TagAPI, TreeTagWithNotes
 
 class TreeNode:
     def __init__(self, data, parent=None):
@@ -35,7 +35,7 @@ class NotesTreeModel(QAbstractItemModel):
 
     def setup_data(self):
         try:
-            tags_tree = self.tag_api.get_tags_tree()
+            tags_tree: List[TreeTagWithNotes] = self.tag_api.get_tags_tree()
             for tag in tags_tree:
                 self._process_tag(tag, self.root_node)
         except Exception as e:
@@ -87,7 +87,7 @@ class NotesTreeModel(QAbstractItemModel):
         node = index.internalPointer()
 
         if role == Qt.DisplayRole:
-            return f"{node.data.name} ({len(node.data.notes)})"
+            return f"{node.data.name}"
 
         return None
 
