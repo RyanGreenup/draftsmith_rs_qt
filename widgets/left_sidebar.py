@@ -13,6 +13,9 @@ class LeftSidebar(QWidget):
         self.tags_tree = QTreeView()
         model = NotesTreeModel(self)
         self.tags_tree.setModel(model)
+        
+        # Set the view for the model
+        model.set_view(self.tags_tree)
         model.tagMoved.connect(self._focus_moved_tag)
         self.tags_tree.setDragEnabled(True)
         self.tags_tree.setAcceptDrops(True)
