@@ -133,12 +133,10 @@ class LeftSidebar(QWidget):
         from PySide6.QtWidgets import QInputDialog
         from PySide6.QtCore import QModelIndex
         
-        # Determine if we're creating a note or tag based on context and force_note parameter
         creating_note = force_note or (parent_node and parent_node.node_type == 'note')
         
         title = None
         if not creating_note:
-            # Only ask for title if creating a tag
             title, ok = QInputDialog.getText(
                 self,
                 "New Tag",
@@ -148,45 +146,74 @@ class LeftSidebar(QWidget):
                 return
                 
         try:
-            # Determine where to insert the new node
+            if creating_note and not parent_node:
+                # Find "All Notes" and "Untagged Notes" nodes
+                all_notes_node = None
+                untagged_notes_node = None
+                for i in range(model.root_node.child_count()):
+                    node = model.root_node.child(i)
+                    if node.node_type == 'page':
+                        if node.data["name"] == "All Notes":
+                            all_notes_node = node
+                        elif node.data["name"] == "Untagged Notes":
+                            untagged_notes_node = node
+
+                # Create the note
+                response = model.note_api.note_create("", "")
+                new_id = response['id']
+                
+                # Add to All Notes
+                if all_notes_node:
+                    insert_pos = all_notes_node.child_count()
+                    parent_index = model.createIndex(all_notes_node.row(), 0, all_notes_node)
+                    model.beginInsertRows(parent_index, insert_pos, insert_pos)
+                    new_node = TreeNode(response, all_notes_node, 'note')
+                    all_notes_node.append_child(new_node)
+                    model.endInsertRows()
+                
+                # Add to Untagged Notes
+                if untagged_notes_node:
+                    insert_pos = untagged_notes_node.child_count()
+                    parent_index = model.createIndex(untagged_notes_node.row(), 0, untagged_notes_node)
+                    model.beginInsertRows(parent_index, insert_pos, insert_pos)
+                    new_node = TreeNode(response, untagged_notes_node, 'note')
+                    untagged_notes_node.append_child(new_node)
+                    model.endInsertRows()
+                    
+                    # Focus the new note in Untagged Notes section
+                    new_index = model.createIndex(insert_pos, 0, new_node)
+                    self.tags_tree.setCurrentIndex(new_index)
+                    self.tags_tree.setFocus()
+                
+                return
+
+            # Handle all other cases (tags or notes with parents) as before
             target_parent = parent_node if is_child else model.root_node
             if not target_parent:
                 target_parent = model.root_node
                 
-            # Get parent index for model operations
             parent_index = model.createIndex(target_parent.row(), 0, target_parent) if target_parent != model.root_node else QModelIndex()
-            
-            # Calculate insertion position
             insert_position = target_parent.child_count()
             
-            # Begin insert operation
             model.beginInsertRows(parent_index, insert_position, insert_position)
             
             if creating_note:
-                # Create new note with empty title - will be inferred from content
                 response = model.note_api.note_create("", "")
                 new_id = response['id']
-                
-                # Create new node with note data
                 new_node = TreeNode(response, target_parent, 'note')
                 
                 if parent_node:
                     if parent_node.node_type == 'tag':
-                        # If parent is a tag, use attach_tag_to_note
                         model.tag_api.attach_tag_to_note(new_id, parent_node.data.id)
                     else:
-                        # If parent is a note, use attach_note_to_parent
                         model.note_api.attach_note_to_parent(
                             new_id,
                             parent_node.data.id,
                             hierarchy_type="block"
                         )
             else:
-                # Create new tag
                 new_tag = model.tag_api.create_tag(title)
                 new_id = new_tag.id
-                
-                # Create new node with tag data
                 new_node = TreeNode(new_tag, target_parent, 'tag')
                 
                 if parent_node and parent_node.node_type == 'tag':
@@ -195,20 +222,13 @@ class LeftSidebar(QWidget):
                         parent_node.data.id
                     )
             
-            # Add new node to tree
             target_parent.append_child(new_node)
-            
-            # End insert operation
             model.endInsertRows()
             
-            # Get the index of the newly created item
             new_index = model.createIndex(insert_position, 0, new_node)
-            
-            # Select and focus the new item if it's a note
-            if creating_note:
-                self.tags_tree.setCurrentIndex(new_index)
-                self.tags_tree.setFocus()
-            
+            self.tags_tree.setCurrentIndex(new_index)
+            self.tags_tree.setFocus()
+                
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Failed to create item: {str(e)}")
