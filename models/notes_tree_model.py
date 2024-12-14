@@ -45,7 +45,7 @@ class NotesTreeModel(QAbstractItemModel):
         self.tag_api = TagAPI(base_url)
         self.note_api = NoteAPI(base_url)  # Add note API
         self.complete_notes_tree = []  # Store complete notes hierarchy
-        self._view = None  # Store reference to view
+        self._view = None  # Initialize view reference
         self.setup_data()
 
     def setup_data(self):
@@ -356,24 +356,29 @@ class NotesTreeModel(QAbstractItemModel):
                     # Convert IDs to integers
                     child_id = int(source_id)
                     parent_id = int(target_node.data.id)
-                    
-                    # Perform the API call
-                    self.tag_api.attach_tag_to_parent(child_id, parent_id)
-                    
+                
                     # Find the source index
                     source_index = self._find_index_by_id(child_id, 'tag')
                     if not source_index.isValid():
                         return False
-                    
+                
+                    # Store expanded states before moving
+                    source_node = source_index.internalPointer()
+                    expanded_states = {}
+                    self._store_expanded_state(source_node, expanded_states)
+                
+                    # Perform the API call
+                    self.tag_api.attach_tag_to_parent(child_id, parent_id)
+                
                     # Remove from old position
                     old_parent = source_index.parent()
                     old_parent_node = old_parent.internalPointer() if old_parent.isValid() else self.root_node
                     row = source_index.row()
-                    
+                
                     self.beginRemoveRows(old_parent, row, row)
                     node_to_move = old_parent_node.children.pop(row)
                     self.endRemoveRows()
-                    
+                
                     # Insert at new position
                     insert_pos = self._find_insert_position(target_node, node_to_move)
                     self.beginInsertRows(parent, insert_pos, insert_pos)
@@ -383,6 +388,10 @@ class NotesTreeModel(QAbstractItemModel):
 
                     # Create and emit the new index for focusing
                     new_index = self.createIndex(insert_pos, 0, node_to_move)
+                
+                    # Restore expanded states
+                    self._restore_expanded_state(node_to_move, expanded_states)
+                
                     self.tagMoved.emit(new_index)
                     
                     return True
@@ -560,17 +569,23 @@ class NotesTreeModel(QAbstractItemModel):
 
     def is_expanded(self, node: TreeNode) -> bool:
         """Check if a node is expanded in the view"""
-        if not hasattr(self, '_view'):
+        if not self._view:
             return False
-        index = self.createIndex(node.row(), 0, node)
-        return self._view.isExpanded(index)
+        try:
+            index = self.createIndex(node.row(), 0, node)
+            return self._view.isExpanded(index)
+        except Exception:
+            return False
 
     def set_expanded(self, node: TreeNode, expanded: bool) -> None:
         """Set the expanded state of a node in the view"""
-        if not hasattr(self, '_view'):
+        if not self._view:
             return
-        index = self.createIndex(node.row(), 0, node)
-        self._view.setExpanded(index, expanded)
+        try:
+            index = self.createIndex(node.row(), 0, node)
+            self._view.setExpanded(index, expanded)
+        except Exception:
+            pass
 
     def set_view(self, view) -> None:
         """Set the associated view for expansion state tracking"""
