@@ -10,7 +10,8 @@ class LeftSidebar(QWidget):
         super().__init__(parent)
         self.tree = NotesTreeWidget()
         self.tags_tree = QTreeView()
-        model = NotesTreeModel()
+        model = NotesTreeModel(self)
+        self.tags_tree.setModel(model)
         self.search_sidebar = SearchSidebar()
         self.tree_selector = QComboBox()
 
