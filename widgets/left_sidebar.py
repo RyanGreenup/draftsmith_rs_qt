@@ -115,6 +115,7 @@ class LeftSidebar(QWidget):
     def _create_new_item(self, model, parent_node, is_child):
         """Handle creation of new items"""
         from PySide6.QtWidgets import QInputDialog
+        from PySide6.QtCore import QModelIndex
         
         # Determine if we're creating a note or tag based on parent context
         creating_note = parent_node and parent_node.node_type == 'note'
@@ -129,10 +130,27 @@ class LeftSidebar(QWidget):
             return
             
         try:
+            # Determine where to insert the new node
+            target_parent = parent_node if is_child else model.root_node
+            if not target_parent:
+                target_parent = model.root_node
+                
+            # Get parent index for model operations
+            parent_index = model.createIndex(target_parent.row(), 0, target_parent) if target_parent != model.root_node else QModelIndex()
+            
+            # Calculate insertion position
+            insert_position = target_parent.child_count()
+            
+            # Begin insert operation
+            model.beginInsertRows(parent_index, insert_position, insert_position)
+            
             if creating_note:
                 # Create new note
                 response = model.note_api.note_create(title, "")
                 new_id = response['id']
+                
+                # Create new node with note data
+                new_node = TreeNode(response, target_parent, 'note')
                 
                 if parent_node:
                     model.note_api.attach_note_to_parent(
@@ -145,14 +163,20 @@ class LeftSidebar(QWidget):
                 new_tag = model.tag_api.create_tag(title)
                 new_id = new_tag.id
                 
+                # Create new node with tag data
+                new_node = TreeNode(new_tag, target_parent, 'tag')
+                
                 if parent_node and parent_node.node_type == 'tag':
                     model.tag_api.attach_tag_to_parent(
                         new_id,
                         parent_node.data.id
                     )
             
-            # Refresh the model to show new items
-            model.setup_data()
+            # Add new node to tree
+            target_parent.append_child(new_node)
+            
+            # End insert operation
+            model.endInsertRows()
             
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
