@@ -65,17 +65,35 @@ class LeftSidebar(QWidget):
             
         # Get the node to check its type
         node = index.internalPointer()
-        if node.node_type == 'special':
+        if node.node_type == 'page':
             return  # Don't show menu for special items
             
         menu = QMenu(self)
         rename_action = menu.addAction("Rename")
+        delete_action = menu.addAction("Delete")
         
         # Show context menu at cursor position
         action = menu.exec_(self.tags_tree.viewport().mapToGlobal(position))
         
         if action == rename_action:
-            self.tags_tree.edit(index)  # Use Qt's built-in editing
+            self.tags_tree.edit(index)
+        elif action == delete_action:
+            model = self.tags_tree.model()
+            try:
+                if node.node_type == 'tag':
+                    model.tag_api.delete_tag(node.data.id)
+                else:  # note
+                    model.note_api.delete_note(node.data.id)
+                
+                # Remove the item from the model
+                parent_index = model.parent(index)
+                model.beginRemoveRows(parent_index, index.row(), index.row())
+                node.parent.children.remove(node)
+                model.endRemoveRows()
+                
+            except Exception as e:
+                from PySide6.QtWidgets import QMessageBox
+                QMessageBox.critical(self, "Error", f"Failed to delete item: {str(e)}")
 
     def focus_search(self):
         """Focus the search input and switch to search view"""
