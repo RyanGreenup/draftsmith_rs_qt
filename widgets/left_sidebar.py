@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt
 from .notes_tree import NotesTreeWidget
 from .search_sidebar import SearchSidebar
 from models.notes_tree_model import NotesTreeModel, TreeNode
+from api.client import TreeNote
 
 
 class LeftSidebar(QWidget):
