@@ -66,13 +66,12 @@ class LeftSidebar(QWidget):
         index = self.tags_tree.indexAt(position)
         model = self.tags_tree.model()
 
-        menu = QMenu(self)
-        node = None
-
+        # Get the base menu from the model
+        menu = model.create_context_menu(index)
+        
         if index.isValid():
-            # Existing item selected - show full menu
             node = index.internalPointer()
-
+            
             # Add Note ID label if this is a note
             if node.node_type == 'note':
                 note_id_action = menu.addAction(f"Note ID: {node.data.id}")
