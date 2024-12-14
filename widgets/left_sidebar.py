@@ -72,6 +72,11 @@ class LeftSidebar(QWidget):
             if node.node_type != 'page':  # Don't show edit options for special items
                 rename_action = menu.addAction("Rename")
                 delete_action = menu.addAction("Delete")
+                
+                # Add promote action if the item has a parent
+                if node.parent and node.parent != model.root_node:
+                    promote_action = menu.addAction("Promote")
+                
                 menu.addSeparator()
             
             # Determine labels based on context
@@ -115,6 +120,8 @@ class LeftSidebar(QWidget):
                 self.tags_tree.edit(index)
             elif action == delete_action:
                 self._delete_item(model, node, index)
+            elif action == promote_action:
+                self._promote_item(model, node, index)
             elif action == new_action:
                 self._create_new_item(model, None, is_child=False)
             elif action == new_child_action:
@@ -225,6 +232,62 @@ class LeftSidebar(QWidget):
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Failed to create item: {str(e)}")
+
+    def _promote_item(self, model, node, index):
+        """Handle promotion of items to their grandparent level"""
+        try:
+            current_parent = node.parent
+            grandparent = current_parent.parent if current_parent else None
+            
+            # First remove from current parent
+            parent_index = model.parent(index)
+            model.beginRemoveRows(parent_index, index.row(), index.row())
+            current_parent.children.remove(node)
+            model.endRemoveRows()
+            
+            if node.node_type == 'tag':
+                # Detach from current parent
+                model.tag_api.detach_tag_from_parent(node.data.id)
+                
+                # Attach to grandparent if it exists and is a tag
+                if grandparent and grandparent != model.root_node and grandparent.node_type == 'tag':
+                    model.tag_api.attach_tag_to_parent(node.data.id, grandparent.data.id)
+                    new_index = model.insert_node(node, grandparent)
+                else:
+                    # If no valid grandparent, move to root level
+                    new_index = model.insert_node(node, model.root_node)
+                    
+            else:  # note
+                # Detach from current parent
+                model.note_api.detach_note_from_parent(node.data.id)
+                
+                # Attach to grandparent if it exists and is a note
+                if grandparent and grandparent != model.root_node and grandparent.node_type == 'note':
+                    model.note_api.attach_note_to_parent(
+                        node.data.id,
+                        grandparent.data.id,
+                        hierarchy_type="block"
+                    )
+                    new_index = model.insert_node(node, grandparent)
+                else:
+                    # If no valid grandparent, move to "Untagged Notes" section
+                    untagged_notes_node = None
+                    for child in model.root_node.children:
+                        if child.node_type == 'page' and child.data["name"] == "Untagged Notes":
+                            untagged_notes_node = child
+                            break
+                    
+                    if untagged_notes_node:
+                        new_index = model.insert_node(node, untagged_notes_node)
+                    else:
+                        new_index = model.insert_node(node, model.root_node)
+            
+            # Select the promoted item in its new location
+            self.tags_tree.setCurrentIndex(new_index)
+            self.tags_tree.setFocus()
+            
+        except Exception as e:
+            raise Exception(f"Failed to promote item: {str(e)}")
 
     def _delete_item(self, model, node, index):
         """Handle deletion of items"""
