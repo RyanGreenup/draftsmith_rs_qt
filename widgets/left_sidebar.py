@@ -86,15 +86,24 @@ class LeftSidebar(QWidget):
                 rename_action = menu.addAction("Rename")
                 delete_action = menu.addAction("Delete")
 
-                # Add promote action if the item has a parent
-                if node.parent and node.parent != model.root_node:
-                    promote_action = menu.addAction("Promote")
+                promote_action = None
+                demote_action = None
 
-                # Add demote action if there's a next sibling
-                next_sibling = self._get_next_sibling(model, index)
-                demote_action = menu.addAction("Demote")
-                if not next_sibling:
-                    demote_action.setEnabled(False)
+                if node.node_type != 'page':  # Don't show edit options for special items
+                    rename_action = menu.addAction("Rename")
+                    delete_action = menu.addAction("Delete")
+
+                    # Add promote action if the item has a parent
+                    if node.parent and node.parent != model.root_node:
+                        promote_action = menu.addAction("Promote")
+
+                    # Add demote action if there's a next sibling
+                    next_sibling = self._get_next_sibling(model, index)
+                    demote_action = menu.addAction("Demote")
+                    if not next_sibling:
+                        demote_action.setEnabled(False)
+
+                    menu.addSeparator()
 
                 menu.addSeparator()
 
