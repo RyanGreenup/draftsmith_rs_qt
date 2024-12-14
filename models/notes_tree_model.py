@@ -537,6 +537,11 @@ class NotesTreeModel(QAbstractItemModel):
         node = index.internalPointer()
 
         if node is not None:
+            # Add delete action for tags
+            if node.node_type == 'tag':
+                delete_action = menu.addAction("Delete tag")
+                delete_action.triggered.connect(lambda: self.delete_tag(index))
+
             # Show detach option for notes under tags
             if (node.node_type == 'note' and
                 node.parent and
@@ -647,6 +652,32 @@ class NotesTreeModel(QAbstractItemModel):
 
         except Exception as e:
             print(f"Error detaching tag from parent: {e}")
+
+    def delete_tag(self, index: QModelIndex) -> None:
+        """Delete a tag and remove it from the tree"""
+        if not index.isValid():
+            return
+
+        node = index.internalPointer()
+        if node.node_type != 'tag':
+            return
+
+        try:
+            # Call API to delete tag
+            tag_id = int(node.data.id)
+            self.tag_api.delete_tag(tag_id)
+
+            # Remove tag from tree
+            parent_index = index.parent()
+            parent_node = parent_index.internalPointer() if parent_index.isValid() else self.root_node
+            row = index.row()
+
+            self.beginRemoveRows(parent_index, row, row)
+            parent_node.children.pop(row)
+            self.endRemoveRows()
+
+        except Exception as e:
+            print(f"Error deleting tag: {e}")
 
     def detach_note_from_tag(self, index: QModelIndex) -> None:
         """Detach a note from its parent tag"""
