@@ -450,8 +450,9 @@ class NotesTreeView(QTreeView):
             grandparent = current_parent.parent if current_parent else None
 
             if node.node_type == 'note' and current_parent and current_parent.node_type == 'note':
-                # Store the note's data before removing it
+                # Store the note's data and the original index for focusing later
                 note_data = node.data
+                original_index = index
                 
                 # Detach from current parent via API
                 self.model.note_api.detach_note_from_parent(node.data.id)
@@ -483,16 +484,38 @@ class NotesTreeView(QTreeView):
                             self.model.endRemoveRows()
                             break
 
-                # Handle the rest of the promotion logic as before
+                focus_index = None
+
                 if grandparent and grandparent != self.model.root_node and grandparent.node_type == 'note':
-                    # Attach to grandparent note
+                    # Find all instances of the grandparent note
+                    def find_grandparent_instances(search_node):
+                        instances = []
+                        if (search_node.node_type == 'note' and 
+                            hasattr(search_node.data, 'id') and 
+                            search_node.data.id == grandparent.data.id):
+                            instances.append(search_node)
+                        for child in search_node.children:
+                            instances.extend(find_grandparent_instances(child))
+                        return instances
+
+                    grandparent_instances = find_grandparent_instances(self.model.root_node)
+
+                    # Attach to grandparent note via API
                     self.model.note_api.attach_note_to_parent(
                         note_data.id,
                         grandparent.data.id,
                         hierarchy_type="block"
                     )
-                    new_node = TreeNode(note_data, None, 'note')
-                    new_index = self.model.insert_node(new_node, grandparent)
+
+                    # Add to each instance of the grandparent
+                    for grandparent_instance in grandparent_instances:
+                        new_node = TreeNode(note_data, None, 'note')
+                        new_index = self.model.insert_node(new_node, grandparent_instance)
+                        
+                        # Store the index if this is the original grandparent instance
+                        if grandparent_instance is grandparent:
+                            focus_index = new_index
+
                 else:
                     # Get current note's tags
                     note_tags = note_data.tags if hasattr(note_data, 'tags') else []
@@ -514,6 +537,10 @@ class NotesTreeView(QTreeView):
                         for tag_node in tag_nodes:
                             new_node = TreeNode(note_data, None, 'note')
                             new_index = self.model.insert_node(new_node, tag_node)
+                            
+                            # Store the first tag node index for focusing
+                            if focus_index is None:
+                                focus_index = new_index
 
                     # Also add to "Untagged Notes" if no tags
                     if not note_tags:
@@ -525,14 +552,15 @@ class NotesTreeView(QTreeView):
 
                         if untagged_notes_node:
                             new_node = TreeNode(note_data, None, 'note')
-                            new_index = self.model.insert_node(new_node, untagged_notes_node)
+                            focus_index = self.model.insert_node(new_node, untagged_notes_node)
 
-                # Select the promoted item in its new location
-                if new_index:
-                    self.setCurrentIndex(new_index)
+                # Focus the appropriate instance
+                if focus_index:
+                    self.setCurrentIndex(focus_index)
                     self.setFocus()
 
             else:
+                # Handle tag promotion as before
                 # First remove from current parent
                 parent_index = self.model.parent(index)
                 self.model.beginRemoveRows(parent_index, index.row(), index.row())
