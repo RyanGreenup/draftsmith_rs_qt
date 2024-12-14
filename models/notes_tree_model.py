@@ -151,7 +151,7 @@ class NotesTreeModel(QAbstractItemModel):
 
         node = index.internalPointer()
 
-        if role == Qt.DisplayRole:
+        if role in (Qt.DisplayRole, Qt.EditRole):
             if node.node_type == 'tag':
                 return f"{node.data.name}"
             elif node.node_type == 'special':
