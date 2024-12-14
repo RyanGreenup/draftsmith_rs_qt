@@ -13,7 +13,7 @@ class LeftSidebar(QWidget):
         self.tags_tree = QTreeView()
         model = NotesTreeModel(self)
         self.tags_tree.setModel(model)
-        
+
         # Set the view for the model
         model.set_view(self.tags_tree)
         model.tagMoved.connect(self._focus_moved_tag)
@@ -72,10 +72,10 @@ class LeftSidebar(QWidget):
 
         # Get the base menu from the model
         menu = model.create_context_menu(index)
-        
+
         if index.isValid():
             node = index.internalPointer()
-            
+
             # Add Note ID label if this is a note
             if node.node_type == 'note':
                 note_id_action = menu.addAction(f"Note ID: {node.data.id}")
@@ -124,11 +124,11 @@ class LeftSidebar(QWidget):
 
         # Show context menu at cursor position
         action = menu.exec_(self.tags_tree.viewport().mapToGlobal(position))
-        
+
         # If no action was selected (e.g. Esc pressed), just return
         if action is None:
             return
-            
+
         try:
             if not index.isValid():
                 # Handle root level actions with simplified menu
