@@ -443,6 +443,129 @@ class NotesTreeView(QTreeView):
             return prev_index.internalPointer()
         return None
 
+    def _demote_item(self, node, index):
+        """Handle demotion of items under their previous sibling"""
+        try:
+            # Get the previous sibling that will become the parent
+            prev_sibling = self._get_previous_sibling(index)
+            if not prev_sibling or prev_sibling.node_type != node.node_type:
+                return
+
+            if node.node_type == 'note':
+                # Store the note's data and the original index
+                note_data = node.data
+                original_parent = node.parent
+
+                # Detach from current parent via API
+                if original_parent and original_parent.node_type == 'note':
+                    self.model.note_api.detach_note_from_parent(node.data.id)
+
+                # Attach to new parent (previous sibling) via API
+                self.model.note_api.attach_note_to_parent(
+                    node.data.id,
+                    prev_sibling.data.id,
+                    hierarchy_type="block"
+                )
+
+                # Find all instances of the previous sibling note
+                def find_new_parent_instances(search_node):
+                    instances = []
+                    if (search_node.node_type == 'note' and 
+                        hasattr(search_node.data, 'id') and 
+                        search_node.data.id == prev_sibling.data.id):
+                        instances.append(search_node)
+                    for child in search_node.children:
+                        instances.extend(find_new_parent_instances(child))
+                    return instances
+
+                new_parent_instances = find_new_parent_instances(self.model.root_node)
+
+                # Remove from current position in all instances
+                if original_parent and original_parent.node_type == 'note':
+                    def find_original_parent_instances(search_node):
+                        instances = []
+                        if (search_node.node_type == 'note' and 
+                            hasattr(search_node.data, 'id') and 
+                            search_node.data.id == original_parent.data.id):
+                            instances.append(search_node)
+                        for child in search_node.children:
+                            instances.extend(find_original_parent_instances(child))
+                        return instances
+
+                    original_parent_instances = find_original_parent_instances(self.model.root_node)
+                    
+                    for parent_instance in original_parent_instances:
+                        for i, child in enumerate(parent_instance.children):
+                            if (child.node_type == 'note' and 
+                                hasattr(child.data, 'id') and 
+                                child.data.id == node.data.id):
+                                parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
+                                self.model.beginRemoveRows(parent_index, i, i)
+                                parent_instance.children.pop(i)
+                                self.model.endRemoveRows()
+                                break
+                else:
+                    # Remove from current position if not under another note
+                    row = index.row()
+                    parent_index = self.model.parent(index)
+                    self.model.beginRemoveRows(parent_index, row, row)
+                    node.parent.children.pop(row)
+                    self.model.endRemoveRows()
+
+                focus_index = None
+
+                # Add under each instance of the new parent
+                for parent_instance in new_parent_instances:
+                    new_note_node = TreeNode(note_data, parent_instance, 'note')
+                    insert_pos = self.model._find_insert_position(parent_instance, new_note_node)
+                    
+                    parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
+                    self.model.beginInsertRows(parent_index, insert_pos, insert_pos)
+                    parent_instance.children.insert(insert_pos, new_note_node)
+                    self.model.endInsertRows()
+                    
+                    # Store the index if this is the instance where the demotion was initiated
+                    if parent_instance is prev_sibling:
+                        focus_index = self.model.createIndex(insert_pos, 0, new_note_node)
+
+                # Focus the specific instance where the demotion occurred
+                if focus_index:
+                    self.setCurrentIndex(focus_index)
+                    self.setFocus()
+
+            elif node.node_type == 'tag':
+                # Handle tag demotion
+                # Detach from current parent if it exists
+                if node.parent and node.parent.node_type == 'tag':
+                    self.model.tag_api.detach_tag_from_parent(node.data.id)
+
+                # Attach to new parent (previous sibling)
+                self.model.tag_api.attach_tag_to_parent(node.data.id, prev_sibling.data.id)
+
+                # Remove from current position
+                row = index.row()
+                parent_index = self.model.parent(index)
+                self.model.beginRemoveRows(parent_index, row, row)
+                node_to_move = node.parent.children.pop(row)
+                self.model.endRemoveRows()
+
+                # Add under new parent
+                insert_pos = self.model._find_insert_position(prev_sibling, node_to_move)
+                new_parent_index = self.model.createIndex(prev_sibling.row(), 0, prev_sibling)
+                
+                self.model.beginInsertRows(new_parent_index, insert_pos, insert_pos)
+                node_to_move.parent = prev_sibling
+                prev_sibling.children.insert(insert_pos, node_to_move)
+                self.model.endInsertRows()
+
+                # Focus the demoted tag
+                new_index = self.model.createIndex(insert_pos, 0, node_to_move)
+                self.setCurrentIndex(new_index)
+                self.setFocus()
+
+        except Exception as e:
+            raise Exception(f"Failed to demote item: {str(e)}")
+
     def _promote_item(self, node, index):
         """Handle promotion of items to their grandparent level"""
         try:
