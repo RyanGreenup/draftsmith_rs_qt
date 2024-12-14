@@ -39,6 +39,7 @@ class NotesTreeModel(QAbstractItemModel):
     def setup_data(self):
         try:
             tags_tree: List[TreeTagWithNotes] = self.tag_api.get_tags_tree()
+            print(f"Received {len(tags_tree)} top-level tags")
             for tag in tags_tree:
                 self._process_tag(tag, self.root_node)
         except Exception as e:
@@ -63,8 +64,10 @@ class NotesTreeModel(QAbstractItemModel):
         parent_node.append_child(node)
 
         # Process child notes (subpages)
-        for child in note_data.children:
-            self._process_note(child, node)
+        if hasattr(note_data, 'children') and note_data.children:
+            print(f"Processing {len(note_data.children)} children for note: {note_data.title}")
+            for child in note_data.children:
+                self._process_note(child, node)
 
     def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
