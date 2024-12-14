@@ -1,5 +1,6 @@
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QStyle, QApplication
 from typing import Optional, Any, List
 from api.client import TagAPI, TreeTagWithNotes
 
@@ -111,10 +112,11 @@ class NotesTreeModel(QAbstractItemModel):
                 return node.data.title
 
         elif role == Qt.DecorationRole:
+            style = self.parent().style() if self.parent() else QApplication.style()
             if node.node_type == 'tag':
-                return QIcon.fromTheme("tag")  # Or path to your tag icon
+                return style.standardIcon(QStyle.StandardPixmap.SP_DirIcon)
             else:  # note
-                return QIcon.fromTheme("text-x-generic")  # Or path to your note icon
+                return style.standardIcon(QStyle.StandardPixmap.SP_FileIcon)
 
         return None
 
