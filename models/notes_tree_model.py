@@ -1,5 +1,6 @@
-from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, QMimeData, QByteArray
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, QMimeData, QByteArray, Signal
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QMenu
 from typing import List
 from PySide6.QtWidgets import QStyle, QApplication
 from typing import Optional, Any, List
@@ -33,6 +34,8 @@ class TreeNode:
         return 0
 
 class NotesTreeModel(QAbstractItemModel):
+    contextMenuRequested = Signal(QModelIndex, 'QMenu')
+    
     def __init__(self, parent=None):
         super().__init__(parent)
         self.root_node = TreeNode(None)
@@ -505,3 +508,57 @@ class NotesTreeModel(QAbstractItemModel):
             return False
 
         return check_children(self.complete_notes_tree)
+
+    def create_context_menu(self, index: QModelIndex) -> QMenu:
+        """Create and return a context menu for the given index"""
+        menu = QMenu()
+        node = index.internalPointer()
+        
+        # Show detach option only for notes under tags
+        if (node.node_type == 'note' and 
+            node.parent and 
+            node.parent.node_type == 'tag'):
+            
+            detach_action = menu.addAction("Detach from tag")
+            detach_action.triggered.connect(lambda: self.detach_note_from_tag(index))
+        
+        self.contextMenuRequested.emit(index, menu)
+        return menu
+
+    def detach_note_from_tag(self, index: QModelIndex) -> None:
+        """Detach a note from its parent tag"""
+        if not index.isValid():
+            return
+            
+        node = index.internalPointer()
+        parent_node = node.parent
+        
+        if not (node.node_type == 'note' and parent_node and parent_node.node_type == 'tag'):
+            return
+            
+        try:
+            # Call API to detach tag
+            note_id = int(node.data.id)
+            tag_id = int(parent_node.data.id)
+            self.tag_api.detach_tag_from_note(note_id, tag_id)
+            
+            # Remove note from current position
+            row = index.row()
+            self.beginRemoveRows(index.parent(), row, row)
+            parent_node.children.pop(row)
+            self.endRemoveRows()
+            
+            # If note has no more tags, add it to "Untagged Notes" section
+            if not node.data.tags:
+                untagged_index = self._find_untagged_section()
+                if untagged_index.isValid():
+                    untagged_node = untagged_index.internalPointer()
+                    insert_pos = self._find_insert_position(untagged_node, node)
+                    
+                    self.beginInsertRows(untagged_index, insert_pos, insert_pos)
+                    new_node = TreeNode(node.data, untagged_node, 'note')
+                    untagged_node.children.insert(insert_pos, new_node)
+                    self.endInsertRows()
+                    
+        except Exception as e:
+            print(f"Error detaching note from tag: {e}")
