@@ -122,6 +122,8 @@ class LeftSidebar(QWidget):
                 self._delete_item(model, node, index)
             elif action == promote_action:
                 self._promote_item(model, node, index)
+            elif action == demote_action:
+                self._demote_item(model, node, index)
             elif action == new_action:
                 self._create_new_item(model, None, is_child=False)
             elif action == new_child_action:
@@ -304,6 +306,74 @@ class LeftSidebar(QWidget):
             
         except Exception as e:
             raise Exception(f"Failed to delete item: {str(e)}")
+
+    def _get_next_sibling(self, model, index):
+        """Get the next sibling node in the tree"""
+        parent = model.parent(index)
+        next_row = index.row() + 1
+        next_index = model.index(next_row, 0, parent)
+        
+        if next_index.isValid():
+            return next_index.internalPointer()
+        return None
+
+    def _demote_item(self, model, node, index):
+        """Handle demotion of items to become children of their next sibling"""
+        try:
+            # Get the next sibling
+            next_sibling = self._get_next_sibling(model, index)
+            if not next_sibling or next_sibling.node_type not in ['tag', 'note']:
+                return
+            
+            current_parent = node.parent
+            
+            # First remove from current parent
+            parent_index = model.parent(index)
+            model.beginRemoveRows(parent_index, index.row(), index.row())
+            current_parent.children.remove(node)
+            model.endRemoveRows()
+            
+            if node.node_type == 'tag':
+                # Detach from current parent if it's a tag
+                if current_parent and current_parent.node_type == 'tag':
+                    model.tag_api.detach_tag_from_parent(node.data.id)
+                
+                # Attach to new parent
+                if next_sibling.node_type == 'tag':
+                    model.tag_api.attach_tag_to_parent(
+                        node.data.id,
+                        next_sibling.data.id
+                    )
+                    new_index = model.insert_node(node, next_sibling)
+                else:
+                    # Can't attach tag to note, revert
+                    new_index = model.insert_node(node, current_parent)
+                    raise Exception("Cannot attach a tag to a note")
+                    
+            else:  # note
+                # Detach from current parent if it's a note
+                if current_parent and current_parent.node_type == 'note':
+                    model.note_api.detach_note_from_parent(node.data.id)
+                
+                # Attach to new parent
+                if next_sibling.node_type == 'note':
+                    model.note_api.attach_note_to_parent(
+                        node.data.id,
+                        next_sibling.data.id,
+                        hierarchy_type="block"
+                    )
+                    new_index = model.insert_node(node, next_sibling)
+                else:
+                    # Can't attach note to tag, revert
+                    new_index = model.insert_node(node, current_parent)
+                    raise Exception("Cannot attach a note directly to a tag")
+            
+            # Select the demoted item in its new location
+            self.tags_tree.setCurrentIndex(new_index)
+            self.tags_tree.setFocus()
+            
+        except Exception as e:
+            raise Exception(f"Failed to demote item: {str(e)}")
 
     def focus_search(self):
         """Focus the search input and switch to search view"""
