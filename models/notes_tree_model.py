@@ -255,16 +255,51 @@ class NotesTreeModel(QAbstractItemModel):
         source_type, source_id = source_data.split(':')
         target_node = parent.internalPointer() if parent.isValid() else self.root_node
         
-        # Print the action that would occur
-        if source_type == 'note':
-            if target_node.node_type == 'tag':
-                print(f"Attaching note {source_id} to tag {target_node.data.id}")
-            else:  # target is note
-                print(f"Attaching note {source_id} as subpage of note {target_node.data.id}")
-        elif source_type == 'tag':
-            print(f"Attaching tag {source_id} to parent tag {target_node.data.id}")
-        
-        return True
+        try:
+            if source_type == 'note':
+                if target_node.node_type == 'tag':
+                    # TODO: Implement note to tag attachment
+                    print(f"Attaching note {source_id} to tag {target_node.data.id}")
+                else:  # target is note
+                    # TODO: Implement note to note (subpage) attachment
+                    print(f"Attaching note {source_id} as subpage of note {target_node.data.id}")
+            elif source_type == 'tag':
+                if target_node.node_type == 'tag':
+                    # Convert IDs to integers
+                    child_id = int(source_id)
+                    parent_id = int(target_node.data.id)
+                    
+                    # Perform the API call
+                    self.tag_api.attach_tag_to_parent(child_id, parent_id)
+                    
+                    # Find the source index
+                    source_index = self._find_index_by_id(child_id, 'tag')
+                    if not source_index.isValid():
+                        return False
+                    
+                    # Remove from old position
+                    old_parent = source_index.parent()
+                    old_parent_node = old_parent.internalPointer() if old_parent.isValid() else self.root_node
+                    row = source_index.row()
+                    
+                    self.beginRemoveRows(old_parent, row, row)
+                    node_to_move = old_parent_node.children.pop(row)
+                    self.endRemoveRows()
+                    
+                    # Insert at new position
+                    insert_pos = self._find_insert_position(target_node, node_to_move)
+                    self.beginInsertRows(parent, insert_pos, insert_pos)
+                    node_to_move.parent = target_node
+                    target_node.children.insert(insert_pos, node_to_move)
+                    self.endInsertRows()
+                    
+                    return True
+                    
+            return False
+            
+        except Exception as e:
+            print(f"Error during drag and drop: {e}")
+            return False
 
     def _get_sort_key(self, node):
         """Get the key to use for sorting nodes"""
@@ -352,6 +387,28 @@ class NotesTreeModel(QAbstractItemModel):
         except Exception as e:
             print(f"Error updating item: {e}")
             return False
+
+    def _find_index_by_id(self, id_to_find: int, node_type: str) -> QModelIndex:
+        """Helper method to find a node's index by its ID"""
+        def search(parent_index: QModelIndex) -> QModelIndex:
+            rows = self.rowCount(parent_index)
+            for row in range(rows):
+                index = self.index(row, 0, parent_index)
+                node = index.internalPointer()
+                
+                if (node.node_type == node_type and 
+                    hasattr(node.data, 'id') and 
+                    node.data.id == id_to_find):
+                    return index
+                    
+                # Recursively search children
+                result = search(index)
+                if result.isValid():
+                    return result
+                    
+            return QModelIndex()
+            
+        return search(QModelIndex())
 
     def _is_subpage(self, note: TreeNote) -> bool:
         """Check if this note is referenced as a child in the complete notes tree"""
