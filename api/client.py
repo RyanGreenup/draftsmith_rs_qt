@@ -748,24 +748,33 @@ class NoteAPI(API):
         response.raise_for_status()
         return response.text
 
-    def get_notes_tree(self) -> list[TreeNote]:
+    def get_notes_tree(self, exclude_content: bool = True) -> List[TreeNote]:
         """
-        Retrieve all notes in a tree structure
+        Retrieve all notes in a tree structure.
 
         Args:
+            exclude_content (bool): If True, exclude the content of the notes to save bandwidth. Default is True.
 
         Returns:
-            list[TreeNote]: List of all notes with their hierarchical structure
+            List[TreeNote]: List of all notes with their hierarchical structure.
 
         Raises:
-            requests.exceptions.RequestException: If the request fails
+            requests.exceptions.RequestException: If the request fails.
         """
+        # Determine the query parameter based on the exclude_content flag
+        exclude_content_str = 'true' if exclude_content else 'false'
+        url = f"{self.base_url}/notes/tree?exclude_content={exclude_content_str}"
+
+        # Make the GET request to the API
         response = requests.get(
-            f"{self.base_url}/notes/tree",
+            url,
             headers={"Content-Type": "application/json"},
         )
 
+        # Check if the response was successful
         response.raise_for_status()
+
+        # Return a list of TreeNote instances
         return [TreeNote.model_validate(note) for note in response.json()]
 
 
