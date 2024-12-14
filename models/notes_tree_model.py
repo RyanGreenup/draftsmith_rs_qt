@@ -246,6 +246,17 @@ class NotesTreeModel(QAbstractItemModel):
         
         return False
 
+    def _find_untagged_section(self) -> QModelIndex:
+        """Find the "Untagged Notes" section in the tree"""
+        for i in range(self.root_node.child_count()):
+            index = self.createIndex(i, 0, self.root_node.children[i])
+            node = index.internalPointer()
+            if (node.node_type == 'page' and 
+                isinstance(node.data, dict) and 
+                node.data.get('name') == "Untagged Notes"):
+                return index
+        return QModelIndex()
+
     def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int,
                      column: int, parent: QModelIndex) -> bool:
         if not self.canDropMimeData(data, action, row, column, parent):
@@ -281,6 +292,20 @@ class NotesTreeModel(QAbstractItemModel):
                     new_note_node = TreeNode(note_node.data, target_node, 'note')
                     target_node.children.insert(insert_pos, new_note_node)
                     self.endInsertRows()
+                    
+                    # Find and remove from "Untagged Notes" if present
+                    untagged_index = self._find_untagged_section()
+                    if untagged_index.isValid():
+                        untagged_node = untagged_index.internalPointer()
+                        for i, child in enumerate(untagged_node.children):
+                            if (child.node_type == 'note' and 
+                                hasattr(child.data, 'id') and 
+                                child.data.id == note_id):
+                                # Remove from untagged section
+                                self.beginRemoveRows(untagged_index, i, i)
+                                untagged_node.children.pop(i)
+                                self.endRemoveRows()
+                                break
                     
                     return True
                     
