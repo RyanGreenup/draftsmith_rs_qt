@@ -341,8 +341,9 @@ class NotesTreeModel(QAbstractItemModel):
                     if not source_index.isValid():
                         return False
 
-                    # Get the source note node
+                    # Get the source note node and its data
                     note_node = source_index.internalPointer()
+                    note_data = note_node.data
 
                     # Remove from old position
                     old_parent = source_index.parent()
@@ -350,15 +351,45 @@ class NotesTreeModel(QAbstractItemModel):
                     row = source_index.row()
 
                     self.beginRemoveRows(old_parent, row, row)
-                    node_to_move = old_parent_node.children.pop(row)
+                    old_parent_node.children.pop(row)
                     self.endRemoveRows()
 
-                    # Insert at new position under target note
-                    insert_pos = self._find_insert_position(target_node, node_to_move)
-                    self.beginInsertRows(parent, insert_pos, insert_pos)
-                    node_to_move.parent = target_node
-                    target_node.children.insert(insert_pos, node_to_move)
-                    self.endInsertRows()
+                    # Find all instances of the target (parent) note and add the child to each
+                    def find_parent_instances(search_node):
+                        instances = []
+                        if (search_node.node_type == 'note' and 
+                            hasattr(search_node.data, 'id') and 
+                            search_node.data.id == parent_note_id):
+                            instances.append(search_node)
+                        for child in search_node.children:
+                            instances.extend(find_parent_instances(child))
+                        return instances
+
+                    parent_instances = find_parent_instances(self.root_node)
+                    last_new_index = None
+
+                    # Add the note to each instance of the parent
+                    for parent_instance in parent_instances:
+                        # Create new node for this instance
+                        new_note_node = TreeNode(note_data, parent_instance, 'note')
+                        
+                        # Find insert position maintaining sort order
+                        insert_pos = self._find_insert_position(parent_instance, new_note_node)
+                        
+                        # Insert the node
+                        parent_index = self.createIndex(parent_instance.row(), 0, parent_instance)
+                        self.beginInsertRows(parent_index, insert_pos, insert_pos)
+                        parent_instance.children.insert(insert_pos, new_note_node)
+                        self.endInsertRows()
+                        
+                        # Store the last created index for focusing
+                        last_new_index = self.createIndex(insert_pos, 0, new_note_node)
+
+                    # Focus the last created instance (typically the one where the drop occurred)
+                    if last_new_index:
+                        if self._view:
+                            self._view.setCurrentIndex(last_new_index)
+                            self._view.setFocus()
 
                     return True
             elif source_type == 'tag':
