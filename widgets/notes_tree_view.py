@@ -303,6 +303,7 @@ class NotesTreeView(QTreeView):
             else:  # note
                 self.model.note_api.delete_note(node.data.id)
 
+            # Remove from tree
             parent_index = self.model.parent(index)
             self.model.beginRemoveRows(parent_index, index.row(), index.row())
             node.parent.children.remove(node)
