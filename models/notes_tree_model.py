@@ -363,15 +363,13 @@ class NotesTreeModel(QAbstractItemModel):
                         return False
                 
                     source_node = source_index.internalPointer()
-                
-                    # Store expanded states BEFORE any model changes
+                    
+                    # Store expanded states BEFORE anything else
                     expanded_states = {}
                     self._store_expanded_state(source_node, expanded_states)
-                
-                    # Store whether the source node itself was expanded
                     was_expanded = self.is_expanded(source_node)
-                
-                    # THEN perform the API call
+                    
+                    # Now perform the API call
                     self.tag_api.attach_tag_to_parent(child_id, parent_id)
                 
                     # Remove from old position
@@ -393,13 +391,11 @@ class NotesTreeModel(QAbstractItemModel):
                     # Create new index for the moved node
                     new_index = self.createIndex(insert_pos, 0, node_to_move)
                 
-                    # First ensure the node itself maintains its expanded state
+                    # Restore expanded states after the move
                     if was_expanded:
-                        self.set_expanded(node_to_move, True)
-                
-                    # Then restore states of all children
+                        self._view.setExpanded(new_index, True)
                     self._restore_expanded_state(node_to_move, expanded_states)
-                
+                    
                     self.tagMoved.emit(new_index)
                     
                     return True
