@@ -125,7 +125,6 @@ class NotesTreeView(QTreeView):
         """Handle creation of new items"""
         creating_note = force_note or (parent_node and parent_node.node_type == 'note')
 
-
         try:
             if creating_note and not parent_node:
                 # Handle root-level note creation (All Notes and Untagged Notes sections)
@@ -171,54 +170,54 @@ class NotesTreeView(QTreeView):
                 tree_note = TreeNote(
                     id=response['id'],
                     title=response.get('title', ''),
-                tags=[],
-                children=[],
-                content=''
-            )
+                    tags=[],
+                    children=[],
+                    content=''
+                )
 
-            # Attach it to parent note
-            self.model.note_api.attach_note_to_parent(
-                tree_note.id,
-                parent_node.data.id,
-                hierarchy_type="block"
-            )
+                # Attach it to parent note
+                self.model.note_api.attach_note_to_parent(
+                    tree_note.id,
+                    parent_node.data.id,
+                    hierarchy_type="block"
+                )
 
-            # Create new node
-            new_node = TreeNode(tree_note, None, 'note')
+                # Create new node
+                new_node = TreeNode(tree_note, None, 'note')
 
-            # Find all instances of the parent note in the tree and add the child to each
-            def add_to_parent_instances(search_node):
-                instances = []
-                if (search_node.node_type == 'note' and 
-                    hasattr(search_node.data, 'id') and 
-                    search_node.data.id == parent_node.data.id):
-                    instances.append(search_node)
-                for child in search_node.children:
-                    instances.extend(add_to_parent_instances(child))
-                return instances
+                # Find all instances of the parent note in the tree and add the child to each
+                def add_to_parent_instances(search_node):
+                    instances = []
+                    if (search_node.node_type == 'note' and 
+                        hasattr(search_node.data, 'id') and 
+                        search_node.data.id == parent_node.data.id):
+                        instances.append(search_node)
+                    for child in search_node.children:
+                        instances.extend(add_to_parent_instances(child))
+                    return instances
 
-            parent_instances = add_to_parent_instances(self.model.root_node)
-            focused_new_index = None
+                parent_instances = add_to_parent_instances(self.model.root_node)
+                focused_new_index = None
 
-            # Add the new note to each instance of the parent
-            for parent_instance in parent_instances:
-                new_child_node = TreeNode(tree_note, None, 'note')
-                new_index = self.model.insert_node(new_child_node, parent_instance)
+                # Add the new note to each instance of the parent
+                for parent_instance in parent_instances:
+                    new_child_node = TreeNode(tree_note, None, 'note')
+                    new_index = self.model.insert_node(new_child_node, parent_instance)
+                    
+                    # If this is the parent instance where the action was initiated,
+                    # store this index to focus
+                    if parent_instance == parent_node:
+                        focused_new_index = new_index
+
+                # Focus the new note under the specific parent where it was created
+                if focused_new_index:
+                    self.setCurrentIndex(focused_new_index)
+                    self.setFocus()
+                    self.edit(focused_new_index)
                 
-                # If this is the parent instance where the action was initiated,
-                # store this index to focus
-                if parent_instance == parent_node:
-                    focused_new_index = new_index
+                return
 
-            # Focus the new note under the specific parent where it was created
-            if focused_new_index:
-                self.setCurrentIndex(focused_new_index)
-                self.setFocus()
-                self.edit(focused_new_index)
-            
-            return
-
-            # Handle all other cases
+            # Handle all other cases (including tag creation)
             target_parent = parent_node if is_child else self.model.root_node
 
             if creating_note:
@@ -242,6 +241,7 @@ class NotesTreeView(QTreeView):
                             hierarchy_type="block"
                         )
             else:
+                # Create new tag
                 new_tag = self.model.tag_api.create_tag("")
                 new_node = TreeNode(new_tag, None, 'tag')
 
@@ -251,15 +251,15 @@ class NotesTreeView(QTreeView):
                         parent_node.data.id
                     )
 
-                # Use model's insert_node method for proper sorting
-                target_parent = parent_node if is_child else self.model.root_node
-                new_index = self.model.insert_node(new_node, target_parent)
-                self.setCurrentIndex(new_index)
-                self.setFocus()
+            # Use model's insert_node method for proper sorting
+            target_parent = parent_node if is_child else self.model.root_node
+            new_index = self.model.insert_node(new_node, target_parent)
+            self.setCurrentIndex(new_index)
+            self.setFocus()
 
-                # Enter edit mode to allow the user to set the tag name
-                if not creating_note:
-                    self.edit(new_index)
+            # Enter edit mode to allow the user to set the name
+            if not creating_note:
+                self.edit(new_index)
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to create item: {str(e)}")
