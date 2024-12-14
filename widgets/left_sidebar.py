@@ -13,11 +13,14 @@ class LeftSidebar(QWidget):
         self.tags_tree = QTreeView()
         model = NotesTreeModel(self)
         self.tags_tree.setModel(model)
-        
+        self.tags_tree.setDragEnabled(True)
+        self.tags_tree.setAcceptDrops(True)
+        self.tags_tree.setDragDropMode(QTreeView.DragDropMode.DragDrop)
+
         # Add context menu support
         self.tags_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tags_tree.customContextMenuRequested.connect(self._show_tags_context_menu)
-        
+
         self.search_sidebar = SearchSidebar()
         self.tree_selector = QComboBox()
 
@@ -62,36 +65,36 @@ class LeftSidebar(QWidget):
     def _show_tags_context_menu(self, position):
         index = self.tags_tree.indexAt(position)
         model = self.tags_tree.model()
-        
+
         menu = QMenu(self)
         node = None
-        
+
         if index.isValid():
             # Existing item selected - show full menu
             node = index.internalPointer()
-            
+
             # Add Note ID label if this is a note
             if node.node_type == 'note':
                 note_id_action = menu.addAction(f"Note ID: {node.data.id}")
                 note_id_action.setEnabled(False)  # Make it non-clickable
                 menu.addSeparator()
-                
+
             if node.node_type != 'page':  # Don't show edit options for special items
                 rename_action = menu.addAction("Rename")
                 delete_action = menu.addAction("Delete")
-                
+
                 # Add promote action if the item has a parent
                 if node.parent and node.parent != model.root_node:
                     promote_action = menu.addAction("Promote")
-                
+
                 # Add demote action if there's a next sibling
                 next_sibling = self._get_next_sibling(model, index)
                 demote_action = menu.addAction("Demote")
                 if not next_sibling:
                     demote_action.setEnabled(False)
-                
+
                 menu.addSeparator()
-            
+
             # Determine labels based on context
             if node and node.node_type == 'note':
                 new_label = "New Note"
@@ -101,11 +104,11 @@ class LeftSidebar(QWidget):
                 new_label = "New Tag"
                 child_label = "New Child Tag"
                 sibling_label = "New Sibling Tag"
-            
+
             new_action = menu.addAction(new_label)
             new_child_action = menu.addAction(child_label)
             new_sibling_action = menu.addAction(sibling_label)
-            
+
             # Add "New Note Under Tag" option when right-clicking a tag
             new_note_under_tag_action = None
             if node and node.node_type == 'tag':
@@ -115,10 +118,10 @@ class LeftSidebar(QWidget):
             # No item selected - show simplified menu
             new_tag_action = menu.addAction("New Tag")
             new_note_action = menu.addAction("New Note")
-        
+
         # Show context menu at cursor position
         action = menu.exec_(self.tags_tree.viewport().mapToGlobal(position))
-        
+
         try:
             if not index.isValid():
                 # Handle root level actions with simplified menu
@@ -127,7 +130,7 @@ class LeftSidebar(QWidget):
                 elif action == new_note_action:
                     self._create_new_item(model, None, is_child=False, force_note=True)
                 return
-                
+
             # Handle actions for existing items
             if action == rename_action:
                 self.tags_tree.edit(index)
@@ -146,7 +149,7 @@ class LeftSidebar(QWidget):
                 self._create_new_item(model, parent_node, is_child=True)
             elif action == new_note_under_tag_action:
                 self._create_new_item(model, node, is_child=True, force_note=True)
-                
+
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Operation failed: {str(e)}")
@@ -155,9 +158,9 @@ class LeftSidebar(QWidget):
         """Handle creation of new items"""
         from PySide6.QtWidgets import QInputDialog
         from PySide6.QtCore import QModelIndex
-        
+
         creating_note = force_note or (parent_node and parent_node.node_type == 'note')
-        
+
         title = None
         if not creating_note:
             title, ok = QInputDialog.getText(
@@ -167,7 +170,7 @@ class LeftSidebar(QWidget):
             )
             if not ok or not title.strip():
                 return
-                
+
         try:
             if creating_note and not parent_node:
                 # Handle root-level note creation (All Notes and Untagged Notes sections)
@@ -179,7 +182,7 @@ class LeftSidebar(QWidget):
                     children=[],
                     content=''
                 )
-                
+
                 # Find special nodes
                 all_notes_node = None
                 untagged_notes_node = None
@@ -189,26 +192,26 @@ class LeftSidebar(QWidget):
                             all_notes_node = node
                         elif node.data["name"] == "Untagged Notes":
                             untagged_notes_node = node
-                
+
                 # Add to All Notes
                 if all_notes_node:
                     new_node = TreeNode(tree_note, None, 'note')
                     new_index = model.insert_node(new_node, all_notes_node)
-                
+
                 # Add to Untagged Notes
                 if untagged_notes_node:
                     new_node = TreeNode(tree_note, None, 'note')
                     new_index = model.insert_node(new_node, untagged_notes_node)
-                    
+
                     # Focus the new note in Untagged Notes section
                     self.tags_tree.setCurrentIndex(new_index)
                     self.tags_tree.setFocus()
-                
+
                 return
-                
+
             # Handle all other cases
             target_parent = parent_node if is_child else model.root_node
-            
+
             if creating_note:
                 response = model.note_api.note_create("", "")
                 tree_note = TreeNote(
@@ -219,7 +222,7 @@ class LeftSidebar(QWidget):
                     content=''
                 )
                 new_node = TreeNode(tree_note, None, 'note')
-                
+
                 if parent_node:
                     if parent_node.node_type == 'tag':
                         model.tag_api.attach_tag_to_note(tree_note.id, parent_node.data.id)
@@ -232,18 +235,18 @@ class LeftSidebar(QWidget):
             else:
                 new_tag = model.tag_api.create_tag(title)
                 new_node = TreeNode(new_tag, None, 'tag')
-                
+
                 if parent_node and parent_node.node_type == 'tag':
                     model.tag_api.attach_tag_to_parent(
                         new_tag.id,
                         parent_node.data.id
                     )
-            
+
             # Insert node in sorted position
             new_index = model.insert_node(new_node, target_parent)
             self.tags_tree.setCurrentIndex(new_index)
             self.tags_tree.setFocus()
-                
+
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Failed to create item: {str(e)}")
@@ -253,17 +256,17 @@ class LeftSidebar(QWidget):
         try:
             current_parent = node.parent
             grandparent = current_parent.parent if current_parent else None
-            
+
             # First remove from current parent
             parent_index = model.parent(index)
             model.beginRemoveRows(parent_index, index.row(), index.row())
             current_parent.children.remove(node)
             model.endRemoveRows()
-            
+
             if node.node_type == 'tag':
                 # Detach from current parent
                 model.tag_api.detach_tag_from_parent(node.data.id)
-                
+
                 # Attach to grandparent if it exists and is a tag
                 if grandparent and grandparent != model.root_node and grandparent.node_type == 'tag':
                     model.tag_api.attach_tag_to_parent(node.data.id, grandparent.data.id)
@@ -271,14 +274,14 @@ class LeftSidebar(QWidget):
                 else:
                     # If no valid grandparent, move to root level
                     new_index = model.insert_node(node, model.root_node)
-                    
+
             else:  # note
                 # Detach from current parent
                 model.note_api.detach_note_from_parent(node.data.id)
-                
+
                 # Get current note's tags
                 note_tags = node.data.tags if hasattr(node.data, 'tags') else []
-                
+
                 if grandparent and grandparent != model.root_node and grandparent.node_type == 'note':
                     # Attach to grandparent note
                     model.note_api.attach_note_to_parent(
@@ -297,14 +300,14 @@ class LeftSidebar(QWidget):
                                     tag_nodes.append(search_node)
                             for child in search_node.children:
                                 find_tag_nodes(child, tag_ids)
-                        
+
                         tag_ids = [tag.id for tag in note_tags]
                         find_tag_nodes(model.root_node, tag_ids)
-                        
+
                         # Add note under each of its tag nodes
                         for tag_node in tag_nodes:
                             new_index = model.insert_node(node, tag_node)
-                    
+
                     # Also add to "Untagged Notes" if no tags
                     if not note_tags:
                         untagged_notes_node = None
@@ -312,17 +315,17 @@ class LeftSidebar(QWidget):
                             if child.node_type == 'page' and child.data["name"] == "Untagged Notes":
                                 untagged_notes_node = child
                                 break
-                        
+
                         if untagged_notes_node:
                             new_index = model.insert_node(node, untagged_notes_node)
-                    
+
                     # Note is already in "All Notes", no need to add it again
-                
+
                 # Select the promoted item in its new location
                 if new_index:
                     self.tags_tree.setCurrentIndex(new_index)
                     self.tags_tree.setFocus()
-            
+
         except Exception as e:
             # If anything fails, try to revert to original position
             if current_parent:
@@ -336,12 +339,12 @@ class LeftSidebar(QWidget):
                 model.tag_api.delete_tag(node.data.id)
             else:  # note
                 model.note_api.delete_note(node.data.id)
-            
+
             parent_index = model.parent(index)
             model.beginRemoveRows(parent_index, index.row(), index.row())
             node.parent.children.remove(node)
             model.endRemoveRows()
-            
+
         except Exception as e:
             raise Exception(f"Failed to delete item: {str(e)}")
 
@@ -350,7 +353,7 @@ class LeftSidebar(QWidget):
         parent = model.parent(index)
         next_row = index.row() + 1
         next_index = model.index(next_row, 0, parent)
-        
+
         if next_index.isValid():
             return next_index.internalPointer()
         return None
@@ -362,32 +365,32 @@ class LeftSidebar(QWidget):
             next_sibling = self._get_next_sibling(model, index)
             if not next_sibling:
                 return
-            
+
             current_parent = node.parent
-            
+
             # First remove from current parent
             parent_index = model.parent(index)
             model.beginRemoveRows(parent_index, index.row(), index.row())
             current_parent.children.remove(node)
             model.endRemoveRows()
-            
+
             if node.node_type == 'tag':
                 # Detach from current parent if it's a tag
                 if current_parent and current_parent.node_type == 'tag':
                     model.tag_api.detach_tag_from_parent(node.data.id)
-                
+
                 # Attach to new parent (tag or note)
                 model.tag_api.attach_tag_to_parent(
                     node.data.id,
                     next_sibling.data.id
                 )
                 new_index = model.insert_node(node, next_sibling)
-                    
+
             else:  # note
                 # Detach from current parent if it's a note
                 if current_parent and current_parent.node_type == 'note':
                     model.note_api.detach_note_from_parent(node.data.id)
-                
+
                 # Attach to new parent
                 model.note_api.attach_note_to_parent(
                     node.data.id,
@@ -395,11 +398,11 @@ class LeftSidebar(QWidget):
                     hierarchy_type="block"
                 )
                 new_index = model.insert_node(node, next_sibling)
-            
+
             # Select the demoted item in its new location
             self.tags_tree.setCurrentIndex(new_index)
             self.tags_tree.setFocus()
-            
+
         except Exception as e:
             # If anything fails, try to revert to original position
             new_index = model.insert_node(node, current_parent)
