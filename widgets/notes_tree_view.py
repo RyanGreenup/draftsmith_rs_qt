@@ -42,17 +42,15 @@ class NotesTreeView(QTreeView):
                 rename_action = menu.addAction("Rename")
                 delete_action = menu.addAction("Delete")
 
-                    # Add promote action if the item has a parent
-                    if node.parent and node.parent != self.model.root_node:
-                        promote_action = menu.addAction("Promote")
+                # Add promote action if the item has a parent
+                if node.parent and node.parent != self.model.root_node:
+                    promote_action = menu.addAction("Promote")
 
-                    # Add demote action if there's a previous sibling to become the parent
-                    prev_sibling = self._get_previous_sibling(index)
-                    demote_action = menu.addAction("Demote")
-                    if not prev_sibling:
-                        demote_action.setEnabled(False)
-
-                    menu.addSeparator()
+                # Add demote action if there's a previous sibling to become the parent
+                prev_sibling = self._get_previous_sibling(index)
+                demote_action = menu.addAction("Demote")
+                if not prev_sibling:
+                    demote_action.setEnabled(False)
 
                 menu.addSeparator()
 
