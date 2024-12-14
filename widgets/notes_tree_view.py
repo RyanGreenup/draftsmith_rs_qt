@@ -35,15 +35,12 @@ class NotesTreeView(QTreeView):
                 note_id_action.setEnabled(False)  # Make it non-clickable
                 menu.addSeparator()
 
+            promote_action = None
+            demote_action = None
+
             if node.node_type != 'page':  # Don't show edit options for special items
                 rename_action = menu.addAction("Rename")
-
-                promote_action = None
-                demote_action = None
-
-                if node.node_type != 'page':  # Don't show edit options for special items
-                    rename_action = menu.addAction("Rename")
-                    delete_action = menu.addAction("Delete")
+                delete_action = menu.addAction("Delete")
 
                     # Add promote action if the item has a parent
                     if node.parent and node.parent != self.model.root_node:
