@@ -37,7 +37,6 @@ class NotesTreeView(QTreeView):
 
             if node.node_type != 'page':  # Don't show edit options for special items
                 rename_action = menu.addAction("Rename")
-                delete_action = menu.addAction("Delete")
 
                 promote_action = None
                 demote_action = None

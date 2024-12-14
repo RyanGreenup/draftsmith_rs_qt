@@ -537,16 +537,18 @@ class NotesTreeModel(QAbstractItemModel):
         node = index.internalPointer()
 
         if node is not None:
-            # Add delete action for tags
+            # Add appropriate delete action based on node type
             if node.node_type == 'tag':
-                delete_action = menu.addAction("Delete tag")
+                delete_action = menu.addAction("Delete Tag")
                 delete_action.triggered.connect(lambda: self.delete_tag(index))
+            elif node.node_type == 'note':
+                delete_action = menu.addAction("Delete Note")
+                delete_action.triggered.connect(lambda: self.delete_note(index))
 
             # Show detach option for notes under tags
             if (node.node_type == 'note' and
                 node.parent and
                 node.parent.node_type == 'tag'):
-
                 detach_action = menu.addAction("Detach from tag")
                 detach_action.triggered.connect(lambda: self.detach_note_from_tag(index))
 
@@ -554,7 +556,6 @@ class NotesTreeModel(QAbstractItemModel):
             elif (node.node_type == 'tag' and
                   node.parent and
                   node.parent.node_type == 'tag'):
-
                 detach_action = menu.addAction("Detach from parent tag")
                 detach_action.triggered.connect(lambda: self.detach_tag_from_parent(index))
 
