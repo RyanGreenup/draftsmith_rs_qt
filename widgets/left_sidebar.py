@@ -77,6 +77,12 @@ class LeftSidebar(QWidget):
                 if node.parent and node.parent != model.root_node:
                     promote_action = menu.addAction("Promote")
                 
+                # Add demote action if there's a next sibling
+                next_sibling = self._get_next_sibling(model, index)
+                demote_action = menu.addAction("Demote")
+                if not next_sibling:
+                    demote_action.setEnabled(False)
+                
                 menu.addSeparator()
             
             # Determine labels based on context
@@ -322,7 +328,7 @@ class LeftSidebar(QWidget):
         try:
             # Get the next sibling
             next_sibling = self._get_next_sibling(model, index)
-            if not next_sibling or next_sibling.node_type not in ['tag', 'note']:
+            if not next_sibling:
                 return
             
             current_parent = node.parent
@@ -338,17 +344,12 @@ class LeftSidebar(QWidget):
                 if current_parent and current_parent.node_type == 'tag':
                     model.tag_api.detach_tag_from_parent(node.data.id)
                 
-                # Attach to new parent
-                if next_sibling.node_type == 'tag':
-                    model.tag_api.attach_tag_to_parent(
-                        node.data.id,
-                        next_sibling.data.id
-                    )
-                    new_index = model.insert_node(node, next_sibling)
-                else:
-                    # Can't attach tag to note, revert
-                    new_index = model.insert_node(node, current_parent)
-                    raise Exception("Cannot attach a tag to a note")
+                # Attach to new parent (tag or note)
+                model.tag_api.attach_tag_to_parent(
+                    node.data.id,
+                    next_sibling.data.id
+                )
+                new_index = model.insert_node(node, next_sibling)
                     
             else:  # note
                 # Detach from current parent if it's a note
@@ -356,23 +357,20 @@ class LeftSidebar(QWidget):
                     model.note_api.detach_note_from_parent(node.data.id)
                 
                 # Attach to new parent
-                if next_sibling.node_type == 'note':
-                    model.note_api.attach_note_to_parent(
-                        node.data.id,
-                        next_sibling.data.id,
-                        hierarchy_type="block"
-                    )
-                    new_index = model.insert_node(node, next_sibling)
-                else:
-                    # Can't attach note to tag, revert
-                    new_index = model.insert_node(node, current_parent)
-                    raise Exception("Cannot attach a note directly to a tag")
+                model.note_api.attach_note_to_parent(
+                    node.data.id,
+                    next_sibling.data.id,
+                    hierarchy_type="block"
+                )
+                new_index = model.insert_node(node, next_sibling)
             
             # Select the demoted item in its new location
             self.tags_tree.setCurrentIndex(new_index)
             self.tags_tree.setFocus()
             
         except Exception as e:
+            # If anything fails, try to revert to original position
+            new_index = model.insert_node(node, current_parent)
             raise Exception(f"Failed to demote item: {str(e)}")
 
     def focus_search(self):
