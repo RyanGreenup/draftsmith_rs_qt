@@ -129,15 +129,17 @@ class LeftSidebar(QWidget):
         # Determine if we're creating a note or tag based on context and force_note parameter
         creating_note = force_note or (parent_node and parent_node.node_type == 'note')
         
-        title, ok = QInputDialog.getText(
-            self,
-            f"New {'Note' if creating_note else 'Tag'}", 
-            f"Enter {'note' if creating_note else 'tag'} name:"
-        )
-        
-        if not ok or not title.strip():
-            return
-            
+        title = None
+        if not creating_note:
+            # Only ask for title if creating a tag
+            title, ok = QInputDialog.getText(
+                self,
+                "New Tag",
+                "Enter tag name:"
+            )
+            if not ok or not title.strip():
+                return
+                
         try:
             # Determine where to insert the new node
             target_parent = parent_node if is_child else model.root_node
@@ -154,8 +156,8 @@ class LeftSidebar(QWidget):
             model.beginInsertRows(parent_index, insert_position, insert_position)
             
             if creating_note:
-                # Create new note
-                response = model.note_api.note_create(title, "")
+                # Create new note with empty title - will be inferred from content
+                response = model.note_api.note_create("", "")
                 new_id = response['id']
                 
                 # Create new node with note data
