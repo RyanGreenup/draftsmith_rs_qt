@@ -36,15 +36,16 @@ class NotesTreeModel(QAbstractItemModel):
         base_url = "http://vidar:37242"
         self.tag_api = TagAPI(base_url)
         self.note_api = NoteAPI(base_url)  # Add note API
+        self.complete_notes_tree = []  # Store complete notes hierarchy
         self.setup_data()
 
     def setup_data(self):
         try:
-            # Get both tag tree and notes tree
-            # TODO: In the future, the API may be updated to include inherited tags in the tag tree
-            # based on user feedback. For now, we'll display both hierarchies.
+            # First get complete notes tree for reference
+            self.complete_notes_tree = self.note_api.get_notes_tree(exclude_content=True)
+            
+            # Then get tag tree
             tags_tree: List[TreeTagWithNotes] = self.tag_api.get_tags_tree()
-            notes_tree: List[TreeNote] = self.note_api.get_notes_tree(exclude_content=True)
 
             # Process tag hierarchy
             print(f"Received {len(tags_tree)} top-level tags")
@@ -61,6 +62,17 @@ class NotesTreeModel(QAbstractItemModel):
         except Exception as e:
             print(f"Error loading data: {e}")
 
+    def _find_note_in_tree(self, note_id: str, notes: List[TreeNote]) -> Optional[TreeNote]:
+        """Recursively find a note by ID in the complete notes tree"""
+        for note in notes:
+            if note.id == note_id:
+                return note
+            if note.children:
+                found = self._find_note_in_tree(note_id, note.children)
+                if found:
+                    return found
+        return None
+
     def _process_tag(self, tag_data, parent_node):
         # Create tag node
         node = TreeNode(tag_data, parent_node, 'tag')
@@ -72,7 +84,12 @@ class NotesTreeModel(QAbstractItemModel):
 
         # Process notes belonging to this tag
         for note in tag_data.notes:
-            self._process_note(note, node)
+            # Find the complete note hierarchy from notes_tree
+            complete_note = self._find_note_in_tree(note.id, self.complete_notes_tree)
+            if complete_note:
+                self._process_note(complete_note, node)
+            else:
+                self._process_note(note, node)
 
     def _process_note(self, note_data, parent_node):
         # Create note node
