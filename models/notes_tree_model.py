@@ -36,7 +36,7 @@ class TreeNode:
 class NotesTreeModel(QAbstractItemModel):
     contextMenuRequested = Signal(QModelIndex, 'QMenu')
     tagMoved = Signal(QModelIndex)
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.root_node = TreeNode(None)
@@ -47,9 +47,6 @@ class NotesTreeModel(QAbstractItemModel):
         self.complete_notes_tree = []  # Store complete notes hierarchy
         self._view = None  # Initialize view reference
         self.setup_data()
-        # Ensure the view is set during initialization
-        if self._view is None:
-            print("Warning: View is not set. Please call set_view with a valid view object.")
 
     def setup_data(self):
         try:
@@ -66,7 +63,7 @@ class NotesTreeModel(QAbstractItemModel):
             # Add "All Notes" section
             all_notes_node = TreeNode({"name": "All Notes"}, self.root_node, 'page')
             self.root_node.append_child(all_notes_node)
-            
+
             # Sort notes before adding them
             sorted_notes = sorted(self.complete_notes_tree, key=lambda x: x.title.lower())
             for note in sorted_notes:
@@ -78,7 +75,7 @@ class NotesTreeModel(QAbstractItemModel):
 
             # Find and process untagged root notes (sort them first)
             untagged_notes = [
-                note for note in self.complete_notes_tree 
+                note for note in self.complete_notes_tree
                 if not note.tags and not self._is_subpage(note)
             ]
             for note in sorted(untagged_notes, key=lambda x: x.title.lower()):
@@ -201,17 +198,17 @@ class NotesTreeModel(QAbstractItemModel):
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         if not index.isValid():
             return Qt.ItemIsDropEnabled  # Allow drops on the root
-            
+
         flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
-        
+
         node = index.internalPointer()
         if node.node_type == 'page':  # Special nodes like "All Notes"
             return flags
-            
+
         # Add drag & drop flags for notes and tags
         if node.node_type in ['note', 'tag']:
             flags |= Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsEditable
-            
+
         return flags
 
     def supportedDropActions(self) -> Qt.DropActions:
@@ -223,7 +220,7 @@ class NotesTreeModel(QAbstractItemModel):
     def mimeData(self, indexes: List[QModelIndex]) -> QMimeData:
         if not indexes:
             return None
-            
+
         mime_data = QMimeData()
         node = indexes[0].internalPointer()
         # Store the node type and ID in the mime data
@@ -231,18 +228,18 @@ class NotesTreeModel(QAbstractItemModel):
         mime_data.setData('application/x-notestreemodeldata', QByteArray(data.encode()))
         return mime_data
 
-    def canDropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, 
+    def canDropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int,
                         column: int, parent: QModelIndex) -> bool:
         if not data.hasFormat('application/x-notestreemodeldata'):
             return False
-            
+
         # Get the target node
         target_node = parent.internalPointer() if parent.isValid() else self.root_node
-        
+
         # Get the source node type
         source_data = bytes(data.data('application/x-notestreemodeldata')).decode()
         source_type = source_data.split(':')[0]
-        
+
         # Allow drops based on rules:
         # 1. Notes can be dropped on tags
         # 2. Notes can be dropped on other notes (to create subpages)
@@ -251,7 +248,7 @@ class NotesTreeModel(QAbstractItemModel):
             return target_node.node_type in ['tag', 'note']
         elif source_type == 'tag':
             return target_node.node_type == 'tag'
-        
+
         return False
 
     def _find_untagged_section(self) -> QModelIndex:
@@ -259,8 +256,8 @@ class NotesTreeModel(QAbstractItemModel):
         for i in range(self.root_node.child_count()):
             index = self.createIndex(i, 0, self.root_node.children[i])
             node = index.internalPointer()
-            if (node.node_type == 'page' and 
-                isinstance(node.data, dict) and 
+            if (node.node_type == 'page' and
+                isinstance(node.data, dict) and
                 node.data.get('name') == "Untagged Notes"):
                 return index
         return QModelIndex()
@@ -269,124 +266,122 @@ class NotesTreeModel(QAbstractItemModel):
                      column: int, parent: QModelIndex) -> bool:
         if not self.canDropMimeData(data, action, row, column, parent):
             return False
-            
+
         source_data = bytes(data.data('application/x-notestreemodeldata')).decode()
         source_type, source_id = source_data.split(':')
         target_node = parent.internalPointer() if parent.isValid() else self.root_node
-        
+
         try:
             if source_type == 'note':
                 if target_node.node_type == 'tag':
                     # Convert IDs to integers
                     note_id = int(source_id)
                     tag_id = int(target_node.data.id)
-                    
+
                     # Perform the API call
                     self.tag_api.attach_tag_to_note(note_id, tag_id)
-                    
+
                     # Find the source note node
                     source_index = self._find_index_by_id(note_id, 'note')
                     if not source_index.isValid():
                         return False
-                        
+
                     # Get the note data
                     note_node = source_index.internalPointer()
-                    
+
                     # Create a new node for the note under the tag
                     insert_pos = self._find_insert_position(target_node, note_node)
-                    
+
                     # Insert the note node under the tag
                     self.beginInsertRows(parent, insert_pos, insert_pos)
                     new_note_node = TreeNode(note_node.data, target_node, 'note')
                     target_node.children.insert(insert_pos, new_note_node)
                     self.endInsertRows()
-                    
+
                     # Find and remove from "Untagged Notes" if present
                     untagged_index = self._find_untagged_section()
                     if untagged_index.isValid():
                         untagged_node = untagged_index.internalPointer()
                         for i, child in enumerate(untagged_node.children):
-                            if (child.node_type == 'note' and 
-                                hasattr(child.data, 'id') and 
+                            if (child.node_type == 'note' and
+                                hasattr(child.data, 'id') and
                                 child.data.id == note_id):
                                 # Remove from untagged section
                                 self.beginRemoveRows(untagged_index, i, i)
                                 untagged_node.children.pop(i)
                                 self.endRemoveRows()
                                 break
-                    
+
                     return True
-                    
+
                 else:  # target is note
                     # Convert IDs to integers
                     child_note_id = int(source_id)
                     parent_note_id = int(target_node.data.id)
-                    
+
                     # Perform the API call
                     self.note_api.attach_note_to_parent(
                         child_note_id,
                         parent_note_id,
                         hierarchy_type="block"
                     )
-                    
+
                     # Find the source note node
                     source_index = self._find_index_by_id(child_note_id, 'note')
                     if not source_index.isValid():
                         return False
-                        
+
                     # Get the source note node
                     note_node = source_index.internalPointer()
-                    
+
                     # Remove from old position
                     old_parent = source_index.parent()
                     old_parent_node = old_parent.internalPointer() if old_parent.isValid() else self.root_node
                     row = source_index.row()
-                    
+
                     self.beginRemoveRows(old_parent, row, row)
                     node_to_move = old_parent_node.children.pop(row)
                     self.endRemoveRows()
-                    
+
                     # Insert at new position under target note
                     insert_pos = self._find_insert_position(target_node, node_to_move)
                     self.beginInsertRows(parent, insert_pos, insert_pos)
                     node_to_move.parent = target_node
                     target_node.children.insert(insert_pos, node_to_move)
                     self.endInsertRows()
-                    
+
                     return True
             elif source_type == 'tag':
                 if target_node.node_type == 'tag':
                     # Convert IDs to integers
                     child_id = int(source_id)
                     parent_id = int(target_node.data.id)
-                
+
                     # Find the source index
                     source_index = self._find_index_by_id(child_id, 'tag')
                     if not source_index.isValid():
                         return False
-                
+
                     source_node = source_index.internalPointer()
-                    
+
                     # Store expanded states BEFORE anything else
-                    print("Storing expanded states...")
                     expanded_states = {}
                     self._store_expanded_state(source_node, expanded_states)
-                    print(f"Expanded states stored: {expanded_states}")
                     expanded_states = {}
                     self._store_expanded_state(source_node, expanded_states)
-                    
+
                     # Now perform the API call
                     self.tag_api.attach_tag_to_parent(child_id, parent_id)
-                
+
                     # Remove from old position
                     old_parent = source_index.parent()
                     old_parent_node = old_parent.internalPointer() if old_parent.isValid() else self.root_node
                     row = source_index.row()
-                
+
                     self.beginRemoveRows(old_parent, row, row)
                     node_to_move = old_parent_node.children.pop(row)
                     self.endRemoveRows()
-                
+
                     # Insert at new position
                     insert_pos = self._find_insert_position(target_node, node_to_move)
                     self.beginInsertRows(parent, insert_pos, insert_pos)
@@ -396,22 +391,20 @@ class NotesTreeModel(QAbstractItemModel):
 
                     # Create new index for the moved node
                     new_index = self.createIndex(insert_pos, 0, node_to_move)
-                
+
                     # Restore expanded states after the move
-                    print("Restoring expanded states...")
                     self._restore_expanded_state(node_to_move, expanded_states)
-                    print(f"Expanded states restored: {expanded_states}")
-                    
+
                     # Ensure the new node is expanded if it was previously
                     if expanded_states.get(f"tag_{child_id}", False):
                         self.set_expanded(node_to_move, True)
-                    
+
                     self.tagMoved.emit(new_index)
-                    
+
                     return True
-                    
+
             return False
-            
+
         except Exception as e:
             print(f"Error during drag and drop: {e}")
             return False
@@ -421,7 +414,7 @@ class NotesTreeModel(QAbstractItemModel):
         # Special handling for page nodes (All Notes, Untagged Notes) - always at the end
         if node.node_type == 'page':
             return ('2', node.data["name"].lower())
-        
+
         # Tags and notes are sorted by name/title
         if node.node_type == 'tag':
             return ('0', node.data.name.lower())
@@ -432,7 +425,7 @@ class NotesTreeModel(QAbstractItemModel):
     def _find_insert_position(self, parent_node, new_node):
         """Find the correct position to insert a node maintaining alphabetical order"""
         new_key = self._get_sort_key(new_node)
-        
+
         for i, child in enumerate(parent_node.children):
             if self._get_sort_key(child) > new_key:
                 return i
@@ -442,31 +435,31 @@ class NotesTreeModel(QAbstractItemModel):
         """Insert a node in the correct sorted position"""
         if not parent_node:
             parent_node = self.root_node
-            
+
         # Find insert position
         insert_pos = self._find_insert_position(parent_node, new_node)
-        
+
         # Create parent index
         parent_index = QModelIndex() if parent_node == self.root_node else \
                       self.createIndex(parent_node.row(), 0, parent_node)
-        
+
         # Insert node
         self.beginInsertRows(parent_index, insert_pos, insert_pos)
         new_node.parent = parent_node
         parent_node.children.insert(insert_pos, new_node)
         self.endInsertRows()
-        
+
         return self.createIndex(insert_pos, 0, new_node)
 
     def sort_children(self, parent_node):
         """Sort the children of a node"""
         if not parent_node.children:
             return
-            
+
         # Create parent index
         parent_index = QModelIndex() if parent_node == self.root_node else \
                       self.createIndex(parent_node.row(), 0, parent_node)
-        
+
         # Sort children
         self.beginResetModel()
         parent_node.children.sort(key=self._get_sort_key)
@@ -510,19 +503,19 @@ class NotesTreeModel(QAbstractItemModel):
             for row in range(rows):
                 index = self.index(row, 0, parent_index)
                 node = index.internalPointer()
-                
-                if (node.node_type == node_type and 
-                    hasattr(node.data, 'id') and 
+
+                if (node.node_type == node_type and
+                    hasattr(node.data, 'id') and
                     node.data.id == id_to_find):
                     return index
-                    
+
                 # Recursively search children
                 result = search(index)
                 if result.isValid():
                     return result
-                    
+
             return QModelIndex()
-            
+
         return search(QModelIndex())
 
     def _is_subpage(self, note: TreeNote) -> bool:
@@ -542,23 +535,23 @@ class NotesTreeModel(QAbstractItemModel):
         """Create and return a context menu for the given index"""
         menu = QMenu()
         node = index.internalPointer()
-        
+
         # Show detach option for notes under tags
-        if (node.node_type == 'note' and 
-            node.parent and 
+        if (node.node_type == 'note' and
+            node.parent and
             node.parent.node_type == 'tag'):
-            
+
             detach_action = menu.addAction("Detach from tag")
             detach_action.triggered.connect(lambda: self.detach_note_from_tag(index))
-        
+
         # Show detach option for tags under other tags
-        elif (node.node_type == 'tag' and 
-              node.parent and 
+        elif (node.node_type == 'tag' and
+              node.parent and
               node.parent.node_type == 'tag'):
-            
+
             detach_action = menu.addAction("Detach from parent tag")
             detach_action.triggered.connect(lambda: self.detach_tag_from_parent(index))
-        
+
         self.contextMenuRequested.emit(index, menu)
         return menu
 
@@ -567,7 +560,7 @@ class NotesTreeModel(QAbstractItemModel):
         if hasattr(node.data, 'id'):
             node_id = f"{node.node_type}_{node.data.id}"
             expanded_states[node_id] = self.is_expanded(node)
-            
+
         for child in node.children:
             self._store_expanded_state(child, expanded_states)
 
@@ -577,7 +570,7 @@ class NotesTreeModel(QAbstractItemModel):
             node_id = f"{node.node_type}_{node.data.id}"
             if node_id in expanded_states:
                 self.set_expanded(node, expanded_states[node_id])
-                
+
         for child in node.children:
             self._restore_expanded_state(child, expanded_states)
 
@@ -589,7 +582,6 @@ class NotesTreeModel(QAbstractItemModel):
         try:
             index = self.createIndex(node.row(), 0, node)
             expanded = self._view.isExpanded(index)
-            print(f"Node {node.data.id} expanded state: {expanded}")
             return expanded
         except Exception as e:
             print(f"Error checking expanded state: {e}")
@@ -613,29 +605,29 @@ class NotesTreeModel(QAbstractItemModel):
         """Detach a tag from its parent tag"""
         if not index.isValid():
             return
-            
+
         node = index.internalPointer()
         parent_node = node.parent
-        
+
         if not (node.node_type == 'tag' and parent_node and parent_node.node_type == 'tag'):
             return
-            
+
         try:
             # Store expanded states before moving
             expanded_states = {}
             self._store_expanded_state(node, expanded_states)
-            
+
             # Call API to detach tag
             tag_id = int(node.data.id)
             parent_tag_id = int(parent_node.data.id)
             self.tag_api.detach_tag_from_parent(tag_id)
-            
+
             # Remove tag from current position
             row = index.row()
             self.beginRemoveRows(index.parent(), row, row)
             node_to_move = parent_node.children.pop(row)
             self.endRemoveRows()
-            
+
             # Move to root level, preserving all children
             insert_pos = self._find_insert_position(self.root_node, node)
             self.beginInsertRows(QModelIndex(), insert_pos, insert_pos)
@@ -645,13 +637,13 @@ class NotesTreeModel(QAbstractItemModel):
 
             # Create new index for focusing
             new_index = self.createIndex(insert_pos, 0, node_to_move)
-            
+
             # Restore expanded states
             self._restore_expanded_state(node_to_move, expanded_states)
-            
+
             # Emit signal for focusing
             self.tagMoved.emit(new_index)
-                
+
         except Exception as e:
             print(f"Error detaching tag from parent: {e}")
 
@@ -659,36 +651,36 @@ class NotesTreeModel(QAbstractItemModel):
         """Detach a note from its parent tag"""
         if not index.isValid():
             return
-            
+
         node = index.internalPointer()
         parent_node = node.parent
-        
+
         if not (node.node_type == 'note' and parent_node and parent_node.node_type == 'tag'):
             return
-            
+
         try:
             # Call API to detach tag
             note_id = int(node.data.id)
             tag_id = int(parent_node.data.id)
             self.tag_api.detach_tag_from_note(note_id, tag_id)
-            
+
             # Remove note from current position
             row = index.row()
             self.beginRemoveRows(index.parent(), row, row)
             parent_node.children.pop(row)
             self.endRemoveRows()
-            
+
             # If note has no more tags, add it to "Untagged Notes" section
             if not node.data.tags:
                 untagged_index = self._find_untagged_section()
                 if untagged_index.isValid():
                     untagged_node = untagged_index.internalPointer()
                     insert_pos = self._find_insert_position(untagged_node, node)
-                    
+
                     self.beginInsertRows(untagged_index, insert_pos, insert_pos)
                     new_node = TreeNode(node.data, untagged_node, 'note')
                     untagged_node.children.insert(insert_pos, new_node)
                     self.endInsertRows()
-                    
+
         except Exception as e:
             print(f"Error detaching note from tag: {e}")
