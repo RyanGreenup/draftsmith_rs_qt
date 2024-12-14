@@ -50,25 +50,31 @@ class NotesTreeModel(QAbstractItemModel):
             # Then get tag tree
             tags_tree: List[TreeTagWithNotes] = self.tag_api.get_tags_tree()
 
-            # Process tag hierarchy
-            for tag in tags_tree:
+            # Process tag hierarchy (sort tags before processing)
+            for tag in sorted(tags_tree, key=lambda x: x.name.lower()):
                 self._process_tag(tag, self.root_node)
 
             # Add "All Notes" section
             all_notes_node = TreeNode({"name": "All Notes"}, self.root_node, 'page')
             self.root_node.append_child(all_notes_node)
-            for note in self.complete_notes_tree:
+            
+            # Sort notes before adding them
+            sorted_notes = sorted(self.complete_notes_tree, key=lambda x: x.title.lower())
+            for note in sorted_notes:
                 self._process_note(note, all_notes_node)
 
             # Add "Untagged Notes" section
             untagged_notes_node = TreeNode({"name": "Untagged Notes"}, self.root_node, 'page')
             self.root_node.append_child(untagged_notes_node)
 
-            # Find and process untagged root notes
-            for note in self.complete_notes_tree:
-                if not note.tags and not self._is_subpage(note):
-                    if not note.tags:
-                        self._process_note(note, untagged_notes_node)
+            # Find and process untagged root notes (sort them first)
+            untagged_notes = [
+                note for note in self.complete_notes_tree 
+                if not note.tags and not self._is_subpage(note)
+            ]
+            for note in sorted(untagged_notes, key=lambda x: x.title.lower()):
+                if not note.tags:
+                    self._process_note(note, untagged_notes_node)
 
         except Exception as e:
             print(f"Error loading data: {e}")
@@ -91,14 +97,15 @@ class NotesTreeModel(QAbstractItemModel):
     def _process_tag(self, tag_data, parent_node):
         # Create tag node
         node = TreeNode(tag_data, parent_node, 'tag')
-        parent_node.append_child(node)
+        # Use insert_node instead of append_child
+        self.insert_node(node, parent_node)
 
         # Process child tags
-        for child in tag_data.children:
+        for child in sorted(tag_data.children, key=lambda x: x.name.lower()):
             self._process_tag(child, node)
 
         # Process notes belonging to this tag
-        for note in tag_data.notes:
+        for note in sorted(tag_data.notes, key=lambda x: x.title.lower()):
             # Find the complete note hierarchy from notes_tree
             complete_note = self._find_note_in_tree(note.id, self.complete_notes_tree)
             if complete_note:
@@ -109,10 +116,11 @@ class NotesTreeModel(QAbstractItemModel):
     def _process_note(self, note_data, parent_node):
         # Create note node
         node = TreeNode(note_data, parent_node, 'note')
-        parent_node.append_child(node)
+        # Use insert_node instead of append_child
+        self.insert_node(node, parent_node)
 
         # Process child notes (subpages)
-        for child in note_data.children:
+        for child in sorted(note_data.children, key=lambda x: x.title.lower()):
             self._process_note(child, node)
 
     def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
@@ -225,7 +233,8 @@ class NotesTreeModel(QAbstractItemModel):
         insert_pos = self._find_insert_position(parent_node, new_node)
         
         # Create parent index
-        parent_index = self.createIndex(parent_node.row(), 0, parent_node) if parent_node != self.root_node else QModelIndex()
+        parent_index = QModelIndex() if parent_node == self.root_node else \
+                      self.createIndex(parent_node.row(), 0, parent_node)
         
         # Insert node
         self.beginInsertRows(parent_index, insert_pos, insert_pos)
@@ -234,6 +243,20 @@ class NotesTreeModel(QAbstractItemModel):
         self.endInsertRows()
         
         return self.createIndex(insert_pos, 0, new_node)
+
+    def sort_children(self, parent_node):
+        """Sort the children of a node"""
+        if not parent_node.children:
+            return
+            
+        # Create parent index
+        parent_index = QModelIndex() if parent_node == self.root_node else \
+                      self.createIndex(parent_node.row(), 0, parent_node)
+        
+        # Sort children
+        self.beginResetModel()
+        parent_node.children.sort(key=self._get_sort_key)
+        self.endResetModel()
 
     def setData(self, index: QModelIndex, value: Any, role: int = Qt.EditRole) -> bool:
         if not index.isValid() or role != Qt.EditRole:
