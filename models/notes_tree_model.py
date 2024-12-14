@@ -581,11 +581,15 @@ class NotesTreeModel(QAbstractItemModel):
     def is_expanded(self, node: TreeNode) -> bool:
         """Check if a node is expanded in the view"""
         if not self._view:
+            print("View is not set.")
             return False
         try:
             index = self.createIndex(node.row(), 0, node)
-            return self._view.isExpanded(index)
-        except Exception:
+            expanded = self._view.isExpanded(index)
+            print(f"Node {node.data.id} expanded state: {expanded}")
+            return expanded
+        except Exception as e:
+            print(f"Error checking expanded state: {e}")
             return False
 
     def set_expanded(self, node: TreeNode, expanded: bool) -> None:
