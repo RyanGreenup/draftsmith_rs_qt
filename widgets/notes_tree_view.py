@@ -198,7 +198,7 @@ class NotesTreeView(QTreeView):
                             hierarchy_type="block"
                         )
             else:
-                new_tag = self.model.tag_api.create_tag(title)
+                new_tag = self.model.tag_api.create_tag("")
                 new_node = TreeNode(new_tag, None, 'tag')
 
                 if parent_node and parent_node.node_type == 'tag':
@@ -211,6 +211,10 @@ class NotesTreeView(QTreeView):
             new_index = self.model.insert_node(new_node, target_parent)
             self.setCurrentIndex(new_index)
             self.setFocus()
+
+            # Enter edit mode to allow the user to set the tag name
+            if not creating_note:
+                self.edit(new_index)
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to create item: {str(e)}")
