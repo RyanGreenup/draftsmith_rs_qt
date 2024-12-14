@@ -147,45 +147,8 @@ class LeftSidebar(QWidget):
                 return
                 
         try:
-            # Special handling for root-level tag creation
-            if not creating_note and not parent_node:
-                # Find the position before "All Notes"
-                insert_position = 0
-                for i in range(model.root_node.child_count()):
-                    if model.root_node.child(i).node_type == 'page':
-                        insert_position = i
-                        break
-                    
-                # Create new tag
-                new_tag = model.tag_api.create_tag(title)
-                
-                # Insert at the correct position
-                model.beginInsertRows(QModelIndex(), insert_position, insert_position)
-                new_node = TreeNode(new_tag, model.root_node, 'tag')
-                
-                # Insert into children list at specific position
-                model.root_node.children.insert(insert_position, new_node)
-                model.endInsertRows()
-                
-                # Select and focus the new tag
-                new_index = model.createIndex(insert_position, 0, new_node)
-                self.tags_tree.setCurrentIndex(new_index)
-                self.tags_tree.setFocus()
-                return
-
             if creating_note and not parent_node:
-                # Find "All Notes" and "Untagged Notes" nodes
-                all_notes_node = None
-                untagged_notes_node = None
-                for i in range(model.root_node.child_count()):
-                    node = model.root_node.child(i)
-                    if node.node_type == 'page':
-                        if node.data["name"] == "All Notes":
-                            all_notes_node = node
-                        elif node.data["name"] == "Untagged Notes":
-                            untagged_notes_node = node
-
-                # Create the note and convert response to TreeNote
+                # Handle root-level note creation (All Notes and Untagged Notes sections)
                 response = model.note_api.note_create("", "")
                 tree_note = TreeNote(
                     id=response['id'],
@@ -195,40 +158,34 @@ class LeftSidebar(QWidget):
                     content=''
                 )
                 
+                # Find special nodes
+                all_notes_node = None
+                untagged_notes_node = None
+                for node in model.root_node.children:
+                    if node.node_type == 'page':
+                        if node.data["name"] == "All Notes":
+                            all_notes_node = node
+                        elif node.data["name"] == "Untagged Notes":
+                            untagged_notes_node = node
+                
                 # Add to All Notes
                 if all_notes_node:
-                    insert_pos = all_notes_node.child_count()
-                    parent_index = model.createIndex(all_notes_node.row(), 0, all_notes_node)
-                    model.beginInsertRows(parent_index, insert_pos, insert_pos)
-                    new_node = TreeNode(tree_note, all_notes_node, 'note')
-                    all_notes_node.append_child(new_node)
-                    model.endInsertRows()
+                    new_node = TreeNode(tree_note, None, 'note')
+                    new_index = model.insert_node(new_node, all_notes_node)
                 
                 # Add to Untagged Notes
                 if untagged_notes_node:
-                    insert_pos = untagged_notes_node.child_count()
-                    parent_index = model.createIndex(untagged_notes_node.row(), 0, untagged_notes_node)
-                    model.beginInsertRows(parent_index, insert_pos, insert_pos)
-                    new_node = TreeNode(tree_note, untagged_notes_node, 'note')
-                    untagged_notes_node.append_child(new_node)
-                    model.endInsertRows()
+                    new_node = TreeNode(tree_note, None, 'note')
+                    new_index = model.insert_node(new_node, untagged_notes_node)
                     
                     # Focus the new note in Untagged Notes section
-                    new_index = model.createIndex(insert_pos, 0, new_node)
                     self.tags_tree.setCurrentIndex(new_index)
                     self.tags_tree.setFocus()
                 
                 return
-
-            # Handle all other cases (tags or notes with parents) as before
-            target_parent = parent_node if is_child else model.root_node
-            if not target_parent:
-                target_parent = model.root_node
                 
-            parent_index = model.createIndex(target_parent.row(), 0, target_parent) if target_parent != model.root_node else QModelIndex()
-            insert_position = target_parent.child_count()
-            
-            model.beginInsertRows(parent_index, insert_position, insert_position)
+            # Handle all other cases
+            target_parent = parent_node if is_child else model.root_node
             
             if creating_note:
                 response = model.note_api.note_create("", "")
@@ -239,7 +196,7 @@ class LeftSidebar(QWidget):
                     children=[],
                     content=''
                 )
-                new_node = TreeNode(tree_note, target_parent, 'note')
+                new_node = TreeNode(tree_note, None, 'note')
                 
                 if parent_node:
                     if parent_node.node_type == 'tag':
@@ -252,7 +209,7 @@ class LeftSidebar(QWidget):
                         )
             else:
                 new_tag = model.tag_api.create_tag(title)
-                new_node = TreeNode(new_tag, target_parent, 'tag')
+                new_node = TreeNode(new_tag, None, 'tag')
                 
                 if parent_node and parent_node.node_type == 'tag':
                     model.tag_api.attach_tag_to_parent(
@@ -260,10 +217,8 @@ class LeftSidebar(QWidget):
                         parent_node.data.id
                     )
             
-            target_parent.append_child(new_node)
-            model.endInsertRows()
-            
-            new_index = model.createIndex(insert_position, 0, new_node)
+            # Insert node in sorted position
+            new_index = model.insert_node(new_node, target_parent)
             self.tags_tree.setCurrentIndex(new_index)
             self.tags_tree.setFocus()
                 

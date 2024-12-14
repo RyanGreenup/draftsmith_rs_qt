@@ -194,6 +194,47 @@ class NotesTreeModel(QAbstractItemModel):
 
         return flags
 
+    def _get_sort_key(self, node):
+        """Get the key to use for sorting nodes"""
+        # Special handling for page nodes (All Notes, Untagged Notes) - always at the end
+        if node.node_type == 'page':
+            return ('2', node.data["name"].lower())
+        
+        # Tags and notes are sorted by name/title
+        if node.node_type == 'tag':
+            return ('0', node.data.name.lower())
+        else:  # note
+            title = node.data.title if hasattr(node.data, 'title') else node.data.get('title', '')
+            return ('1', title.lower())
+
+    def _find_insert_position(self, parent_node, new_node):
+        """Find the correct position to insert a node maintaining alphabetical order"""
+        new_key = self._get_sort_key(new_node)
+        
+        for i, child in enumerate(parent_node.children):
+            if self._get_sort_key(child) > new_key:
+                return i
+        return len(parent_node.children)
+
+    def insert_node(self, new_node, parent_node):
+        """Insert a node in the correct sorted position"""
+        if not parent_node:
+            parent_node = self.root_node
+            
+        # Find insert position
+        insert_pos = self._find_insert_position(parent_node, new_node)
+        
+        # Create parent index
+        parent_index = self.createIndex(parent_node.row(), 0, parent_node) if parent_node != self.root_node else QModelIndex()
+        
+        # Insert node
+        self.beginInsertRows(parent_index, insert_pos, insert_pos)
+        new_node.parent = parent_node
+        parent_node.children.insert(insert_pos, new_node)
+        self.endInsertRows()
+        
+        return self.createIndex(insert_pos, 0, new_node)
+
     def setData(self, index: QModelIndex, value: Any, role: int = Qt.EditRole) -> bool:
         if not index.isValid() or role != Qt.EditRole:
             return False
