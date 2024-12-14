@@ -126,15 +126,6 @@ class NotesTreeView(QTreeView):
         """Handle creation of new items"""
         creating_note = force_note or (parent_node and parent_node.node_type == 'note')
 
-        title = None
-        if not creating_note:
-            title, ok = QInputDialog.getText(
-                self,
-                "New Tag",
-                "Enter tag name:"
-            )
-            if not ok or not title.strip():
-                return
 
         try:
             if creating_note and not parent_node:
