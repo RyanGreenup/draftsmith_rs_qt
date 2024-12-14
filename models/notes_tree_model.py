@@ -367,7 +367,6 @@ class NotesTreeModel(QAbstractItemModel):
                     # Store expanded states BEFORE anything else
                     expanded_states = {}
                     self._store_expanded_state(source_node, expanded_states)
-                    was_expanded = self.is_expanded(source_node)
                     
                     # Now perform the API call
                     self.tag_api.attach_tag_to_parent(child_id, parent_id)
@@ -392,8 +391,6 @@ class NotesTreeModel(QAbstractItemModel):
                     new_index = self.createIndex(insert_pos, 0, node_to_move)
                 
                     # Restore expanded states after the move
-                    if was_expanded:
-                        self._view.setExpanded(new_index, True)
                     self._restore_expanded_state(node_to_move, expanded_states)
                     
                     self.tagMoved.emit(new_index)
