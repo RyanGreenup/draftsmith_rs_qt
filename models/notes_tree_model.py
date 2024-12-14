@@ -52,13 +52,13 @@ class NotesTreeModel(QAbstractItemModel):
                 self._process_tag(tag, self.root_node)
 
             # Add "All Notes" section
-            all_notes_node = TreeNode({"name": "All Notes"}, self.root_node, 'special')
+            all_notes_node = TreeNode({"name": "All Notes"}, self.root_node, 'page')
             self.root_node.append_child(all_notes_node)
             for note in self.complete_notes_tree:
                 self._process_note(note, all_notes_node)
 
             # Add "Untagged Notes" section
-            untagged_notes_node = TreeNode({"name": "Untagged Notes"}, self.root_node, 'special')
+            untagged_notes_node = TreeNode({"name": "Untagged Notes"}, self.root_node, 'page')
             self.root_node.append_child(untagged_notes_node)
 
             # Find and process untagged root notes
@@ -154,7 +154,7 @@ class NotesTreeModel(QAbstractItemModel):
         if role in (Qt.DisplayRole, Qt.EditRole):
             if node.node_type == 'tag':
                 return f"{node.data.name}"
-            elif node.node_type == 'special':
+            elif node.node_type == 'page':
                 return node.data["name"]  # Access dict with key
             else:  # note
                 return node.data.title
@@ -163,7 +163,7 @@ class NotesTreeModel(QAbstractItemModel):
             style = QApplication.style()
             if node.node_type == 'tag':
                 return style.standardIcon(QStyle.StandardPixmap.SP_DirIcon)
-            elif node.node_type == 'special':
+            elif node.node_type == 'page':
                 return style.standardIcon(QStyle.StandardPixmap.SP_DirLinkIcon)
             else:  # note
                 return style.standardIcon(QStyle.StandardPixmap.SP_FileIcon)
@@ -178,14 +178,14 @@ class NotesTreeModel(QAbstractItemModel):
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         if not index.isValid():
             return Qt.NoItemFlags
-            
+
         flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
-        
-        # Don't allow editing of special nodes (All Notes, Untagged Notes)
+
+        # Don't allow editing of page nodes (All Notes, Untagged Notes)
         node = index.internalPointer()
-        if node.node_type != 'special':
+        if node.node_type != 'page':
             flags |= Qt.ItemIsEditable
-            
+
         return flags
 
     def setData(self, index: QModelIndex, value: Any, role: int = Qt.EditRole) -> bool:
@@ -194,10 +194,10 @@ class NotesTreeModel(QAbstractItemModel):
 
         node = index.internalPointer()
         new_name = str(value).strip()
-        
+
         if not new_name:  # Don't allow empty names
             return False
-            
+
         try:
             if node.node_type == 'tag':
                 # Update tag name
@@ -210,11 +210,11 @@ class NotesTreeModel(QAbstractItemModel):
                 node.data.title = updated_note.title
             else:
                 return False
-                
+
             # Notify views that data has changed
             self.dataChanged.emit(index, index, [Qt.DisplayRole, Qt.EditRole])
             return True
-            
+
         except Exception as e:
             print(f"Error updating item: {e}")
             return False
