@@ -69,6 +69,13 @@ class LeftSidebar(QWidget):
         if index.isValid():
             # Existing item selected - show full menu
             node = index.internalPointer()
+            
+            # Add Note ID label if this is a note
+            if node.node_type == 'note':
+                note_id_action = menu.addAction(f"Note ID: {node.data.id}")
+                note_id_action.setEnabled(False)  # Make it non-clickable
+                menu.addSeparator()
+                
             if node.node_type != 'page':  # Don't show edit options for special items
                 rename_action = menu.addAction("Rename")
                 delete_action = menu.addAction("Delete")
