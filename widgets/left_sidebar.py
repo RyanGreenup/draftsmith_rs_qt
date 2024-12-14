@@ -60,40 +60,119 @@ class LeftSidebar(QWidget):
 
     def _show_tags_context_menu(self, position):
         index = self.tags_tree.indexAt(position)
-        if not index.isValid():
-            return
-            
-        # Get the node to check its type
-        node = index.internalPointer()
-        if node.node_type == 'page':
-            return  # Don't show menu for special items
-            
+        model = self.tags_tree.model()
+        
         menu = QMenu(self)
-        rename_action = menu.addAction("Rename")
-        delete_action = menu.addAction("Delete")
+        node = None
+        
+        if index.isValid():
+            node = index.internalPointer()
+            if node.node_type != 'page':  # Don't show edit options for special items
+                rename_action = menu.addAction("Rename")
+                delete_action = menu.addAction("Delete")
+                menu.addSeparator()
+        
+        # Determine labels based on context
+        if node and node.node_type == 'note':
+            new_label = "New Note"
+            child_label = "New Subpage"
+            sibling_label = "New Sibling Page"
+        else:
+            new_label = "New Tag"
+            child_label = "New Child Tag"
+            sibling_label = "New Sibling Tag"
+        
+        new_action = menu.addAction(new_label)
+        new_child_action = menu.addAction(child_label)
+        new_sibling_action = menu.addAction(sibling_label)
         
         # Show context menu at cursor position
         action = menu.exec_(self.tags_tree.viewport().mapToGlobal(position))
         
-        if action == rename_action:
-            self.tags_tree.edit(index)
-        elif action == delete_action:
-            model = self.tags_tree.model()
-            try:
-                if node.node_type == 'tag':
-                    model.tag_api.delete_tag(node.data.id)
-                else:  # note
-                    model.note_api.delete_note(node.data.id)
+        try:
+            if not index.isValid():
+                # Handle root level actions
+                if action == new_action:
+                    self._create_new_item(model, None, is_child=False)
+                return
                 
-                # Remove the item from the model
-                parent_index = model.parent(index)
-                model.beginRemoveRows(parent_index, index.row(), index.row())
-                node.parent.children.remove(node)
-                model.endRemoveRows()
+            if action == rename_action:
+                self.tags_tree.edit(index)
+            elif action == delete_action:
+                self._delete_item(model, node, index)
+            elif action == new_action:
+                self._create_new_item(model, None, is_child=False)
+            elif action == new_child_action:
+                self._create_new_item(model, node, is_child=True)
+            elif action == new_sibling_action:
+                parent_node = node.parent
+                self._create_new_item(model, parent_node, is_child=True)
                 
-            except Exception as e:
-                from PySide6.QtWidgets import QMessageBox
-                QMessageBox.critical(self, "Error", f"Failed to delete item: {str(e)}")
+        except Exception as e:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.critical(self, "Error", f"Operation failed: {str(e)}")
+
+    def _create_new_item(self, model, parent_node, is_child):
+        """Handle creation of new items"""
+        from PySide6.QtWidgets import QInputDialog
+        
+        # Determine if we're creating a note or tag based on parent context
+        creating_note = parent_node and parent_node.node_type == 'note'
+        
+        title, ok = QInputDialog.getText(
+            self,
+            f"New {'Note' if creating_note else 'Tag'}", 
+            f"Enter {'note' if creating_note else 'tag'} name:"
+        )
+        
+        if not ok or not title.strip():
+            return
+            
+        try:
+            if creating_note:
+                # Create new note
+                response = model.note_api.note_create(title, "")
+                new_id = response['id']
+                
+                if parent_node:
+                    model.note_api.attach_note_to_parent(
+                        new_id,
+                        parent_node.data.id,
+                        hierarchy_type="block"
+                    )
+            else:
+                # Create new tag
+                new_tag = model.tag_api.create_tag(title)
+                new_id = new_tag.id
+                
+                if parent_node and parent_node.node_type == 'tag':
+                    model.tag_api.attach_tag_to_parent(
+                        new_id,
+                        parent_node.data.id
+                    )
+            
+            # Refresh the model to show new items
+            model.setup_data()
+            
+        except Exception as e:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.critical(self, "Error", f"Failed to create item: {str(e)}")
+
+    def _delete_item(self, model, node, index):
+        """Handle deletion of items"""
+        try:
+            if node.node_type == 'tag':
+                model.tag_api.delete_tag(node.data.id)
+            else:  # note
+                model.note_api.delete_note(node.data.id)
+            
+            parent_index = model.parent(index)
+            model.beginRemoveRows(parent_index, index.row(), index.row())
+            node.parent.children.remove(node)
+            model.endRemoveRows()
+            
+        except Exception as e:
+            raise Exception(f"Failed to delete item: {str(e)}")
 
     def focus_search(self):
         """Focus the search input and switch to search view"""
