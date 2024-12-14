@@ -393,6 +393,10 @@ class NotesTreeModel(QAbstractItemModel):
                     # Restore expanded states after the move
                     self._restore_expanded_state(node_to_move, expanded_states)
                     
+                    # Ensure the new node is expanded if it was previously
+                    if expanded_states.get(f"tag_{child_id}", False):
+                        self.set_expanded(node_to_move, True)
+                    
                     self.tagMoved.emit(new_index)
                     
                     return True
