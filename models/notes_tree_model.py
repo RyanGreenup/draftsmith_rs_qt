@@ -197,14 +197,12 @@ class NotesTreeModel(QAbstractItemModel):
         flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
         
         node = index.internalPointer()
-        if node.node_type != 'page':  # Don't allow editing of page nodes
-            flags |= Qt.ItemIsEditable
+        if node.node_type == 'page':  # Special nodes like "All Notes"
+            return flags
             
-        # Add drag & drop flags
-        if node.node_type in ['note', 'tag']:  # Allow dragging notes and tags
-            flags |= Qt.ItemIsDragEnabled
-        if node.node_type in ['note', 'tag']:  # Allow dropping on notes and tags
-            flags |= Qt.ItemIsDropEnabled
+        # Add drag & drop flags for notes and tags
+        if node.node_type in ['note', 'tag']:
+            flags |= Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsEditable
             
         return flags
 
