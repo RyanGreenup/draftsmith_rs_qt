@@ -112,7 +112,7 @@ class NotesTreeModel(QAbstractItemModel):
                 return node.data.title
 
         elif role == Qt.DecorationRole:
-            style = self.parent().style() if self.parent() else QApplication.style()
+            style = QApplication.style()
             if node.node_type == 'tag':
                 return style.standardIcon(QStyle.StandardPixmap.SP_DirIcon)
             else:  # note
