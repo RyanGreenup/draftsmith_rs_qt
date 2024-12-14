@@ -86,6 +86,12 @@ class LeftSidebar(QWidget):
         new_child_action = menu.addAction(child_label)
         new_sibling_action = menu.addAction(sibling_label)
         
+        # Add "New Note Under Tag" option when right-clicking a tag
+        new_note_under_tag_action = None
+        if node and node.node_type == 'tag':
+            menu.addSeparator()
+            new_note_under_tag_action = menu.addAction("New Note Under Tag")
+        
         # Show context menu at cursor position
         action = menu.exec_(self.tags_tree.viewport().mapToGlobal(position))
         
@@ -107,18 +113,21 @@ class LeftSidebar(QWidget):
             elif action == new_sibling_action:
                 parent_node = node.parent
                 self._create_new_item(model, parent_node, is_child=True)
+            elif action == new_note_under_tag_action:
+                # Create a new note and attach it to the selected tag
+                self._create_new_item(model, node, is_child=True, force_note=True)
                 
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Operation failed: {str(e)}")
 
-    def _create_new_item(self, model, parent_node, is_child):
+    def _create_new_item(self, model, parent_node, is_child, force_note=False):
         """Handle creation of new items"""
         from PySide6.QtWidgets import QInputDialog
         from PySide6.QtCore import QModelIndex
         
-        # Determine if we're creating a note or tag based on parent context
-        creating_note = parent_node and parent_node.node_type == 'note'
+        # Determine if we're creating a note or tag based on context and force_note parameter
+        creating_note = force_note or (parent_node and parent_node.node_type == 'note')
         
         title, ok = QInputDialog.getText(
             self,
