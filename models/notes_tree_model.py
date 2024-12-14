@@ -47,6 +47,9 @@ class NotesTreeModel(QAbstractItemModel):
         self.complete_notes_tree = []  # Store complete notes hierarchy
         self._view = None  # Initialize view reference
         self.setup_data()
+        # Ensure the view is set during initialization
+        if self._view is None:
+            print("Warning: View is not set. Please call set_view with a valid view object.")
 
     def setup_data(self):
         try:
