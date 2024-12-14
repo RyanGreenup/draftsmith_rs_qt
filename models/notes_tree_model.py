@@ -87,7 +87,7 @@ class NotesTreeModel(QAbstractItemModel):
         node = index.internalPointer()
 
         if role == Qt.DisplayRole:
-            return f"{node.data.name} ({len(node.data.note_ids)})"
+            return f"{node.data.name} ({len(node.data.notes)})"
 
         return None
 
