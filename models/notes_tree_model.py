@@ -56,7 +56,7 @@ class NotesTreeModel(QAbstractItemModel):
             # Create a special "All Notes" node
             all_notes_node = TreeNode({"name": "All Notes"}, self.root_node, 'special')
             self.root_node.append_child(all_notes_node)
-            for note in notes_tree:
+            for note in self.complete_notes_tree:
                 self._process_note(note, all_notes_node)
 
         except Exception as e:
