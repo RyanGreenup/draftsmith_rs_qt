@@ -296,6 +296,16 @@ class NotesTreeModel(QAbstractItemModel):
                     self.beginInsertRows(parent, insert_pos, insert_pos)
                     new_note_node = TreeNode(note_node.data, target_node, 'note')
                     target_node.children.insert(insert_pos, new_note_node)
+                    
+                    # Process child notes recursively
+                    def process_children(parent_note_node, source_note_node):
+                        for child in source_note_node.children:
+                            child_node = TreeNode(child.data, parent_note_node, 'note')
+                            parent_note_node.append_child(child_node)
+                            process_children(child_node, child)
+                    
+                    # Process all children of the original note
+                    process_children(new_note_node, note_node)
                     self.endInsertRows()
 
                     # Find and remove from "Untagged Notes" if present
