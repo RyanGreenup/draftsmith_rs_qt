@@ -127,23 +127,18 @@ class TabContent(QWidget):
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
         self.notes_model = notes_model
-        
+
         # Create the tree model and set it on the view
         tree_model = NotesTreeModel()  # Create new tree model instance
         self.left_sidebar.tree.model = tree_model  # Use model property instead of setModel
-        
+
         # Connect note selection to view updates, but only when this tab is active
         self.notes_model.note_selected.connect(self._filtered_update_view)
-        
-        # Connect tree model's note_updated signal to notes_model's note_updated signal  
-        self.left_sidebar.tags_tree.model.note_updated.connect(self.notes_model.note_updated.emit)
-        
-        # Connect tree model's note_deleted signal to notes_model's note_deleted signal
-        self.left_sidebar.tags_tree.model.note_deleted.connect(self.notes_model.note_deleted.emit)
-        
+
+
         # Initialize palettes with view actions
         self.note_select_palette = NoteSelectPalette(notes_model, self)
-        
+
         # Initialize note link palette
         from widgets.note_id_link_insert import NoteLinkInsertPalette
         self.note_link_palette = NoteLinkInsertPalette(notes_model, self)
