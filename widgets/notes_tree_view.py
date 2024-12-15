@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox
+from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox 
+from PySide6.QtGui import QKeyEvent
 from widgets.notes_tree_delegate import NotesTreeDelegate
 from PySide6.QtCore import Qt, QModelIndex
 from models.notes_tree_model import NotesTreeModel, TreeNode
@@ -23,6 +24,17 @@ class NotesTreeView(QTreeView):
         # Add context menu support
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_tags_context_menu)
+
+    def keyPressEvent(self, event):
+        # Map J key to Down arrow behavior
+        if event.key() == Qt.Key_J:
+            # Create a new QKeyEvent simulating a Down arrow press
+            new_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Down, event.modifiers())
+            # Process the simulated Down arrow event
+            super().keyPressEvent(new_event)
+        else:
+            # Handle all other keys normally
+            super().keyPressEvent(event)
 
     def _show_tags_context_menu(self, position):
         index = self.indexAt(position)
