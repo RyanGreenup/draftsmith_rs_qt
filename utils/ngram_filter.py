@@ -19,13 +19,14 @@ def generate_ngrams(text: str, n: int = 2) -> Set[str]:
         ngrams.add(text[i:i + n])
     return ngrams
 
-def text_matches_filter(filter_text: str, target_text: str, n: int = 2) -> bool:
+def text_matches_filter(filter_text: str, target_text: str, n: int = 2, match_all: bool = False) -> bool:
     """Check if target text matches filter text using n-gram comparison.
 
     Args:
         filter_text: Text to filter by
         target_text: Text to check against filter
         n: Length of n-grams to use (default=2)
+        match_all: If True, all filter n-grams must be present in target; if False, any filter n-gram can be present (default=False)
 
     Returns:
         True if target text matches filter criteria
@@ -36,10 +37,9 @@ def text_matches_filter(filter_text: str, target_text: str, n: int = 2) -> bool:
     if len(filter_text) < n or len(target_text) < n:
         n = min(len(filter_text), len(target_text))
 
-
     # Generate n-grams for both texts
     filter_ngrams = generate_ngrams(filter_text, n)
     target_ngrams = generate_ngrams(target_text, n)
 
-    # Check if any filter n-grams are present in target
-    return any(ng in target_ngrams for ng in filter_ngrams)
+    # Check if all or any filter n-grams are present in target
+    return all(ng in target_ngrams for ng in filter_ngrams) if match_all else any(ng in target_ngrams for ng in filter_ngrams)
