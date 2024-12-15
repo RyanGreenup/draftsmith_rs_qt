@@ -878,15 +878,16 @@ class NotesTreeModel(QAbstractItemModel):
     def _filter_node(self, node: TreeNode, filter_text: str) -> bool:
         """
         Recursively filter nodes. Returns True if node or any children match filter.
+        Uses trigram matching for fuzzy text comparison.
         """
         if not node:
             return False
 
         # Get node text based on type
-        node_text = self._get_node_text(node).lower()
+        node_text = self._get_node_text(node)
         
-        # Check if current node matches
-        matches = filter_text in node_text
+        # Check if current node matches using trigram matching
+        matches = text_matches_filter(filter_text, node_text, n=3, match_all=True)
 
         # Special handling for "All Notes" and "Untagged Notes" sections
         if node.node_type == 'page':
