@@ -393,11 +393,11 @@ class TabContent(QWidget):
 
     def filter_sidebar(self, text: str) -> None:
         """Filter the sidebar tree based on entered text"""
-        # Get the tree model using Qt's model() method
+        # Get the tree model directly
         tree_model = self.left_sidebar.tree.model()
 
         # If using a proxy model, get the source model
-        if hasattr(tree_model, 'sourceModel') and callable(tree_model.sourceModel):
+        if hasattr(tree_model, 'sourceModel') and callable(getattr(tree_model, 'sourceModel', None)):
             tree_model = tree_model.sourceModel()
 
         if hasattr(tree_model, 'filter_tree'):
