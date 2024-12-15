@@ -837,7 +837,28 @@ class NotesTreeModel(QAbstractItemModel):
         target_type = target_node.node_type
         
         try:
-            if operation == "move" and source_type == "note" and target_type == "note":
+            if operation == "attach" and source_type == "note" and target_type == "tag":
+                # Get source and target IDs
+                note_id = int(source_node.data.id)
+                tag_id = int(target_node.data.id)
+                
+                # Call API to attach note to tag
+                self.tag_api.attach_tag_to_note(note_id, tag_id)
+                
+                # Create new node under the tag
+                insert_pos = self._find_insert_position(target_node, source_node)
+                target_index = self.createIndex(target_node.row(), 0, target_node)
+                
+                self.beginInsertRows(target_index, insert_pos, insert_pos)
+                new_note_node = TreeNode(source_node.data, target_node, 'note')
+                target_node.children.insert(insert_pos, new_note_node)
+                self.endInsertRows()
+                
+                # Create new index for the attached node
+                new_index = self.createIndex(insert_pos, 0, new_note_node)
+                self.tagMoved.emit(new_index)
+
+            elif operation == "move" and source_type == "note" and target_type == "note":
                 # Store expanded states before moving
                 expanded_states = {}
                 self._store_expanded_state(source_node, expanded_states)
