@@ -47,7 +47,12 @@ class NotesTreeView(QTreeView):
             current_index = self.currentIndex()
             if current_index.isValid():
                 current_node = current_index.internalPointer()
-                self.model._mark_node(current_node)
+                # Only mark if it's a note or tag
+                if current_node.node_type in ['note', 'tag']:
+                    # Clear any existing mark first to stay in sync with model
+                    self.model.marked_node = None
+                    # Then set the new mark
+                    self.model._mark_node(current_node)
         elif event.key() == Qt.Key_P:
             # Handle Put (lowercase p) and Move (uppercase P) operations
             current_index = self.currentIndex()
