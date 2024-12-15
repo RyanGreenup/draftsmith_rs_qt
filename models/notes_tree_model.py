@@ -801,6 +801,15 @@ class NotesTreeModel(QAbstractItemModel):
             expanded_states = {}
             self._store_expanded_state(self.root_node, expanded_states)
 
+            # Store currently selected item's ID if any
+            selected_id = None
+            selected_type = None
+            if self._view and self._view.currentIndex().isValid():
+                current_node = self._view.currentIndex().internalPointer()
+                if hasattr(current_node.data, 'id'):
+                    selected_id = current_node.data.id
+                    selected_type = current_node.node_type
+
             # Reset and reload the entire tree
             self.beginResetModel()
             # Create new root node but keep reference to old one
@@ -821,6 +830,13 @@ class NotesTreeModel(QAbstractItemModel):
 
             # Restore expanded states after refresh
             self._restore_expanded_state(self.root_node, expanded_states)
+
+            # Restore selection if item still exists
+            if selected_id is not None and self._view:
+                new_index = self._find_index_by_id(selected_id, selected_type)
+                if new_index.isValid():
+                    self._view.setCurrentIndex(new_index)
+                    self._view.scrollTo(new_index)
 
             self.notes_updated.emit()
 
