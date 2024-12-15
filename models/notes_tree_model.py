@@ -644,6 +644,7 @@ class NotesTreeModel(QAbstractItemModel):
             # Add Mark option for notes and tags
             if node.node_type in ['note', 'tag']:
                 mark_action = menu.addAction("Mark")
+                mark_action.setShortcut("Ctrl+M")  # Add keyboard shortcut
                 mark_action.triggered.connect(lambda: self._mark_node(node))
 
             # Add Paste options if there's a marked node
