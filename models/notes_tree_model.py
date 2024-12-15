@@ -599,27 +599,42 @@ class NotesTreeModel(QAbstractItemModel):
             print(f"Error updating item: {e}")
             return False
 
-    def _find_index_by_id(self, id_to_find: int, node_type: str) -> QModelIndex:
-        """Helper method to find a node's index by its ID"""
-        def search(parent_index: QModelIndex) -> QModelIndex:
-            rows = self.rowCount(parent_index)
-            for row in range(rows):
-                index = self.index(row, 0, parent_index)
-                node = index.internalPointer()
+    def _find_node_by_id(self, node_id: int, node_type: str, start_node=None) -> Optional[TreeNode]:
+        """Find a node by its ID and type"""
+        if start_node is None:
+            start_node = self.root_node
+            
+        # Check current node
+        if (start_node.node_type == node_type and 
+            hasattr(start_node.data, 'id') and 
+            start_node.data.id == node_id):
+            return start_node
+            
+        # Search children
+        for child in start_node.children:
+            result = self._find_node_by_id(node_id, node_type, child)
+            if result:
+                return result
+                
+        return None
 
-                if (node.node_type == node_type and
-                    hasattr(node.data, 'id') and
-                    node.data.id == id_to_find):
-                    return index
-
-                # Recursively search children
-                result = search(index)
-                if result.isValid():
-                    return result
-
-            return QModelIndex()
-
-        return search(QModelIndex())
+    def _find_index_by_id(self, node_id: int, node_type: str) -> QModelIndex:
+        """Find the model index for a node with the given ID and type"""
+        node = self._find_node_by_id(node_id, node_type)
+        if node:
+            # Create index path to node
+            index_path = []
+            current = node
+            while current and current != self.root_node:
+                index_path.insert(0, current.row())
+                current = current.parent
+                
+            # Build the model index
+            result = QModelIndex()
+            for row in index_path:
+                result = self.index(row, 0, result)
+            return result
+        return QModelIndex()
 
     def _is_subpage(self, note: TreeNote) -> bool:
         """Check if this note is referenced as a child in the complete notes tree"""
