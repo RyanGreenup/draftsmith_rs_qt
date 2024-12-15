@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QSplitter
+from PySide6.QtWidgets import QApplication, QWidget, QSplitter, QLineEdit
 from pydantic import BaseModel, Field
 from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
 from PySide6.QtNetwork import QNetworkRequest
@@ -23,6 +23,7 @@ class TabContent(QWidget):
     """A complete view implementation for a note"""
 
     note_saved = Signal(int)  # Emits note_id when saved
+    text_entered = Signal(str)  # Add this new signal
 
     def __init__(self, base_url: str, parent=None):
         super().__init__(parent)
@@ -43,13 +44,26 @@ class TabContent(QWidget):
         # .editor: QTextEdit
         # .preview: QWebEngineView
 
+        # Add the new QLineEdit
+        self.text_input = QLineEdit()
+        self.text_input.setPlaceholderText("Enter text...")
+
         self._setup_ui()
         self._connect_signals()
 
     def _setup_ui(self):
         """Setup the UI layout"""
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
-        main_splitter.addWidget(self.left_sidebar)
+        
+        # Create a container for left sidebar and text input
+        left_container = QWidget()
+        left_layout = QVBoxLayout()
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.addWidget(self.text_input)
+        left_layout.addWidget(self.left_sidebar)
+        left_container.setLayout(left_layout)
+        
+        main_splitter.addWidget(left_container)
         main_splitter.addWidget(self.editor)
         main_splitter.addWidget(self.right_sidebar)
 
@@ -66,6 +80,9 @@ class TabContent(QWidget):
 
     def _connect_signals(self):
         """Connect internal signals"""
+        # Add this new connection
+        self.text_input.textChanged.connect(self.text_entered.emit)
+
         # Add connection for note deletion
         # What to do when the user has asked to delete a note
         self.left_sidebar.tree.note_deleted.connect(self._handle_note_deletion)
