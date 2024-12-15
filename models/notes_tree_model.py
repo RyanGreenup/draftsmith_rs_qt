@@ -172,11 +172,11 @@ class NotesTreeModel(QAbstractItemModel):
         if role == Qt.DecorationRole:
             style = QApplication.style()
             icons = []
-            
+
             # Add marked indicator if this is the marked node
             if node == self.marked_node:
                 icons.append(style.standardIcon(QStyle.StandardPixmap.SP_DialogYesButton))
-            
+
             # Add regular icon based on node type
             if node.node_type == 'tag':
                 icons.append(style.standardIcon(QStyle.StandardPixmap.SP_DirIcon))
@@ -184,19 +184,19 @@ class NotesTreeModel(QAbstractItemModel):
                 icons.append(style.standardIcon(QStyle.StandardPixmap.SP_DirLinkIcon))
             else:  # note
                 icons.append(style.standardIcon(QStyle.StandardPixmap.SP_FileIcon))
-            
+
             # If we have multiple icons, combine them
             if len(icons) > 1:
                 # Create a pixmap to hold both icons
                 combined = QPixmap(32, 16)  # Width enough for both icons
                 combined.fill(Qt.transparent)
                 painter = QPainter(combined)
-                
+
                 # Draw marked indicator
                 icons[0].paint(painter, 0, 0, 16, 16)
                 # Draw type icon
                 icons[1].paint(painter, 16, 0, 16, 16)
-                
+
                 painter.end()
                 return QIcon(combined)
             else:
@@ -657,7 +657,7 @@ class NotesTreeModel(QAbstractItemModel):
                     attach_action = menu.addAction("Attach Marked Note Here")
                     attach_action.triggered.connect(
                         lambda: self._handle_paste(self.marked_node, node, "attach"))
-                    
+
                     move_action = menu.addAction("Move Marked Note Here")
                     move_action.triggered.connect(
                         lambda: self._handle_paste(self.marked_node, node, "move"))
@@ -829,31 +829,30 @@ class NotesTreeModel(QAbstractItemModel):
     def _mark_node(self, node):
         """Mark a node for later operations"""
         self.marked_node = node
-        print(f"Marked {node.node_type}: {self.data(self.createIndex(node.row(), 0, node))}")
 
     def _handle_paste(self, source_node, target_node, operation):
         """Handle paste operations between nodes"""
         source_type = source_node.node_type
         target_type = target_node.node_type
-        
+
         try:
             if operation == "attach" and source_type == "note" and target_type == "tag":
                 # Get source and target IDs
                 note_id = int(source_node.data.id)
                 tag_id = int(target_node.data.id)
-                
+
                 # Call API to attach note to tag
                 self.tag_api.attach_tag_to_note(note_id, tag_id)
-                
+
                 # Create new node under the tag
                 insert_pos = self._find_insert_position(target_node, source_node)
                 target_index = self.createIndex(target_node.row(), 0, target_node)
-                
+
                 self.beginInsertRows(target_index, insert_pos, insert_pos)
                 new_note_node = TreeNode(source_node.data, target_node, 'note')
                 target_node.children.insert(insert_pos, new_note_node)
                 self.endInsertRows()
-                
+
                 # Create new index for the attached node
                 new_index = self.createIndex(insert_pos, 0, new_note_node)
                 self.tagMoved.emit(new_index)
@@ -862,70 +861,70 @@ class NotesTreeModel(QAbstractItemModel):
                 # Store expanded states before moving
                 expanded_states = {}
                 self._store_expanded_state(source_node, expanded_states)
-                
+
                 # Get source and target IDs
                 source_id = int(source_node.data.id)
                 target_id = int(target_node.data.id)
-                
+
                 # Call API to attach note as subpage
                 self.note_api.attach_note_to_parent(source_id, target_id, hierarchy_type="block")
-                
+
                 # Remove note from current position
                 source_parent = source_node.parent
                 source_index = self.createIndex(source_node.row(), 0, source_node)
                 source_parent_index = self.createIndex(source_parent.row(), 0, source_parent) if source_parent != self.root_node else QModelIndex()
-                
+
                 self.beginRemoveRows(source_parent_index, source_node.row(), source_node.row())
                 source_parent.children.remove(source_node)
                 self.endRemoveRows()
-                
+
                 # Add to new parent
                 insert_pos = self._find_insert_position(target_node, source_node)
                 target_index = self.createIndex(target_node.row(), 0, target_node)
-                
+
                 self.beginInsertRows(target_index, insert_pos, insert_pos)
                 source_node.parent = target_node
                 target_node.children.insert(insert_pos, source_node)
                 self.endInsertRows()
-                
+
                 # Restore expanded states
                 self._restore_expanded_state(source_node, expanded_states)
-                
+
                 # Create new index for the moved node
                 new_index = self.createIndex(insert_pos, 0, source_node)
                 self.tagMoved.emit(new_index)
-                
+
             elif operation == "move" and source_type == "note" and target_type == "tag":
                 # Get source and target IDs
                 note_id = int(source_node.data.id)
                 new_tag_id = int(target_node.data.id)
-                
+
                 # Find original parent tag if it exists
                 source_parent = source_node.parent
                 if source_parent and source_parent.node_type == 'tag':
                     old_tag_id = int(source_parent.data.id)
                     # Detach from original tag
                     self.tag_api.detach_tag_from_note(note_id, old_tag_id)
-                    
+
                     # Remove from original tag's view
                     source_index = self.createIndex(source_node.row(), 0, source_node)
                     source_parent_index = self.createIndex(source_parent.row(), 0, source_parent)
                     self.beginRemoveRows(source_parent_index, source_node.row(), source_node.row())
                     source_parent.children.remove(source_node)
                     self.endRemoveRows()
-                
+
                 # Attach to new tag
                 self.tag_api.attach_tag_to_note(note_id, new_tag_id)
-                
+
                 # Add to new tag's view
                 insert_pos = self._find_insert_position(target_node, source_node)
                 target_index = self.createIndex(target_node.row(), 0, target_node)
-                
+
                 self.beginInsertRows(target_index, insert_pos, insert_pos)
                 source_node.parent = target_node
                 target_node.children.insert(insert_pos, source_node)
                 self.endInsertRows()
-                
+
                 # Create new index for the moved node
                 new_index = self.createIndex(insert_pos, 0, source_node)
                 self.tagMoved.emit(new_index)
@@ -934,39 +933,39 @@ class NotesTreeModel(QAbstractItemModel):
                 # Store expanded states before moving
                 expanded_states = {}
                 self._store_expanded_state(source_node, expanded_states)
-                
+
                 # Get source and target IDs
                 source_id = int(source_node.data.id)
                 target_id = int(target_node.data.id)
-                
+
                 # Call API to attach tag to new parent
                 self.tag_api.attach_tag_to_parent(source_id, target_id)
-                
+
                 # Remove tag from current position
                 source_parent = source_node.parent
                 source_index = self.createIndex(source_node.row(), 0, source_node)
                 source_parent_index = self.createIndex(source_parent.row(), 0, source_parent) if source_parent != self.root_node else QModelIndex()
-                
+
                 self.beginRemoveRows(source_parent_index, source_node.row(), source_node.row())
                 source_parent.children.remove(source_node)
                 self.endRemoveRows()
-                
+
                 # Add to new parent
                 insert_pos = self._find_insert_position(target_node, source_node)
                 target_index = self.createIndex(target_node.row(), 0, target_node)
-                
+
                 self.beginInsertRows(target_index, insert_pos, insert_pos)
                 source_node.parent = target_node
                 target_node.children.insert(insert_pos, source_node)
                 self.endInsertRows()
-                
+
                 # Restore expanded states
                 self._restore_expanded_state(source_node, expanded_states)
-                
+
                 # Create new index for the moved node
                 new_index = self.createIndex(insert_pos, 0, source_node)
                 self.tagMoved.emit(new_index)
-            
+
             else:
                 source_name = self.data(self.createIndex(source_node.row(), 0, source_node))
                 target_name = self.data(self.createIndex(target_node.row(), 0, target_node))
@@ -974,10 +973,10 @@ class NotesTreeModel(QAbstractItemModel):
                 print(f"Source: {source_type} '{source_name}'")
                 print(f"Target: {target_type} '{target_name}'")
                 print(f"Operation: {operation}")
-            
+
         except Exception as e:
             print(f"Error during paste operation: {e}")
-        
+
         finally:
             # Clear the marked node after operation
             self.marked_node = None
