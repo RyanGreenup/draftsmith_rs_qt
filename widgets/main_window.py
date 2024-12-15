@@ -188,30 +188,7 @@ class NoteApp(QMainWindow):
 
     def _reload_with_preserved_state(self) -> None:
         """Helper method to reload notes while preserving UI state"""
-        # Store cursor position before refresh
-        cursor_pos = self.main_content.editor.get_cursor_position()
-
-        # Store current note ID and tree state
-        current_item = self.main_content.left_sidebar.tree.currentItem()
-        current_note_id = None
-        if current_item:
-            note_data = current_item.data(0, Qt.ItemDataRole.UserRole)
-            if note_data:
-                current_note_id = note_data.id
-
-        # Save the tree state
-        tree_state = self.main_content.left_sidebar.tree.save_state()
-
-        # Reload notes
-        self.notes_model.load_notes()
-
-        # Restore tree state
-        self.main_content.left_sidebar.tree.restore_state(tree_state)
-
-        # If there was a selected note, reselect it and restore cursor
-        if current_note_id:
-            self.main_content.left_sidebar.tree.select_note_by_id(current_note_id)
-            self.main_content.editor.set_cursor_position(cursor_pos)
+        self.notes_model.refresh_notes()
 
     def refresh_model(self) -> None:
         """Refresh the notes model from the server"""
