@@ -1,5 +1,5 @@
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, QMimeData, QByteArray, Signal
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QPixmap, QPainter
 from PySide6.QtWidgets import QMenu
 from typing import List
 from PySide6.QtWidgets import QStyle, QApplication
@@ -169,7 +169,40 @@ class NotesTreeModel(QAbstractItemModel):
 
         node = index.internalPointer()
 
-        if role in (Qt.DisplayRole, Qt.EditRole):
+        if role == Qt.DecorationRole:
+            style = QApplication.style()
+            icons = []
+            
+            # Add marked indicator if this is the marked node
+            if node == self.marked_node:
+                icons.append(style.standardIcon(QStyle.StandardPixmap.SP_DialogYesButton))
+            
+            # Add regular icon based on node type
+            if node.node_type == 'tag':
+                icons.append(style.standardIcon(QStyle.StandardPixmap.SP_DirIcon))
+            elif node.node_type == 'page':
+                icons.append(style.standardIcon(QStyle.StandardPixmap.SP_DirLinkIcon))
+            else:  # note
+                icons.append(style.standardIcon(QStyle.StandardPixmap.SP_FileIcon))
+            
+            # If we have multiple icons, combine them
+            if len(icons) > 1:
+                # Create a pixmap to hold both icons
+                combined = QPixmap(32, 16)  # Width enough for both icons
+                combined.fill(Qt.transparent)
+                painter = QPainter(combined)
+                
+                # Draw marked indicator
+                icons[0].paint(painter, 0, 0, 16, 16)
+                # Draw type icon
+                icons[1].paint(painter, 16, 0, 16, 16)
+                
+                painter.end()
+                return QIcon(combined)
+            else:
+                return icons[0]
+
+        elif role in (Qt.DisplayRole, Qt.EditRole):
             if node.node_type == 'tag':
                 return f"{node.data.name}"
             elif node.node_type == 'page':
@@ -179,15 +212,6 @@ class NotesTreeModel(QAbstractItemModel):
                 if isinstance(node.data, dict):
                     return node.data.get('title', 'Untitled')
                 return getattr(node.data, 'title', 'Untitled')
-
-        elif role == Qt.DecorationRole:
-            style = QApplication.style()
-            if node.node_type == 'tag':
-                return style.standardIcon(QStyle.StandardPixmap.SP_DirIcon)
-            elif node.node_type == 'page':
-                return style.standardIcon(QStyle.StandardPixmap.SP_DirLinkIcon)
-            else:  # note
-                return style.standardIcon(QStyle.StandardPixmap.SP_FileIcon)
 
         return None
 
