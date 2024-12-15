@@ -38,6 +38,7 @@ class NotesTreeModel(QAbstractItemModel):
     contextMenuRequested = Signal(QModelIndex, 'QMenu')
     tagMoved = Signal(QModelIndex)
     note_created = Signal(int)  # Signal emitted when a new note is created
+    note_updated = Signal(int)  # Signal emitted when a note is updated
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -586,6 +587,7 @@ class NotesTreeModel(QAbstractItemModel):
                 request = UpdateNoteRequest(title=new_name)
                 updated_note = self.note_api.update_note(node.data.id, request)
                 node.data.title = updated_note.title
+                self.note_updated.emit(node.data.id)
             else:
                 return False
 
