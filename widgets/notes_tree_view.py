@@ -66,6 +66,11 @@ class NotesTreeView(QTreeView):
         self.action_demote.setShortcut("Shift+Right")
         self.action_demote.triggered.connect(self._handle_demote)
 
+        # Add refresh action
+        self.action_refresh = QAction("Refresh Tree", self)
+        self.action_refresh.setShortcut("F5")
+        self.action_refresh.triggered.connect(self._handle_refresh)
+
         # Add actions to widget
         self.addAction(self.action_move_down)
         self.addAction(self.action_move_up)
@@ -75,6 +80,7 @@ class NotesTreeView(QTreeView):
         self.addAction(self.action_move)
         self.addAction(self.action_promote)
         self.addAction(self.action_demote)
+        self.addAction(self.action_refresh)
 
     def keyPressEvent(self, event):
         # Let the actions handle the key events
