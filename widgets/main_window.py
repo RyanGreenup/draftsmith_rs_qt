@@ -181,7 +181,6 @@ class NoteApp(QMainWindow):
                 success = self.notes_model.update_note(note_data.id, content=content)
 
                 if success:
-                    self._reload_with_preserved_state()
                     self.status_bar.showMessage("Note saved successfully", 3000)
                 else:
                     self.status_bar.showMessage("Failed to save note", 3000)
