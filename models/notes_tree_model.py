@@ -48,6 +48,7 @@ class NotesTreeModel(QAbstractItemModel):
         self.note_api = NoteAPI(base_url)  # Add note API
         self.complete_notes_tree = []  # Store complete notes hierarchy
         self._view = None  # Initialize view reference
+        self._expansion_state = {}  # Store expansion states during filtering
         self.setup_data()
 
     def setup_data(self):
@@ -1018,7 +1019,13 @@ class NotesTreeModel(QAbstractItemModel):
         """Filter tree items using digram matching"""
         if not self._view:
             return
-            
+
+        # If clearing filter, restore previous expansion state
+        if not text:
+            for child in self.root_node.children:
+                self._restore_node_expansion(child)
+            return
+
         def check_node(node: TreeNode) -> bool:
             """Check if node or any children match filter text"""
             # Get display text based on node type
@@ -1041,7 +1048,19 @@ class NotesTreeModel(QAbstractItemModel):
             node_index = self.createIndex(node.row(), 0, node)
             self._view.setRowHidden(node.row(), node_index.parent(), not matches)
             
+            # If matches, expand all parent nodes to show the path
+            if matches:
+                current = node
+                while current.parent and current.parent != self.root_node:
+                    parent_index = self.createIndex(current.parent.row(), 0, current.parent)
+                    self._view.expand(parent_index)
+                    current = current.parent
+            
             return matches
+
+        # Save current expansion state before filtering
+        for child in self.root_node.children:
+            self._save_node_expansion(child)
 
         # Start recursive check from root's children
         for child in self.root_node.children:
@@ -1084,3 +1103,36 @@ class NotesTreeModel(QAbstractItemModel):
 
         except Exception as e:
             print(f"Error detaching note from tag: {e}")
+    def _save_node_expansion(self, node: TreeNode) -> None:
+        """Save expansion state of a node and its children"""
+        if not self._view:
+            return
+            
+        node_index = self.createIndex(node.row(), 0, node)
+        # Store whether this node is expanded
+        if hasattr(node.data, 'id'):
+            node_id = f"{node.node_type}_{node.data.id}"
+            self._expansion_state[node_id] = self._view.isExpanded(node_index)
+            
+        # Recursively save children's states
+        for child in node.children:
+            self._save_node_expansion(child)
+
+    def _restore_node_expansion(self, node: TreeNode) -> None:
+        """Restore expansion state of a node and its children"""
+        if not self._view:
+            return
+            
+        node_index = self.createIndex(node.row(), 0, node)
+        # Restore this node's expansion state
+        if hasattr(node.data, 'id'):
+            node_id = f"{node.node_type}_{node.data.id}"
+            if node_id in self._expansion_state:
+                self._view.setExpanded(node_index, self._expansion_state[node_id])
+                
+        # Show all rows when restoring
+        self._view.setRowHidden(node.row(), node_index.parent(), False)
+            
+        # Recursively restore children's states
+        for child in node.children:
+            self._restore_node_expansion(child)
