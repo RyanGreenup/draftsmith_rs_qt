@@ -22,8 +22,8 @@ class NotesTreeView(QTreeView):
         self.setItemDelegate(NotesTreeDelegate())
 
         # Connect mouse event handlers
-        self.clicked.connect(self._handle_click)
-        self.doubleClicked.connect(self._handle_double_click)
+        self.clicked.connect(self.mousePressEvent)
+        self.doubleClicked.connect(self.mouseDoubleClickEvent)
 
         # Set the view for the model
         self.model.set_view(self)
