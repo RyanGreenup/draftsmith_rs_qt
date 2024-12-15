@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QSplitter, QLineEdit
+from PySide6.QtWidgets import QApplication, QWidget, QSplitter, QLineEdit, QVBoxLayout
 from pydantic import BaseModel, Field
 from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
 from PySide6.QtNetwork import QNetworkRequest
