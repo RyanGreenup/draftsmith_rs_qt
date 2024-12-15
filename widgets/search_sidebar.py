@@ -143,11 +143,39 @@ class SearchSidebar(QWidget):
         self._current_results.clear()  # Clear stored results
 
         if not search_text:
-            item = QListWidgetItem("Type to search...")
-            item.setFlags(
-                item.flags() & ~Qt.ItemFlag.ItemIsEnabled
-            )  # Make non-clickable
-            self.results_list.addItem(item)
+            # List all notes if search text is empty
+            main_window = self.window()
+            if not main_window or not hasattr(main_window, "notes_model"):
+                return
+
+            try:
+                results = main_window.notes_model.note_api.get_all_notes()
+
+                if not results:
+                    item = QListWidgetItem("No notes found")
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                    self.results_list.addItem(item)
+                    return
+
+                # Store results and display them
+                self._current_results = [(note.title, note.id) for note in results]
+                
+                # Apply any existing filter
+                filter_text = self.filter_input.text()
+                if filter_text:
+                    self._apply_filter(filter_text)
+                else:
+                    # Show all results
+                    for title, note_id in self._current_results:
+                        item = QListWidgetItem(title)
+                        item.setData(Qt.ItemDataRole.UserRole, note_id)
+                        self.results_list.addItem(item)
+
+            except Exception as e:
+                print(f"Error fetching notes: {e}")
+                item = QListWidgetItem("Error fetching notes")
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                self.results_list.addItem(item)
             return
 
         # Get current search type
