@@ -58,8 +58,15 @@ class NoteApp(QMainWindow):
         self.main_content = self.tab_handler.setup_tabs()
         self.menu_handler.setup_menus()
 
-        # Connect the model to the tree - do this before loading notes
-        self.main_content.left_sidebar.tree.set_model(self.notes_model)
+        # Create tree model and connect it to the view
+        tree_model = NotesTreeModel()  # Create the tree model
+        tree_model.set_view(self.main_content.left_sidebar.tree)  # Give model reference to view
+        self.main_content.left_sidebar.tree.setModel(tree_model)  # Set model on view
+
+        # Connect the notes model to the tree model
+        self.notes_model.notes_updated.connect(tree_model.refresh_tree)
+        self.notes_model.note_updated.connect(lambda note_id: tree_model.refresh_tree())
+        self.notes_model.note_deleted.connect(lambda note_id: tree_model.refresh_tree())
 
         # Now load the notes
         self.notes_model.load_notes()  # Load notes at startup
