@@ -126,6 +126,21 @@ class NotesTreeView(QTreeView):
         """Handle refreshing the tree"""
         self.model.refresh_tree()
 
+    def mousePressEvent(self, event):
+        """Handle single click selection of notes"""
+        super().mousePressEvent(event)
+        
+        # Only handle left clicks
+        if event.button() != Qt.LeftButton:
+            return
+            
+        # Get the clicked item
+        index = self.indexAt(event.pos())
+        if index.isValid():
+            node = index.internalPointer()
+            if node.node_type == 'note' and hasattr(node.data, 'id'):
+                self.note_selected.emit(node.data.id)
+
     def mouseDoubleClickEvent(self, event):
         """Handle double click to focus the selected note"""
         index = self.indexAt(event.pos())
