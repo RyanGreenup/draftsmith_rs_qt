@@ -152,7 +152,7 @@ class NotesTreeModel(QAbstractItemModel):
         child_node = index.internalPointer()
         parent_node = child_node.parent
 
-        if parent_node == self.root_node:
+        if parent_node is None or parent_node == self.root_node:
             return QModelIndex()
 
         return self.createIndex(parent_node.row(), 0, parent_node)
