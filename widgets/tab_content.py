@@ -401,7 +401,6 @@ class TabContent(QWidget):
             tree_model = tree_model.sourceModel()
 
         if hasattr(tree_model, 'filter_tree'):
-            print(f"Filtering tree with text: {text}")
             tree_model.filter_tree(text)
         else:
             print("Warning: Tree model does not support filtering")
