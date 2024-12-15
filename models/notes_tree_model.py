@@ -858,7 +858,7 @@ class NotesTreeModel(QAbstractItemModel):
                 if result.isValid():
                     return result
             return QModelIndex()
-        
+
         return search(QModelIndex())
 
     def _handle_paste(self, source_node, target_node, operation):
@@ -959,7 +959,7 @@ class NotesTreeModel(QAbstractItemModel):
                 # Create new index for the moved node
                 new_index = self.createIndex(insert_pos, 0, source_node)
                 self.tagMoved.emit(new_index)
-                
+
                 # Refresh the tree to ensure consistency
                 self.refresh_tree()
 
@@ -1035,19 +1035,19 @@ class NotesTreeModel(QAbstractItemModel):
                 node_text = node.data["name"]
             else:  # note
                 node_text = node.data.title if hasattr(node.data, 'title') else node.data.get('title', '')
-                
+
             # Check if this node matches
-            matches = text_matches_filter(text, node_text)
-            
+            matches = text_matches_filter(text, node_text, n=3)
+
             # Check children recursively
             for child in node.children:
                 if check_node(child):
                     matches = True
-                    
+
             # Show/hide based on matches
             node_index = self.createIndex(node.row(), 0, node)
             self._view.setRowHidden(node.row(), node_index.parent(), not matches)
-            
+
             # If matches, expand all parent nodes to show the path
             if matches:
                 current = node
@@ -1055,7 +1055,7 @@ class NotesTreeModel(QAbstractItemModel):
                     parent_index = self.createIndex(current.parent.row(), 0, current.parent)
                     self._view.expand(parent_index)
                     current = current.parent
-            
+
             return matches
 
         # Save current expansion state before filtering
@@ -1107,13 +1107,13 @@ class NotesTreeModel(QAbstractItemModel):
         """Save expansion state of a node and its children"""
         if not self._view:
             return
-            
+
         node_index = self.createIndex(node.row(), 0, node)
         # Store whether this node is expanded
         if hasattr(node.data, 'id'):
             node_id = f"{node.node_type}_{node.data.id}"
             self._expansion_state[node_id] = self._view.isExpanded(node_index)
-            
+
         # Recursively save children's states
         for child in node.children:
             self._save_node_expansion(child)
@@ -1122,17 +1122,17 @@ class NotesTreeModel(QAbstractItemModel):
         """Restore expansion state of a node and its children"""
         if not self._view:
             return
-            
+
         node_index = self.createIndex(node.row(), 0, node)
         # Restore this node's expansion state
         if hasattr(node.data, 'id'):
             node_id = f"{node.node_type}_{node.data.id}"
             if node_id in self._expansion_state:
                 self._view.setExpanded(node_index, self._expansion_state[node_id])
-                
+
         # Show all rows when restoring
         self._view.setRowHidden(node.row(), node_index.parent(), False)
-            
+
         # Recursively restore children's states
         for child in node.children:
             self._restore_node_expansion(child)
