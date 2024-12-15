@@ -78,8 +78,8 @@ class TabContent(QWidget):
 
     def _connect_signals(self):
         """Connect internal signals"""
-        # Add this new connection
-        self.text_input.textChanged.connect(self.filter_text_entered.emit)
+        # Connect text input to filtering
+        self.text_input.textChanged.connect(self.filter_sidebar)
 
         # Add connection for note deletion
         # What to do when the user has asked to delete a note
