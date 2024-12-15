@@ -1103,6 +1103,7 @@ class NotesTreeModel(QAbstractItemModel):
                 current = node
                 while current.parent and current.parent != self.root_node:
                     parent_index = self.createIndex(current.parent.row(), 0, current.parent)
+                    print(f"Expanding parent: {current.parent.data}")  # Debugging step
                     self._view.expand(parent_index)
                     current = current.parent
 
