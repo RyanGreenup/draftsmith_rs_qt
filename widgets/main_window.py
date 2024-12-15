@@ -95,14 +95,10 @@ class NoteApp(QMainWindow):
         self.command_shortcut.activated.connect(self.show_command_palette)
 
     def on_tree_selection_changed(self, text):
+        # Todo can this be removed?
         if text == "Notes":
             self.main_content.left_sidebar.tree.show()
-            self.main_content.left_sidebar.tags_tree.hide()
             self.status_bar.showMessage("Showing Notes Tree")
-        else:  # Tags
-            self.main_content.left_sidebar.tree.hide()
-            self.main_content.left_sidebar.tags_tree.show()
-            self.status_bar.showMessage("Showing Tags Tree")
 
     def toggle_left_sidebar(self):
         """Toggle the visibility of the left sidebar"""
