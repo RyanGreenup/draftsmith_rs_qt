@@ -7,6 +7,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal, QTimer
 from enum import Enum
+from thefuzz import fuzz
+from typing import List, Optional
 
 
 class SearchType(Enum):
@@ -41,6 +43,10 @@ class SearchSidebar(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        # Add filter input at top
+        self.filter_input = QLineEdit()
+        self.filter_input.setPlaceholderText("Filter results...")
+
         # Search type selector
         self.search_type_combo = QComboBox()
         for search_type in SearchType:
@@ -63,9 +69,13 @@ class SearchSidebar(QWidget):
             self.note_selected_with_focus.emit
         )
 
+        layout.addWidget(self.filter_input)
         layout.addWidget(self.search_type_combo)
         layout.addWidget(self.search_input)
         layout.addWidget(self.results_list)
+
+        # Store original search results
+        self._current_results: List[tuple[str, int]] = []  # [(title, note_id), ...]
 
     def _setup_search_timer(self):
         # Debounce timer to avoid searching on every keystroke
@@ -77,6 +87,7 @@ class SearchSidebar(QWidget):
         self.search_input.textChanged.connect(self._on_search_text_changed)
         self.search_timer.timeout.connect(self._perform_search)
         self.results_list.itemSelectionChanged.connect(self._on_selection_changed)
+        self.filter_input.textChanged.connect(self._apply_filter)
 
     def _on_selection_changed(self):
         """Handle selection changes in results list"""
@@ -94,10 +105,42 @@ class SearchSidebar(QWidget):
         self.search_timer.stop()
         self.search_timer.start()
 
+    def _apply_filter(self, filter_text: str) -> None:
+        """Apply fuzzy filter to current search results"""
+        self.results_list.clear()
+        
+        if not self._current_results:
+            return
+            
+        if not filter_text:
+            # Show all results if no filter
+            for title, note_id in self._current_results:
+                item = QListWidgetItem(title)
+                item.setData(Qt.ItemDataRole.UserRole, note_id)
+                self.results_list.addItem(item)
+            return
+
+        # Apply fuzzy filtering
+        filtered_results = []
+        for title, note_id in self._current_results:
+            ratio = fuzz.partial_ratio(filter_text.lower(), title.lower())
+            if ratio > 60:  # Adjust threshold as needed
+                filtered_results.append((title, note_id, ratio))
+        
+        # Sort by match quality
+        filtered_results.sort(key=lambda x: x[2], reverse=True)
+        
+        # Update list widget
+        for title, note_id, _ in filtered_results:
+            item = QListWidgetItem(title)
+            item.setData(Qt.ItemDataRole.UserRole, note_id)
+            self.results_list.addItem(item)
+
     def _perform_search(self):
         """Perform the search using the selected search type"""
         search_text = self.search_input.text()
         self.results_list.clear()
+        self._current_results.clear()  # Clear stored results
 
         if not search_text:
             item = QListWidgetItem("Type to search...")
@@ -133,10 +176,19 @@ class SearchSidebar(QWidget):
                 self.results_list.addItem(item)
                 return
 
-            for note in results:
-                item = QListWidgetItem(note.title)
-                item.setData(Qt.ItemDataRole.UserRole, note.id)
-                self.results_list.addItem(item)
+            # Store results and display them
+            self._current_results = [(note.title, note.id) for note in results]
+            
+            # Apply any existing filter
+            filter_text = self.filter_input.text()
+            if filter_text:
+                self._apply_filter(filter_text)
+            else:
+                # Show all results
+                for title, note_id in self._current_results:
+                    item = QListWidgetItem(title)
+                    item.setData(Qt.ItemDataRole.UserRole, note_id)
+                    self.results_list.addItem(item)
 
         except Exception as e:
             print(f"Error performing search: {e}")
