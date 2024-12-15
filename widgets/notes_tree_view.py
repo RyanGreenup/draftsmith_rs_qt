@@ -21,9 +21,9 @@ class NotesTreeView(QTreeView):
         # Add the custom delegate
         self.setItemDelegate(NotesTreeDelegate())
 
-        # Connect mouse event handlers
-        self.clicked.connect(self.mousePressEvent)
-        self.doubleClicked.connect(self.mouseDoubleClickEvent)
+        # Connect signal handlers
+        self.clicked.connect(self._handle_click)
+        self.doubleClicked.connect(self._handle_double_click)
 
         # Set the view for the model
         self.model.set_view(self)
@@ -130,8 +130,22 @@ class NotesTreeView(QTreeView):
         """Handle refreshing the tree"""
         self.model.refresh_tree()
 
+    def _handle_click(self, index):
+        """Handle click signal (receives QModelIndex)"""
+        if index.isValid():
+            node = index.internalPointer()
+            if node.node_type == 'note' and hasattr(node.data, 'id'):
+                self.note_selected.emit(node.data.id)
+
+    def _handle_double_click(self, index):
+        """Handle double click signal (receives QModelIndex)"""
+        if index.isValid():
+            node = index.internalPointer()
+            if node.node_type == 'note' and hasattr(node.data, 'id'):
+                self.note_selected_with_focus.emit(node.data.id)
+                
     def mousePressEvent(self, event):
-        """Handle single click selection of notes"""
+        """Handle mouse press events"""
         super().mousePressEvent(event)
         
         # Only handle left clicks
