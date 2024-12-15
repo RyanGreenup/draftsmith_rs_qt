@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget, QSplitter, QLineEdit
 from pydantic import BaseModel, Field
 from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
+from models.notes_tree_model import NotesTreeModel
 from PySide6.QtNetwork import QNetworkRequest
 from PySide6.QtGui import QAction
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestJob
