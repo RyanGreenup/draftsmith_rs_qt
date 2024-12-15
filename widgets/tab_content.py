@@ -135,6 +135,10 @@ class TabContent(QWidget):
         # Connect note selection to view updates, but only when this tab is active
         self.notes_model.note_selected.connect(self._filtered_update_view)
 
+        # Add connections to refresh tree when notes are updated
+        self.notes_model.notes_updated.connect(tree_model.refresh_tree)
+        self.notes_model.note_updated.connect(lambda note_id: tree_model.refresh_tree())
+        self.notes_model.note_deleted.connect(lambda note_id: tree_model.refresh_tree())
 
         # Initialize palettes with view actions
         self.note_select_palette = NoteSelectPalette(notes_model, self)
