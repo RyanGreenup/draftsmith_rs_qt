@@ -15,8 +15,12 @@ class NotesTreeView(QTreeView):
 
     def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
-        tree_model = NotesTreeModel(parent=self, api_url=api_url)
-        self.setModel(tree_model)
+        # Create the model and store a reference
+        self._tree_model = NotesTreeModel(parent=self, api_url=api_url)
+        # Set it as the model for the view
+        self.setModel(self._tree_model)
+        # Set the view reference in the model
+        self._tree_model.set_view(self)
 
         # Add the custom delegate
         self.setItemDelegate(NotesTreeDelegate())
@@ -25,9 +29,8 @@ class NotesTreeView(QTreeView):
         self.clicked.connect(self._handle_click)
         self.doubleClicked.connect(self._handle_double_click)
 
-        # Set the view for the model
-        self.model.set_view(self)
-        self.model.tagMoved.connect(self._focus_moved_tag)
+        # Connect signals
+        self._tree_model.tagMoved.connect(self._focus_moved_tag)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDragDropMode(QTreeView.DragDropMode.DragDrop)
@@ -208,7 +211,7 @@ class NotesTreeView(QTreeView):
         index = self.indexAt(position)
 
         # Get the base menu from the model
-        menu = self.model.create_context_menu(index)
+        menu = self._tree_model.create_context_menu(index)
 
         if index.isValid():
             node = index.internalPointer()
@@ -240,7 +243,7 @@ class NotesTreeView(QTreeView):
                 menu.addAction(self.action_mark)
 
             # Add paste operations if there's a marked node
-            if self.model.marked_node:
+            if self._tree_model.marked_node:
                 marked_type = self.model.marked_node.node_type
                 target_type = node.node_type
 
@@ -260,7 +263,7 @@ class NotesTreeView(QTreeView):
                 delete_action = menu.addAction("Delete")
 
                 # Add promote action if the item has a parent
-                if node.parent and node.parent != self.model.root_node:
+                if node.parent and node.parent != self._tree_model.root_node:
                     menu.addAction(self.action_promote)
 
                 # Add demote action if there's a previous sibling to become the parent
@@ -387,7 +390,7 @@ class NotesTreeView(QTreeView):
                 )
 
                 # Attach it to parent note
-                self.model.note_api.attach_note_to_parent(
+                self._tree_model.note_api.attach_note_to_parent(
                     tree_note.id,
                     parent_node.data.id,
                     hierarchy_type="block"
@@ -613,7 +616,7 @@ class NotesTreeView(QTreeView):
         """Handle deletion of items"""
         try:
             if node.node_type == 'tag':
-                self.model.delete_tag(QModelIndex(index))
+                self._tree_model.delete_tag(QModelIndex(index))
 
                 # Remove from tree
                 parent_index = self.model.parent(index)
@@ -630,7 +633,7 @@ class NotesTreeView(QTreeView):
                     parent_note_id = node.parent.data.id
 
                     # Delete the note via API
-                    self.model.note_api.delete_note(node.data.id)
+                    self._tree_model.note_api.delete_note(node.data.id)
 
                     # Find all instances of the parent note and remove this subpage from each
                     def find_parent_instances(search_node):
@@ -643,7 +646,7 @@ class NotesTreeView(QTreeView):
                             instances.extend(find_parent_instances(child))
                         return instances
 
-                    parent_instances = find_parent_instances(self.model.root_node)
+                    parent_instances = find_parent_instances(self._tree_model.root_node)
 
                     # Remove the subpage from each instance of the parent
                     for parent_instance in parent_instances:
@@ -654,9 +657,9 @@ class NotesTreeView(QTreeView):
                                 child.data.id == node.data.id):
                                 # Remove from this parent instance
                                 parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
-                                self.model.beginRemoveRows(parent_index, i, i)
+                                self._tree_model.beginRemoveRows(parent_index, i, i)
                                 parent_instance.children.pop(i)
-                                self.model.endRemoveRows()
+                                self._tree_model.endRemoveRows()
                                 break
 
                     # Focus the item above the deleted one in the original location
@@ -674,7 +677,7 @@ class NotesTreeView(QTreeView):
                             self.setFocus()
 
                 else:  # Regular note (not a subpage)
-                    self.model.note_api.delete_note(node.data.id)
+                    self._tree_model.note_api.delete_note(node.data.id)
 
                     # Remove from tree
                     parent_index = self.model.parent(index)
@@ -694,9 +697,9 @@ class NotesTreeView(QTreeView):
 
     def _get_previous_sibling(self, index):
         """Get the previous sibling node in the tree"""
-        parent = self.model.parent(index)
+        parent = self._tree_model.parent(index)
         prev_row = index.row() - 1
-        prev_index = self.model.index(prev_row, 0, parent)
+        prev_index = self._tree_model.index(prev_row, 0, parent)
 
         if prev_index.isValid():
             return prev_index.internalPointer()
@@ -717,7 +720,7 @@ class NotesTreeView(QTreeView):
 
                 # Detach from current parent via API
                 if original_parent and original_parent.node_type == 'note':
-                    self.model.note_api.detach_note_from_parent(node.data.id)
+                    self._tree_model.note_api.detach_note_from_parent(node.data.id)
 
                 # Attach to new parent (previous sibling) via API
                 self.model.note_api.attach_note_to_parent(
@@ -737,7 +740,7 @@ class NotesTreeView(QTreeView):
                         instances.extend(find_new_parent_instances(child))
                     return instances
 
-                new_parent_instances = find_new_parent_instances(self.model.root_node)
+                new_parent_instances = find_new_parent_instances(self._tree_model.root_node)
 
                 # Remove from current position in all instances
                 if original_parent and original_parent.node_type == 'note':
@@ -751,7 +754,7 @@ class NotesTreeView(QTreeView):
                             instances.extend(find_original_parent_instances(child))
                         return instances
 
-                    original_parent_instances = find_original_parent_instances(self.model.root_node)
+                    original_parent_instances = find_original_parent_instances(self._tree_model.root_node)
 
                     for parent_instance in original_parent_instances:
                         for i, child in enumerate(parent_instance.children):
@@ -759,29 +762,29 @@ class NotesTreeView(QTreeView):
                                 hasattr(child.data, 'id') and
                                 child.data.id == node.data.id):
                                 parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
-                                self.model.beginRemoveRows(parent_index, i, i)
+                                self._tree_model.beginRemoveRows(parent_index, i, i)
                                 parent_instance.children.pop(i)
-                                self.model.endRemoveRows()
+                                self._tree_model.endRemoveRows()
                                 break
                 else:
                     # Remove from current position if not under another note
                     row = index.row()
                     parent_index = self.model.parent(index)
-                    self.model.beginRemoveRows(parent_index, row, row)
+                    self._tree_model.beginRemoveRows(parent_index, row, row)
                     node.parent.children.pop(row)
-                    self.model.endRemoveRows()
+                    self._tree_model.endRemoveRows()
 
                 focus_index = None
 
                 # Add under each instance of the new parent
                 for parent_instance in new_parent_instances:
                     new_note_node = TreeNode(note_data, parent_instance, 'note')
-                    insert_pos = self.model._find_insert_position(parent_instance, new_note_node)
+                    insert_pos = self._tree_model._find_insert_position(parent_instance, new_note_node)
 
                     parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
-                    self.model.beginInsertRows(parent_index, insert_pos, insert_pos)
+                    self._tree_model.beginInsertRows(parent_index, insert_pos, insert_pos)
                     parent_instance.children.insert(insert_pos, new_note_node)
-                    self.model.endInsertRows()
+                    self._tree_model.endInsertRows()
 
                     # Store the index if this is the instance where the demotion was initiated
                     if parent_instance is prev_sibling:
@@ -796,10 +799,10 @@ class NotesTreeView(QTreeView):
                 # Handle tag demotion
                 # Detach from current parent if it exists
                 if node.parent and node.parent.node_type == 'tag':
-                    self.model.tag_api.detach_tag_from_parent(node.data.id)
+                    self._tree_model.tag_api.detach_tag_from_parent(node.data.id)
 
                 # Attach to new parent (previous sibling)
-                self.model.tag_api.attach_tag_to_parent(node.data.id, prev_sibling.data.id)
+                self._tree_model.tag_api.attach_tag_to_parent(node.data.id, prev_sibling.data.id)
 
                 # Remove from current position
                 row = index.row()
@@ -809,7 +812,7 @@ class NotesTreeView(QTreeView):
                 self.model.endRemoveRows()
 
                 # Add under new parent
-                insert_pos = self.model._find_insert_position(prev_sibling, node_to_move)
+                insert_pos = self._tree_model._find_insert_position(prev_sibling, node_to_move)
                 new_parent_index = self.model.createIndex(prev_sibling.row(), 0, prev_sibling)
 
                 self.model.beginInsertRows(new_parent_index, insert_pos, insert_pos)
