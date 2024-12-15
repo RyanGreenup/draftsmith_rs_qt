@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox 
+from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox, QAction
 from PySide6.QtGui import QKeyEvent
 from widgets.notes_tree_delegate import NotesTreeDelegate
 from PySide6.QtCore import Qt, QModelIndex
@@ -21,56 +21,57 @@ class NotesTreeView(QTreeView):
         self.setAcceptDrops(True)
         self.setDragDropMode(QTreeView.DragDropMode.DragDrop)
 
+        # Create actions
+        self._setup_actions()
+
         # Add context menu support
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_tags_context_menu)
 
+    def _setup_actions(self):
+        """Setup actions that can be triggered by both menu and keyboard"""
+        # Navigation actions
+        self.action_move_down = QAction("Move Down", self)
+        self.action_move_down.setShortcut("J")
+        self.action_move_down.triggered.connect(self._handle_move_down)
+
+        self.action_move_up = QAction("Move Up", self)
+        self.action_move_up.setShortcut("K")
+        self.action_move_up.triggered.connect(self._handle_move_up)
+
+        self.action_toggle_expand = QAction("Toggle Expand", self)
+        self.action_toggle_expand.setShortcut("Space")
+        self.action_toggle_expand.triggered.connect(self._handle_toggle_expand)
+
+        # Mark and Move actions
+        self.action_mark = QAction("Mark", self)
+        self.action_mark.setShortcut("M")
+        self.action_mark.triggered.connect(self._handle_mark)
+
+        self.action_put = QAction("Put", self)
+        self.action_put.setShortcut("P")
+        self.action_put.triggered.connect(self._handle_put)
+
+        self.action_move = QAction("Move", self)
+        self.action_move.setShortcut("Shift+P")
+        self.action_move.triggered.connect(self._handle_move)
+
+        # Add actions to widget
+        self.addAction(self.action_move_down)
+        self.addAction(self.action_move_up)
+        self.addAction(self.action_toggle_expand)
+        self.addAction(self.action_mark)
+        self.addAction(self.action_put)
+        self.addAction(self.action_move)
+
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_J:
-            # Map J key to Down arrow behavior
-            new_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Down, event.modifiers())
-            super().keyPressEvent(new_event)
-        elif event.key() == Qt.Key_K:
-            # Map K key to Up arrow behavior
-            new_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Up, event.modifiers())
-            super().keyPressEvent(new_event)
-        elif event.key() == Qt.Key_Space:
-            # Toggle expand/collapse on Space
-            current_index = self.currentIndex()
-            if current_index.isValid():
-                if self.isExpanded(current_index):
-                    self.collapse(current_index)
-                else:
-                    self.expand(current_index)
-        elif event.key() == Qt.Key_M:
-            # Handle Mark (lowercase m)
-            current_index = self.currentIndex()
-            if current_index.isValid():
-                current_node = current_index.internalPointer()
-                # Only mark if it's a note or tag
-                if current_node.node_type in ['note', 'tag']:
-                    # Clear any existing mark first to stay in sync with model
-                    self.model.marked_node = None
-                    # Then set the new mark
-                    self.model._mark_node(current_node)
-        elif event.key() == Qt.Key_P:
-            # Handle Put (lowercase p) and Move (uppercase P) operations
-            current_index = self.currentIndex()
-            if current_index.isValid() and self.model.marked_node:
-                current_node = current_index.internalPointer()
-                if event.modifiers() == Qt.ShiftModifier:  # Capital P for Move
-                    self._handle_move_operation(self.model.marked_node, current_node)
-                else:  # lowercase p for Put/Move as subpage
-                    if (self.model.marked_node.node_type == 'note' and 
-                        current_node.node_type == 'note'):
-                        # Move note as subpage
-                        self.model._handle_paste(self.model.marked_node, current_node, "move")
-                    else:
-                        # Handle other put operations
-                        self._handle_put_operation(self.model.marked_node, current_node)
-        else:
-            # Handle all other keys normally
-            super().keyPressEvent(event)
+        # Let the actions handle the key events
+        if event.key() in [Qt.Key_J, Qt.Key_K, Qt.Key_Space, Qt.Key_M, Qt.Key_P]:
+            # The actions will handle these keys through their shortcuts
+            return
+        
+        # Handle all other keys normally
+        super().keyPressEvent(event)
 
     def _handle_move_operation(self, source_node, target_node):
         """Handle Move operations based on node types"""
@@ -414,6 +415,54 @@ class NotesTreeView(QTreeView):
         """Focus and select a tag after it's been moved"""
         self.setCurrentIndex(index)
         self.setFocus()
+
+    def _handle_move_down(self):
+        """Handle moving down in the tree"""
+        new_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Down, Qt.NoModifier)
+        super().keyPressEvent(new_event)
+
+    def _handle_move_up(self):
+        """Handle moving up in the tree"""
+        new_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Up, Qt.NoModifier)
+        super().keyPressEvent(new_event)
+
+    def _handle_toggle_expand(self):
+        """Handle expanding/collapsing tree items"""
+        current_index = self.currentIndex()
+        if current_index.isValid():
+            if self.isExpanded(current_index):
+                self.collapse(current_index)
+            else:
+                self.expand(current_index)
+
+    def _handle_mark(self):
+        """Handle marking a node"""
+        current_index = self.currentIndex()
+        if current_index.isValid():
+            current_node = current_index.internalPointer()
+            if current_node.node_type in ['note', 'tag']:
+                self.model.marked_node = None
+                self.model._mark_node(current_node)
+
+    def _handle_put(self):
+        """Handle put operation"""
+        current_index = self.currentIndex()
+        if current_index.isValid() and self.model.marked_node:
+            current_node = current_index.internalPointer()
+            if (self.model.marked_node.node_type == 'note' and 
+                current_node.node_type == 'note'):
+                # Move note as subpage
+                self.model._handle_paste(self.model.marked_node, current_node, "move")
+            else:
+                # Handle other put operations
+                self._handle_put_operation(self.model.marked_node, current_node)
+
+    def _handle_move(self):
+        """Handle move operation"""
+        current_index = self.currentIndex()
+        if current_index.isValid() and self.model.marked_node:
+            current_node = current_index.internalPointer()
+            self._handle_move_operation(self.model.marked_node, current_node)
 
     def _delete_item(self, node, index):
         """Handle deletion of items"""
