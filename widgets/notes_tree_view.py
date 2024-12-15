@@ -159,10 +159,7 @@ class NotesTreeView(QTreeView):
         if index.isValid():
             # Set the selection explicitly
             self.setCurrentIndex(index)
-            
-            node = index.internalPointer()
-            if node.node_type == 'note' and hasattr(node.data, 'id'):
-                self.note_selected.emit(node.data.id)
+            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.ClearAndSelect)
 
     def mouseDoubleClickEvent(self, event):
         """Handle double click to focus the selected note"""
@@ -170,7 +167,7 @@ class NotesTreeView(QTreeView):
         if index.isValid():
             node = index.internalPointer()
             if node.node_type == 'note' and hasattr(node.data, 'id'):
-                self.note_selected_with_focus.emit(node.data.id)
+                self.note_selected.emit(node.data.id)
                 event.accept()
                 return
         super().mouseDoubleClickEvent(event)
@@ -995,8 +992,8 @@ class NotesTreeView(QTreeView):
         
         if index.isValid():
             # Set selection and ensure item is visible
-            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.ClearAndSelect)
             self.setCurrentIndex(index)
+            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.ClearAndSelect)
             self.scrollTo(index)
             
             # Emit our custom signal if requested
