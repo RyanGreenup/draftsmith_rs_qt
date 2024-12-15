@@ -107,6 +107,34 @@ class NotesTreeView(QTreeView):
                 note_id_action.setEnabled(False)  # Make it non-clickable
                 menu.addSeparator()
 
+            # Add navigation section
+            menu.addSection("Navigation")
+            menu.addAction(self.action_move_up)
+            menu.addAction(self.action_move_down)
+            menu.addAction(self.action_toggle_expand)
+            menu.addSeparator()
+
+            # Add operations section
+            menu.addSection("Operations")
+            if node.node_type in ['note', 'tag']:
+                menu.addAction(self.action_mark)
+
+            # Add paste operations if there's a marked node
+            if self.model.marked_node:
+                marked_type = self.model.marked_node.node_type
+                target_type = node.node_type
+
+                if marked_type == 'note' and target_type == 'tag':
+                    menu.addAction(self.action_put)
+                    menu.addAction(self.action_move)
+                elif marked_type == 'tag' and target_type == 'tag':
+                    menu.addAction(self.action_move)
+                elif marked_type == 'note' and target_type == 'note':
+                    menu.addAction(self.action_put)
+                    menu.addAction(self.action_move)
+
+            menu.addSeparator()
+
             promote_action = None
             demote_action = None
 
