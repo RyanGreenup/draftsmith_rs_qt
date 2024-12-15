@@ -680,10 +680,10 @@ class NotesTreeView(QTreeView):
                     self._tree_model.note_api.delete_note(node.data.id)
 
                     # Remove from tree
-                    parent_index = self.model.parent(index)
-                    self.model.beginRemoveRows(parent_index, index.row(), index.row())
+                    parent_index = self._tree_model.parent(index)
+                    self._tree_model.beginRemoveRows(parent_index, index.row(), index.row())
                     node.parent.children.remove(node)
-                    self.model.endRemoveRows()
+                    self._tree_model.endRemoveRows()
 
                     # Focus the item above
                     if current_row > 0:
