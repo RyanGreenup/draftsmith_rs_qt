@@ -836,16 +836,58 @@ class NotesTreeModel(QAbstractItemModel):
         source_type = source_node.node_type
         target_type = target_node.node_type
         
-        source_name = self.data(self.createIndex(source_node.row(), 0, source_node))
-        target_name = self.data(self.createIndex(target_node.row(), 0, target_node))
+        try:
+            if operation == "move" and source_type == "tag" and target_type == "tag":
+                # Store expanded states before moving
+                expanded_states = {}
+                self._store_expanded_state(source_node, expanded_states)
+                
+                # Get source and target IDs
+                source_id = int(source_node.data.id)
+                target_id = int(target_node.data.id)
+                
+                # Call API to attach tag to new parent
+                self.tag_api.attach_tag_to_parent(source_id, target_id)
+                
+                # Remove tag from current position
+                source_parent = source_node.parent
+                source_index = self.createIndex(source_node.row(), 0, source_node)
+                source_parent_index = self.createIndex(source_parent.row(), 0, source_parent) if source_parent != self.root_node else QModelIndex()
+                
+                self.beginRemoveRows(source_parent_index, source_node.row(), source_node.row())
+                source_parent.children.remove(source_node)
+                self.endRemoveRows()
+                
+                # Add to new parent
+                insert_pos = self._find_insert_position(target_node, source_node)
+                target_index = self.createIndex(target_node.row(), 0, target_node)
+                
+                self.beginInsertRows(target_index, insert_pos, insert_pos)
+                source_node.parent = target_node
+                target_node.children.insert(insert_pos, source_node)
+                self.endInsertRows()
+                
+                # Restore expanded states
+                self._restore_expanded_state(source_node, expanded_states)
+                
+                # Create new index for the moved node
+                new_index = self.createIndex(insert_pos, 0, source_node)
+                self.tagMoved.emit(new_index)
+            
+            else:
+                source_name = self.data(self.createIndex(source_node.row(), 0, source_node))
+                target_name = self.data(self.createIndex(target_node.row(), 0, target_node))
+                print(f"\nPaste Operation:")
+                print(f"Source: {source_type} '{source_name}'")
+                print(f"Target: {target_type} '{target_name}'")
+                print(f"Operation: {operation}")
+            
+        except Exception as e:
+            print(f"Error during paste operation: {e}")
         
-        print(f"\nPaste Operation:")
-        print(f"Source: {source_type} '{source_name}'")
-        print(f"Target: {target_type} '{target_name}'")
-        print(f"Operation: {operation}")
-        
-        # Clear the marked node after operation
-        self.marked_node = None
+        finally:
+            # Clear the marked node after operation
+            self.marked_node = None
 
     def detach_note_from_tag(self, index: QModelIndex) -> None:
         """Detach a note from its parent tag"""
