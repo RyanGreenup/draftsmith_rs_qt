@@ -1026,7 +1026,11 @@ class NotesTreeModel(QAbstractItemModel):
                 node_index = self.createIndex(node.row(), 0, node)
                 if node.parent:  # Don't try to show/hide root node
                     self._view.setRowHidden(node.row(), node_index.parent(), False)
-                    if hasattr(node.data, 'id'):
+                    if node.node_type == 'page':
+                        # Always collapse "All Notes" and "Untagged Notes" sections
+                        self._view.collapse(node_index)
+                    elif hasattr(node.data, 'id'):
+                        # Restore saved state for regular nodes
                         node_id = f"{node.node_type}_{node.data.id}"
                         if node_id in self._expansion_state:
                             self._view.setExpanded(node_index, self._expansion_state[node_id])
