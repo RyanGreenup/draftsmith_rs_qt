@@ -40,6 +40,7 @@ class NotesTreeModel(QAbstractItemModel):
     note_updated = Signal(int)  # Signal emitted when a note is updated
     note_deleted = Signal(int)  # Signal emitted when a note is deleted
     notes_updated = Signal()
+    note_selected = Signal(int)  # Emitted when a note is selected
 
     def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
@@ -1212,3 +1213,15 @@ class NotesTreeModel(QAbstractItemModel):
         # Recursively restore children's states
         for child in node.children:
             self._restore_node_expansion(child)
+
+    def handle_selection_changed(self, current: QModelIndex, previous: QModelIndex) -> None:
+        """Handle selection changes in the view"""
+        if not current.isValid():
+            return
+
+        node = current.internalPointer()
+        if node and node.node_type == 'note':
+            # For notes, emit the note ID for preview
+            note_id = node.data.id if hasattr(node.data, 'id') else None
+            if note_id is not None:
+                self.note_selected.emit(note_id)
