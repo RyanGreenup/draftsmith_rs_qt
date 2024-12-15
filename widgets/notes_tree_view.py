@@ -79,12 +79,16 @@ class NotesTreeView(QTreeView):
     def keyPressEvent(self, event):
         # Let the actions handle the key events
         if event.key() in [Qt.Key_J, Qt.Key_K, Qt.Key_Space, Qt.Key_M, Qt.Key_P, 
-                          Qt.Key_Left, Qt.Key_Right]:
+                          Qt.Key_Left, Qt.Key_Right, Qt.Key_F5]:
             # The actions will handle these keys through their shortcuts
             return
 
         # Handle all other keys normally
         super().keyPressEvent(event)
+
+    def _handle_refresh(self):
+        """Handle refreshing the tree"""
+        self.model.refresh_tree()
 
     def _handle_move_operation(self, source_node, target_node):
         """Handle Move operations based on node types"""
@@ -192,6 +196,10 @@ class NotesTreeView(QTreeView):
         # If no action was selected (e.g. Esc pressed), just return
         if action is None:
             return
+
+        # Handle refresh action
+        if action == self.action_refresh:
+            self._handle_refresh()
 
         try:
             if not index.isValid():
