@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget
 from PySide6.QtCore import Qt
 from .notes_tree import NotesTreeWidget
 from .search_sidebar import SearchSidebar
@@ -11,7 +11,7 @@ class LeftSidebar(QWidget):
         self.tree = NotesTreeWidget()
         self.tags_tree = NotesTreeView()  # Use the new NotesTreeView class
         self.search_sidebar = SearchSidebar()
-        self.tree_selector = QComboBox()
+        self.tab_widget = QTabWidget()
 
         self._setup_ui()
         self._connect_signals()
@@ -25,24 +25,24 @@ class LeftSidebar(QWidget):
 
         self.search_sidebar.hide()  # Initially hidden
 
-        self.tree_selector.addItems(["Notes", "Tags", "Search"])
+        # Add tabs to the tab widget
+        self.tab_widget.addTab(self.tree, "Notes")
+        self.tab_widget.addTab(self.tags_tree, "Tags")
+        self.tab_widget.addTab(self.search_sidebar, "Search")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.tree_selector)
-        layout.addWidget(self.tree)
-        layout.addWidget(self.tags_tree)
-        layout.addWidget(self.search_sidebar)
+        layout.addWidget(self.tab_widget)
 
     def _connect_signals(self):
-        self.tree_selector.currentTextChanged.connect(self._on_tree_selection_changed)
+        self.tab_widget.currentChanged.connect(self._on_tab_changed)
 
-    def _on_tree_selection_changed(self, text):
-        if text == "Notes":
+    def _on_tab_changed(self, index):
+        if index == 0:  # Notes
             self.tree.show()
             self.tags_tree.hide()
             self.search_sidebar.hide()
-        elif text == "Tags":
+        elif index == 1:  # Tags
             self.tree.hide()
             self.tags_tree.show()
             self.search_sidebar.hide()
@@ -53,5 +53,5 @@ class LeftSidebar(QWidget):
 
     def focus_search(self):
         """Focus the search input and switch to search view"""
-        self.tree_selector.setCurrentText("Search")
+        self.tab_widget.setCurrentIndex(2)
         self.search_sidebar.search_input.setFocus()
