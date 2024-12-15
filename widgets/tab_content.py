@@ -393,9 +393,8 @@ class TabContent(QWidget):
         tree_model = self.left_sidebar.tree.model()
         
         # If using a proxy model, get the source model
-        source_model = getattr(tree_model, 'sourceModel', lambda: None)()
-        if source_model:
-            tree_model = source_model
+        if hasattr(tree_model, 'sourceModel') and callable(tree_model.sourceModel):
+            tree_model = tree_model.sourceModel()
             
         if hasattr(tree_model, 'filter_tree'):
             tree_model.filter_tree(text)
