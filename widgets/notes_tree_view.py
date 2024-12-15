@@ -183,8 +183,8 @@ class NotesTreeView(QTreeView):
                 # Find all instances of the parent note in the tree and add the child to each
                 def add_to_parent_instances(search_node):
                     instances = []
-                    if (search_node.node_type == 'note' and 
-                        hasattr(search_node.data, 'id') and 
+                    if (search_node.node_type == 'note' and
+                        hasattr(search_node.data, 'id') and
                         search_node.data.id == parent_node.data.id):
                         instances.append(search_node)
                     for child in search_node.children:
@@ -198,7 +198,7 @@ class NotesTreeView(QTreeView):
                 for parent_instance in parent_instances:
                     new_child_node = TreeNode(tree_note, None, 'note')
                     new_index = self.model.insert_node(new_child_node, parent_instance)
-                    
+
                     # If this is the parent instance where the action was initiated,
                     # store this index to focus
                     if parent_instance == parent_node:
@@ -209,7 +209,7 @@ class NotesTreeView(QTreeView):
                     self.setCurrentIndex(focused_new_index)
                     self.setFocus()
                     self.edit(focused_new_index)
-                
+
                 return
 
             # Handle all other cases (including tag creation)
@@ -349,44 +349,44 @@ class NotesTreeView(QTreeView):
         """Handle deletion of items"""
         try:
             if node.node_type == 'tag':
-                self.model.tag_api.delete_tag(node.data.id)
-                
+                self.model.delete_tag(QModelIndex(index))
+
                 # Remove from tree
                 parent_index = self.model.parent(index)
                 self.model.beginRemoveRows(parent_index, index.row(), index.row())
                 node.parent.children.remove(node)
                 self.model.endRemoveRows()
-                
+
             else:  # note
                 # Store the row number for focusing later
                 current_row = index.row()
-                
+
                 # If this is a subpage (has a parent note)
                 if node.parent and node.parent.node_type == 'note':
                     parent_note_id = node.parent.data.id
-                    
+
                     # Delete the note via API
                     self.model.note_api.delete_note(node.data.id)
-                    
+
                     # Find all instances of the parent note and remove this subpage from each
                     def find_parent_instances(search_node):
                         instances = []
-                        if (search_node.node_type == 'note' and 
-                            hasattr(search_node.data, 'id') and 
+                        if (search_node.node_type == 'note' and
+                            hasattr(search_node.data, 'id') and
                             search_node.data.id == parent_note_id):
                             instances.append(search_node)
                         for child in search_node.children:
                             instances.extend(find_parent_instances(child))
                         return instances
-                    
+
                     parent_instances = find_parent_instances(self.model.root_node)
-                    
+
                     # Remove the subpage from each instance of the parent
                     for parent_instance in parent_instances:
                         # Find the subpage in this parent's children
                         for i, child in enumerate(parent_instance.children):
-                            if (child.node_type == 'note' and 
-                                hasattr(child.data, 'id') and 
+                            if (child.node_type == 'note' and
+                                hasattr(child.data, 'id') and
                                 child.data.id == node.data.id):
                                 # Remove from this parent instance
                                 parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
@@ -394,7 +394,7 @@ class NotesTreeView(QTreeView):
                                 parent_instance.children.pop(i)
                                 self.model.endRemoveRows()
                                 break
-                    
+
                     # Focus the item above the deleted one in the original location
                     if current_row > 0:
                         parent_index = self.model.parent(index)
@@ -408,16 +408,16 @@ class NotesTreeView(QTreeView):
                         if parent_index.isValid():
                             self.setCurrentIndex(parent_index)
                             self.setFocus()
-                    
+
                 else:  # Regular note (not a subpage)
                     self.model.note_api.delete_note(node.data.id)
-                    
+
                     # Remove from tree
                     parent_index = self.model.parent(index)
                     self.model.beginRemoveRows(parent_index, index.row(), index.row())
                     node.parent.children.remove(node)
                     self.model.endRemoveRows()
-                    
+
                     # Focus the item above
                     if current_row > 0:
                         above_index = self.model.index(current_row - 1, 0, parent_index)
@@ -465,8 +465,8 @@ class NotesTreeView(QTreeView):
                 # Find all instances of the previous sibling note
                 def find_new_parent_instances(search_node):
                     instances = []
-                    if (search_node.node_type == 'note' and 
-                        hasattr(search_node.data, 'id') and 
+                    if (search_node.node_type == 'note' and
+                        hasattr(search_node.data, 'id') and
                         search_node.data.id == prev_sibling.data.id):
                         instances.append(search_node)
                     for child in search_node.children:
@@ -479,8 +479,8 @@ class NotesTreeView(QTreeView):
                 if original_parent and original_parent.node_type == 'note':
                     def find_original_parent_instances(search_node):
                         instances = []
-                        if (search_node.node_type == 'note' and 
-                            hasattr(search_node.data, 'id') and 
+                        if (search_node.node_type == 'note' and
+                            hasattr(search_node.data, 'id') and
                             search_node.data.id == original_parent.data.id):
                             instances.append(search_node)
                         for child in search_node.children:
@@ -488,11 +488,11 @@ class NotesTreeView(QTreeView):
                         return instances
 
                     original_parent_instances = find_original_parent_instances(self.model.root_node)
-                    
+
                     for parent_instance in original_parent_instances:
                         for i, child in enumerate(parent_instance.children):
-                            if (child.node_type == 'note' and 
-                                hasattr(child.data, 'id') and 
+                            if (child.node_type == 'note' and
+                                hasattr(child.data, 'id') and
                                 child.data.id == node.data.id):
                                 parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
                                 self.model.beginRemoveRows(parent_index, i, i)
@@ -513,12 +513,12 @@ class NotesTreeView(QTreeView):
                 for parent_instance in new_parent_instances:
                     new_note_node = TreeNode(note_data, parent_instance, 'note')
                     insert_pos = self.model._find_insert_position(parent_instance, new_note_node)
-                    
+
                     parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
                     self.model.beginInsertRows(parent_index, insert_pos, insert_pos)
                     parent_instance.children.insert(insert_pos, new_note_node)
                     self.model.endInsertRows()
-                    
+
                     # Store the index if this is the instance where the demotion was initiated
                     if parent_instance is prev_sibling:
                         focus_index = self.model.createIndex(insert_pos, 0, new_note_node)
@@ -547,7 +547,7 @@ class NotesTreeView(QTreeView):
                 # Add under new parent
                 insert_pos = self.model._find_insert_position(prev_sibling, node_to_move)
                 new_parent_index = self.model.createIndex(prev_sibling.row(), 0, prev_sibling)
-                
+
                 self.model.beginInsertRows(new_parent_index, insert_pos, insert_pos)
                 node_to_move.parent = prev_sibling
                 prev_sibling.children.insert(insert_pos, node_to_move)
@@ -571,15 +571,15 @@ class NotesTreeView(QTreeView):
                 # Store the note's data and the original index for focusing later
                 note_data = node.data
                 original_index = index
-                
+
                 # Detach from current parent via API
                 self.model.note_api.detach_note_from_parent(node.data.id)
 
                 # Find all instances of the parent note and remove this subpage from each
                 def find_parent_instances(search_node):
                     instances = []
-                    if (search_node.node_type == 'note' and 
-                        hasattr(search_node.data, 'id') and 
+                    if (search_node.node_type == 'note' and
+                        hasattr(search_node.data, 'id') and
                         search_node.data.id == current_parent.data.id):
                         instances.append(search_node)
                     for child in search_node.children:
@@ -592,8 +592,8 @@ class NotesTreeView(QTreeView):
                 for parent_instance in parent_instances:
                     # Find the subpage in this parent's children
                     for i, child in enumerate(parent_instance.children):
-                        if (child.node_type == 'note' and 
-                            hasattr(child.data, 'id') and 
+                        if (child.node_type == 'note' and
+                            hasattr(child.data, 'id') and
                             child.data.id == node.data.id):
                             # Remove from this parent instance
                             parent_index = self.model.createIndex(parent_instance.row(), 0, parent_instance)
@@ -608,8 +608,8 @@ class NotesTreeView(QTreeView):
                     # Find all instances of the grandparent note
                     def find_grandparent_instances(search_node):
                         instances = []
-                        if (search_node.node_type == 'note' and 
-                            hasattr(search_node.data, 'id') and 
+                        if (search_node.node_type == 'note' and
+                            hasattr(search_node.data, 'id') and
                             search_node.data.id == grandparent.data.id):
                             instances.append(search_node)
                         for child in search_node.children:
@@ -629,7 +629,7 @@ class NotesTreeView(QTreeView):
                     for grandparent_instance in grandparent_instances:
                         new_node = TreeNode(note_data, None, 'note')
                         new_index = self.model.insert_node(new_node, grandparent_instance)
-                        
+
                         # Store the index if this is the original grandparent instance
                         if grandparent_instance is grandparent:
                             focus_index = new_index
@@ -655,7 +655,7 @@ class NotesTreeView(QTreeView):
                         for tag_node in tag_nodes:
                             new_node = TreeNode(note_data, None, 'note')
                             new_index = self.model.insert_node(new_node, tag_node)
-                            
+
                             # Store the first tag node index for focusing
                             if focus_index is None:
                                 focus_index = new_index

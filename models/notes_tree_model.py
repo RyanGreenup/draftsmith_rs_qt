@@ -296,14 +296,14 @@ class NotesTreeModel(QAbstractItemModel):
                     self.beginInsertRows(parent, insert_pos, insert_pos)
                     new_note_node = TreeNode(note_node.data, target_node, 'note')
                     target_node.children.insert(insert_pos, new_note_node)
-                    
+
                     # Process child notes recursively
                     def process_children(parent_note_node, source_note_node):
                         for child in source_note_node.children:
                             child_node = TreeNode(child.data, parent_note_node, 'note')
                             parent_note_node.append_child(child_node)
                             process_children(child_node, child)
-                    
+
                     # Process all children of the original note
                     process_children(new_note_node, note_node)
                     self.endInsertRows()
@@ -347,12 +347,12 @@ class NotesTreeModel(QAbstractItemModel):
                         old_parent_node = old_parent.internalPointer()
                         if old_parent_node.node_type == 'note':
                             old_parent_id = old_parent_node.data.id
-                            
+
                             # Find all instances of the old parent note
                             def find_old_parent_instances(search_node):
                                 instances = []
-                                if (search_node.node_type == 'note' and 
-                                    hasattr(search_node.data, 'id') and 
+                                if (search_node.node_type == 'note' and
+                                    hasattr(search_node.data, 'id') and
                                     search_node.data.id == old_parent_id):
                                     instances.append(search_node)
                                 for child in search_node.children:
@@ -360,12 +360,12 @@ class NotesTreeModel(QAbstractItemModel):
                                 return instances
 
                             old_parent_instances = find_old_parent_instances(self.root_node)
-                            
+
                             # Remove the note from each instance of the old parent
                             for parent_instance in old_parent_instances:
                                 for i, child in enumerate(parent_instance.children):
-                                    if (child.node_type == 'note' and 
-                                        hasattr(child.data, 'id') and 
+                                    if (child.node_type == 'note' and
+                                        hasattr(child.data, 'id') and
                                         child.data.id == child_note_id):
                                         parent_index = self.createIndex(parent_instance.row(), 0, parent_instance)
                                         self.beginRemoveRows(parent_index, i, i)
@@ -389,8 +389,8 @@ class NotesTreeModel(QAbstractItemModel):
                     # Find all instances of the target (parent) note and add the child to each
                     def find_parent_instances(search_node):
                         instances = []
-                        if (search_node.node_type == 'note' and 
-                            hasattr(search_node.data, 'id') and 
+                        if (search_node.node_type == 'note' and
+                            hasattr(search_node.data, 'id') and
                             search_node.data.id == parent_note_id):
                             instances.append(search_node)
                         for child in search_node.children:
@@ -404,16 +404,16 @@ class NotesTreeModel(QAbstractItemModel):
                     for parent_instance in parent_instances:
                         # Create new node for this instance
                         new_note_node = TreeNode(note_data, parent_instance, 'note')
-                        
+
                         # Find insert position maintaining sort order
                         insert_pos = self._find_insert_position(parent_instance, new_note_node)
-                        
+
                         # Insert the node
                         parent_index = self.createIndex(parent_instance.row(), 0, parent_instance)
                         self.beginInsertRows(parent_index, insert_pos, insert_pos)
                         parent_instance.children.insert(insert_pos, new_note_node)
                         self.endInsertRows()
-                        
+
                         # Store the index only if this is the instance where the drop occurred
                         if parent_instance is drop_target_instance:
                             focus_index = self.createIndex(insert_pos, 0, new_note_node)
@@ -607,7 +607,7 @@ class NotesTreeModel(QAbstractItemModel):
     def create_context_menu(self, index: QModelIndex) -> QMenu:
         """Create and return a context menu for the given index"""
         menu = QMenu()
-        
+
         # If no item is clicked (empty space), show refresh option
         if not index.isValid():
             refresh_action = menu.addAction("Refresh Tree")
