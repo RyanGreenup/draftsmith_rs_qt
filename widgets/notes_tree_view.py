@@ -995,7 +995,7 @@ class NotesTreeView(QTreeView):
         
         if index.isValid():
             # Set selection and ensure item is visible
-            self.selectionModel().select(index, self.selectionModel().ClearAndSelect)
+            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.ClearAndSelect)
             self.setCurrentIndex(index)
             self.scrollTo(index)
             
