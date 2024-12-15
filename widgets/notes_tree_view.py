@@ -1,16 +1,17 @@
-from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox, QAction
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox
+from PySide6.QtGui import QAction, QActionEvent, QKeyEvent
 from widgets.notes_tree_delegate import NotesTreeDelegate
 from PySide6.QtCore import Qt, QModelIndex
 from models.notes_tree_model import NotesTreeModel, TreeNode
 from api.client import TreeNote
+
 
 class NotesTreeView(QTreeView):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.model = NotesTreeModel(self)
         self.setModel(self.model)
-        
+
         # Add the custom delegate
         self.setItemDelegate(NotesTreeDelegate())
 
@@ -69,7 +70,7 @@ class NotesTreeView(QTreeView):
         if event.key() in [Qt.Key_J, Qt.Key_K, Qt.Key_Space, Qt.Key_M, Qt.Key_P]:
             # The actions will handle these keys through their shortcuts
             return
-        
+
         # Handle all other keys normally
         super().keyPressEvent(event)
 
@@ -449,7 +450,7 @@ class NotesTreeView(QTreeView):
         current_index = self.currentIndex()
         if current_index.isValid() and self.model.marked_node:
             current_node = current_index.internalPointer()
-            if (self.model.marked_node.node_type == 'note' and 
+            if (self.model.marked_node.node_type == 'note' and
                 current_node.node_type == 'note'):
                 # Move note as subpage
                 self.model._handle_paste(self.model.marked_node, current_node, "move")
