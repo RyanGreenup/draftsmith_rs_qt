@@ -803,9 +803,21 @@ class NotesTreeModel(QAbstractItemModel):
 
             # Reset and reload the entire tree
             self.beginResetModel()
-            self.root_node = TreeNode(None)
+            # Create new root node but keep reference to old one
+            new_root = TreeNode(None)
+            old_root = self.root_node
+            self.root_node = new_root
+            
+            # Clear complete notes tree before reloading
+            self.complete_notes_tree = []
+            
+            # Reload data
             self.setup_data()
             self.endResetModel()
+            
+            # Clean up old root node to prevent parent reference issues
+            if old_root:
+                self._cleanup_node(old_root)
 
             # Restore expanded states after refresh
             self._restore_expanded_state(self.root_node, expanded_states)
@@ -814,6 +826,19 @@ class NotesTreeModel(QAbstractItemModel):
 
         except Exception as e:
             print(f"Error refreshing tree: {e}")
+
+    def _cleanup_node(self, node: TreeNode):
+        """Recursively clean up node references"""
+        if not node:
+            return
+            
+        for child in node.children:
+            self._cleanup_node(child)
+            
+        # Clear references
+        node.parent = None
+        node.children = []
+        node.data = None
 
     def delete_tag(self, index: QModelIndex) -> None:
         """Delete a tag and refresh the entire tree"""
