@@ -39,6 +39,7 @@ class NotesTreeModel(QAbstractItemModel):
     tagMoved = Signal(QModelIndex)
     note_created = Signal(int)  # Signal emitted when a new note is created
     note_updated = Signal(int)  # Signal emitted when a note is updated
+    note_deleted = Signal(int)  # Signal emitted when a note is deleted
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1092,6 +1093,35 @@ class NotesTreeModel(QAbstractItemModel):
         # Start recursive check from root's children
         for child in self.root_node.children:
             check_node(child)
+
+    def delete_note(self, index: QModelIndex) -> None:
+        """Delete a note"""
+        if not index.isValid():
+            return
+
+        node = index.internalPointer()
+        if node.node_type != 'note':
+            return
+
+        try:
+            # Call API to delete note
+            note_id = int(node.data.id)
+            self.note_api.delete_note(note_id)
+
+            # Emit deletion signal
+            self.note_deleted.emit(note_id)
+
+            # Remove note from current position
+            parent_node = node.parent
+            row = index.row()
+            parent_index = self.createIndex(parent_node.row(), 0, parent_node) if parent_node != self.root_node else QModelIndex()
+            
+            self.beginRemoveRows(parent_index, row, row)
+            parent_node.children.pop(row)
+            self.endRemoveRows()
+
+        except Exception as e:
+            print(f"Error deleting note: {e}")
 
     def detach_note_from_tag(self, index: QModelIndex) -> None:
         """Detach a note from its parent tag"""
