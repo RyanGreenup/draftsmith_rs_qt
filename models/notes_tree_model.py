@@ -1013,6 +1013,10 @@ class NotesTreeModel(QAbstractItemModel):
             # Clear the marked node after operation
             self.marked_node = None
 
+    def filter_tree(self, text: str) -> None:
+        """Print filter text to stdout for debugging"""
+        print(f"NotesTreeModel filtering with text: '{text}'")
+
     def detach_note_from_tag(self, index: QModelIndex) -> None:
         """Detach a note from its parent tag"""
         if not index.isValid():
