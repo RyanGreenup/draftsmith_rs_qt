@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox
 from PySide6.QtGui import QAction, QActionEvent, QKeyEvent
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QItemSelectionModel
 from widgets.notes_tree_delegate import NotesTreeDelegate
 from PySide6.QtCore import Qt, QModelIndex
 from models.notes_tree_model import NotesTreeModel, TreeNode
