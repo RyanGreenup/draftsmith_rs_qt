@@ -855,6 +855,89 @@ class NotesTreeModel(QAbstractItemModel):
         node.children = []
         node.data = None
 
+    def filter_tree(self, filter_text: str) -> None:
+        """Filter the tree to show only matching items and their parents"""
+        if not self._view:
+            return
+
+        # Save current expansion state before filtering
+        self._expansion_state = {}
+        self._save_node_expansion(self.root_node)
+
+        # If filter is empty, restore all nodes and original expansion state
+        if not filter_text:
+            self._restore_node_expansion(self.root_node)
+            return
+
+        # Expand all nodes initially during filtering
+        self._expand_all_nodes(self.root_node)
+        
+        # Start filtering from root node
+        self._filter_node(self.root_node, filter_text.lower())
+
+    def _filter_node(self, node: TreeNode, filter_text: str) -> bool:
+        """
+        Recursively filter nodes. Returns True if node or any children match filter.
+        """
+        if not node:
+            return False
+
+        # Get node text based on type
+        node_text = self._get_node_text(node).lower()
+        
+        # Check if current node matches
+        matches = filter_text in node_text
+
+        # Special handling for "All Notes" and "Untagged Notes" sections
+        if node.node_type == 'page':
+            # Always show these sections if they have matching children
+            show_children = any(self._filter_node(child, filter_text) for child in node.children)
+            if self._view:
+                node_index = self.createIndex(node.row(), 0, node)
+                self._view.setRowHidden(node.row(), node_index.parent(), not show_children)
+            return show_children
+
+        # Process children
+        children_match = False
+        for child in node.children:
+            if self._filter_node(child, filter_text):
+                children_match = True
+
+        # Show node if it matches or has matching children
+        should_show = matches or children_match
+        
+        if self._view:
+            node_index = self.createIndex(node.row(), 0, node)
+            self._view.setRowHidden(node.row(), node_index.parent(), not should_show)
+
+        return should_show
+
+    def _get_node_text(self, node: TreeNode) -> str:
+        """Get the display text for a node based on its type"""
+        if node is None or node.data is None:
+            return ""
+            
+        if node.node_type == 'tag':
+            return node.data.name if hasattr(node.data, 'name') else ""
+        elif node.node_type == 'note':
+            if isinstance(node.data, dict):
+                return node.data.get('title', '')
+            return node.data.title if hasattr(node.data, 'title') else ""
+        elif node.node_type == 'page':
+            return node.data.get("name", "") if isinstance(node.data, dict) else ""
+        return ""
+
+    def _expand_all_nodes(self, node: TreeNode) -> None:
+        """Recursively expand all nodes"""
+        if not self._view:
+            return
+            
+        node_index = self.createIndex(node.row(), 0, node)
+        self._view.expand(node_index)
+        
+        for child in node.children:
+            self._expand_all_nodes(child)
+
     def delete_tag(self, index: QModelIndex) -> None:
         """Delete a tag and refresh the entire tree"""
         if not index.isValid():
