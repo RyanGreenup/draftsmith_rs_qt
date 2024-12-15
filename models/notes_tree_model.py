@@ -37,9 +37,9 @@ class TreeNode:
 class NotesTreeModel(QAbstractItemModel):
     contextMenuRequested = Signal(QModelIndex, 'QMenu')
     tagMoved = Signal(QModelIndex)
-    note_created = Signal(int)  # Signal emitted when a new note is created
     note_updated = Signal(int)  # Signal emitted when a note is updated
     note_deleted = Signal(int)  # Signal emitted when a note is deleted
+    notes_updated = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -810,6 +810,8 @@ class NotesTreeModel(QAbstractItemModel):
             # Restore expanded states after refresh
             self._restore_expanded_state(self.root_node, expanded_states)
 
+            self.notes_updated.emit()
+
         except Exception as e:
             print(f"Error refreshing tree: {e}")
 
@@ -1040,7 +1042,7 @@ class NotesTreeModel(QAbstractItemModel):
                             self._view.setExpanded(node_index, self._expansion_state[node_id])
                 for child in node.children:
                     restore_all(child)
-            
+
             restore_all(self.root_node)
             self._expansion_state.clear()  # Clear saved states after restore
             return
@@ -1055,7 +1057,7 @@ class NotesTreeModel(QAbstractItemModel):
                         self._expansion_state[node_id] = self._view.isExpanded(node_index)
                 for child in node.children:
                     save_all(child)
-            
+
             save_all(self.root_node)
 
         def check_node(node: TreeNode) -> bool:
@@ -1115,7 +1117,7 @@ class NotesTreeModel(QAbstractItemModel):
             parent_node = node.parent
             row = index.row()
             parent_index = self.createIndex(parent_node.row(), 0, parent_node) if parent_node != self.root_node else QModelIndex()
-            
+
             self.beginRemoveRows(parent_index, row, row)
             parent_node.children.pop(row)
             self.endRemoveRows()
