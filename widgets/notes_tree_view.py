@@ -964,3 +964,21 @@ class NotesTreeView(QTreeView):
             prev_sibling = self._get_previous_sibling(current_index)
             if prev_sibling:
                 self._demote_item(current_node, current_index)
+
+    def select_note_by_id(self, note_id: int, emit_signal: bool = True) -> None:
+        """Select the tree item corresponding to the given note ID"""
+        # Find the index for this note ID
+        index = self.model._find_index_by_id(note_id, 'note')
+        
+        if index.isValid():
+            # Block signals if requested
+            if not emit_signal:
+                self.blockSignals(True)
+                
+            # Select and scroll to the item
+            self.setCurrentIndex(index)
+            self.scrollTo(index)
+            
+            # Restore signal blocking
+            if not emit_signal:
+                self.blockSignals(False)
