@@ -43,21 +43,20 @@ class NotesTreeView(QTreeView):
                 else:
                     self.expand(current_index)
         elif event.key() == Qt.Key_M:
-            # Handle Mark (lowercase m) and Move (uppercase M)
+            # Handle Mark (lowercase m)
             current_index = self.currentIndex()
             if current_index.isValid():
                 current_node = current_index.internalPointer()
-                if event.modifiers() == Qt.ShiftModifier:  # Capital M for Move
-                    if self.model.marked_node:
-                        self._handle_move_operation(self.model.marked_node, current_node)
-                else:  # lowercase m for Mark
-                    self.model._mark_node(current_node)
+                self.model._mark_node(current_node)
         elif event.key() == Qt.Key_P:
-            # Handle Put operation
+            # Handle Put (lowercase p) and Move (uppercase P) operations
             current_index = self.currentIndex()
             if current_index.isValid() and self.model.marked_node:
                 current_node = current_index.internalPointer()
-                self._handle_put_operation(self.model.marked_node, current_node)
+                if event.modifiers() == Qt.ShiftModifier:  # Capital P for Move
+                    self._handle_move_operation(self.model.marked_node, current_node)
+                else:  # lowercase p for Put
+                    self._handle_put_operation(self.model.marked_node, current_node)
         else:
             # Handle all other keys normally
             super().keyPressEvent(event)
