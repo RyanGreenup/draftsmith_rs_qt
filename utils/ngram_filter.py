@@ -19,7 +19,7 @@ def generate_ngrams(text: str, n: int = 2) -> Set[str]:
         ngrams.add(text[i:i + n])
     return ngrams
 
-def text_matches_filter(filter_text: str, target_text: str, n: int = 2, match_all: bool = False) -> bool:
+def text_matches_filter(filter_text: str, target_text: str, n: int = 2, match_all: bool = True) -> bool:
     """Check if target text matches filter text using n-gram comparison.
 
     Args:
