@@ -26,12 +26,22 @@ class NotesTreeView(QTreeView):
         self.customContextMenuRequested.connect(self._show_tags_context_menu)
 
     def keyPressEvent(self, event):
-        # Map J key to Down arrow behavior
         if event.key() == Qt.Key_J:
-            # Create a new QKeyEvent simulating a Down arrow press
+            # Map J key to Down arrow behavior
             new_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Down, event.modifiers())
-            # Process the simulated Down arrow event
             super().keyPressEvent(new_event)
+        elif event.key() == Qt.Key_K:
+            # Map K key to Up arrow behavior
+            new_event = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Up, event.modifiers())
+            super().keyPressEvent(new_event)
+        elif event.key() == Qt.Key_Space:
+            # Toggle expand/collapse on Space
+            current_index = self.currentIndex()
+            if current_index.isValid():
+                if self.isExpanded(current_index):
+                    self.collapse(current_index)
+                else:
+                    self.expand(current_index)
         else:
             # Handle all other keys normally
             super().keyPressEvent(event)
