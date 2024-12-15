@@ -855,25 +855,55 @@ class NotesTreeModel(QAbstractItemModel):
         node.children = []
         node.data = None
 
-    def filter_tree(self, filter_text: str) -> None:
-        """Filter the tree to show only matching items and their parents"""
+    def filter_tree(self, text: str) -> None:
+        """Filter tree items using trigram matching"""
         if not self._view:
             return
 
-        # Save current expansion state before filtering
-        self._expansion_state = {}
-        self._save_node_expansion(self.root_node)
-
-        # If filter is empty, restore all nodes and original expansion state
-        if not filter_text:
+        # If clearing filter, restore previous expansion state and show all rows
+        if not text:
             self._restore_node_expansion(self.root_node)
             return
 
-        # Expand all nodes initially during filtering
-        self._expand_all_nodes(self.root_node)
-        
-        # Start filtering from root node
-        self._filter_node(self.root_node, filter_text.lower())
+        # Save current expansion state before filtering if not already saved
+        if not self._expansion_state:
+            self._save_node_expansion(self.root_node)
+
+        def check_node(node: TreeNode) -> bool:
+            """Check if node or any children match filter text"""
+            # Get display text based on node type
+            if node.node_type == 'tag':
+                node_text = node.data.name
+            elif node.node_type == 'page':
+                node_text = node.data["name"]
+            else:  # note
+                node_text = node.data.title if hasattr(node.data, 'title') else node.data.get('title', '')
+
+            # Check if this node matches
+            matches = text_matches_filter(text.lower(), node_text.lower(), n=3)
+
+            # Check children recursively
+            for child in node.children:
+                if check_node(child):
+                    matches = True
+
+            # Show/hide based on matches
+            node_index = self.createIndex(node.row(), 0, node)
+            self._view.setRowHidden(node.row(), node_index.parent(), not matches)
+
+            # If matches, expand all parent nodes to show the path
+            if matches:
+                current = node
+                while current.parent and current.parent != self.root_node:
+                    parent_index = self.createIndex(current.parent.row(), 0, current.parent)
+                    self._view.expand(parent_index)
+                    current = current.parent
+
+            return matches
+
+        # Start recursive check from root's children
+        for child in self.root_node.children:
+            check_node(child)
 
 
     def delete_tag(self, index: QModelIndex) -> None:
