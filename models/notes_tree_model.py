@@ -1069,37 +1069,12 @@ class NotesTreeModel(QAbstractItemModel):
 
         # If clearing filter, restore previous expansion state and show all rows
         if not text:
-            def restore_all(node: TreeNode):
-                node_index = self.createIndex(node.row(), 0, node)
-                if node.parent:  # Don't try to show/hide root node
-                    self._view.setRowHidden(node.row(), node_index.parent(), False)
-                    if node.node_type == 'page':
-                        # Always collapse "All Notes" and "Untagged Notes" sections
-                        self._view.collapse(node_index)
-                    elif hasattr(node.data, 'id'):
-                        # Restore saved state for regular nodes
-                        node_id = f"{node.node_type}_{node.data.id}"
-                        if node_id in self._expansion_state:
-                            self._view.setExpanded(node_index, self._expansion_state[node_id])
-                for child in node.children:
-                    restore_all(child)
-
-            restore_all(self.root_node)
-            self._expansion_state.clear()  # Clear saved states after restore
+            self._restore_node_expansion(self.root_node)
             return
 
         # Save current expansion state before filtering if not already saved
         if not self._expansion_state:
-            def save_all(node: TreeNode):
-                if node.parent:  # Don't save root node state
-                    node_index = self.createIndex(node.row(), 0, node)
-                    if hasattr(node.data, 'id'):
-                        node_id = f"{node.node_type}_{node.data.id}"
-                        self._expansion_state[node_id] = self._view.isExpanded(node_index)
-                for child in node.children:
-                    save_all(child)
-
-            save_all(self.root_node)
+            self._save_node_expansion(self.root_node)
 
         def check_node(node: TreeNode) -> bool:
             """Check if node or any children match filter text"""
