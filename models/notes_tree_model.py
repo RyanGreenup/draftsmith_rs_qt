@@ -928,6 +928,9 @@ class NotesTreeModel(QAbstractItemModel):
                 # Create new index for the moved node
                 new_index = self.createIndex(insert_pos, 0, source_node)
                 self.tagMoved.emit(new_index)
+                
+                # Refresh the tree to ensure consistency
+                self.refresh_tree()
 
             elif operation == "move" and source_type == "tag" and target_type == "tag":
                 # Store expanded states before moving
