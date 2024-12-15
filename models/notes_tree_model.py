@@ -40,6 +40,7 @@ class NotesTreeModel(QAbstractItemModel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.root_node = TreeNode(None)
+        self.marked_node = None  # Store marked node for copy/paste operations
         # TODO: Update base URL handling
         base_url = "http://vidar:37242"
         self.tag_api = TagAPI(base_url)
@@ -616,10 +617,46 @@ class NotesTreeModel(QAbstractItemModel):
 
         node = index.internalPointer()
         if node is not None:
+            # Add Mark option for notes and tags
+            if node.node_type in ['note', 'tag']:
+                mark_action = menu.addAction("Mark")
+                mark_action.triggered.connect(lambda: self._mark_node(node))
+
+            # Add Paste options if there's a marked node
+            if self.marked_node:
+                marked_type = self.marked_node.node_type
+                target_type = node.node_type
+
+                if marked_type == 'note' and target_type == 'tag':
+                    # Note -> Tag options
+                    menu.addSeparator()
+                    attach_action = menu.addAction("Attach Marked Note Here")
+                    attach_action.triggered.connect(
+                        lambda: self._handle_paste(self.marked_node, node, "attach"))
+                    
+                    move_action = menu.addAction("Move Marked Note Here")
+                    move_action.triggered.connect(
+                        lambda: self._handle_paste(self.marked_node, node, "move"))
+
+                elif marked_type == 'tag' and target_type == 'tag':
+                    # Tag -> Tag option
+                    menu.addSeparator()
+                    move_action = menu.addAction("Move Marked Tag as Child")
+                    move_action.triggered.connect(
+                        lambda: self._handle_paste(self.marked_node, node, "move"))
+
+                elif marked_type == 'note' and target_type == 'note':
+                    # Note -> Note option
+                    menu.addSeparator()
+                    move_action = menu.addAction("Move Marked Note as Subpage")
+                    move_action.triggered.connect(
+                        lambda: self._handle_paste(self.marked_node, node, "move"))
+
             # Show detach option for notes under tags
             if (node.node_type == 'note' and
                 node.parent and
                 node.parent.node_type == 'tag'):
+                menu.addSeparator()
                 detach_action = menu.addAction("Detach from tag")
                 detach_action.triggered.connect(lambda: self.detach_note_from_tag(index))
 
@@ -627,6 +664,7 @@ class NotesTreeModel(QAbstractItemModel):
             elif (node.node_type == 'tag' and
                   node.parent and
                   node.parent.node_type == 'tag'):
+                menu.addSeparator()
                 detach_action = menu.addAction("Detach from parent tag")
                 detach_action.triggered.connect(lambda: self.detach_tag_from_parent(index))
 
@@ -763,6 +801,27 @@ class NotesTreeModel(QAbstractItemModel):
 
         except Exception as e:
             print(f"Error deleting tag: {e}")
+
+    def _mark_node(self, node):
+        """Mark a node for later operations"""
+        self.marked_node = node
+        print(f"Marked {node.node_type}: {self.data(self.createIndex(node.row(), 0, node))}")
+
+    def _handle_paste(self, source_node, target_node, operation):
+        """Handle paste operations between nodes"""
+        source_type = source_node.node_type
+        target_type = target_node.node_type
+        
+        source_name = self.data(self.createIndex(source_node.row(), 0, source_node))
+        target_name = self.data(self.createIndex(target_node.row(), 0, target_node))
+        
+        print(f"\nPaste Operation:")
+        print(f"Source: {source_type} '{source_name}'")
+        print(f"Target: {target_type} '{target_name}'")
+        print(f"Operation: {operation}")
+        
+        # Clear the marked node after operation
+        self.marked_node = None
 
     def detach_note_from_tag(self, index: QModelIndex) -> None:
         """Detach a note from its parent tag"""
