@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox
+from widgets.notes_tree_delegate import NotesTreeDelegate
 from PySide6.QtCore import Qt, QModelIndex
 from models.notes_tree_model import NotesTreeModel, TreeNode
 from api.client import TreeNote
@@ -8,6 +9,9 @@ class NotesTreeView(QTreeView):
         super().__init__(parent)
         self.model = NotesTreeModel(self)
         self.setModel(self.model)
+        
+        # Add the custom delegate
+        self.setItemDelegate(NotesTreeDelegate())
 
         # Set the view for the model
         self.model.set_view(self)
