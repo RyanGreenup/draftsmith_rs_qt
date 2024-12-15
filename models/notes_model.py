@@ -180,7 +180,7 @@ class NotesModel(QObject):
             # Refresh notes but don't trigger a global re-selection
             self.refresh_notes()
             
-            # Emit note_updated signal after refresh
+            # Emit note_updated signal AFTER refresh
             self.note_updated.emit(note_id)
             return True
 
