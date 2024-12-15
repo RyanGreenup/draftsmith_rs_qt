@@ -41,14 +41,13 @@ class NotesTreeModel(QAbstractItemModel):
     note_deleted = Signal(int)  # Signal emitted when a note is deleted
     notes_updated = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
         self.root_node = TreeNode(None)
         self.marked_node = None  # Store marked node for copy/paste operations
         # TODO: Update base URL handling
-        base_url = "http://vidar:37242"
-        self.tag_api = TagAPI(base_url)
-        self.note_api = NoteAPI(base_url)  # Add note API
+        self.tag_api = TagAPI(api_url)
+        self.note_api = NoteAPI(api_url)  # Add note API
         self.complete_notes_tree = []  # Store complete notes hierarchy
         self._view = None  # Initialize view reference
         self._expansion_state = {}  # Store expansion states during filtering
@@ -816,14 +815,14 @@ class NotesTreeModel(QAbstractItemModel):
             new_root = TreeNode(None)
             old_root = self.root_node
             self.root_node = new_root
-            
+
             # Clear complete notes tree before reloading
             self.complete_notes_tree = []
-            
+
             # Reload data
             self.setup_data()
             self.endResetModel()
-            
+
             # Clean up old root node to prevent parent reference issues
             if old_root:
                 self._cleanup_node(old_root)
@@ -848,10 +847,10 @@ class NotesTreeModel(QAbstractItemModel):
         """Recursively clean up node references"""
         if not node:
             return
-            
+
         for child in node.children:
             self._cleanup_node(child)
-            
+
         # Clear references
         node.parent = None
         node.children = []

@@ -10,12 +10,12 @@ from api.client import TreeNote
 class NotesTreeView(QTreeView):
     # Signals for note operations
     note_selected = Signal(int)  # Signal emitted when a note is selected
-    note_selected_with_focus = Signal(int)  # Signal emitted when note should be selected and focused 
+    note_selected_with_focus = Signal(int)  # Signal emitted when note should be selected and focused
     note_deleted = Signal(int)  # Signal emitted when a note should be deleted
 
-    def __init__(self, parent=None):
+    def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
-        self.model = NotesTreeModel(self)
+        self.model = NotesTreeModel(parent=self, api_url=api_url)
         self.setModel(self.model)
 
         # Add the custom delegate
@@ -143,19 +143,19 @@ class NotesTreeView(QTreeView):
             node = index.internalPointer()
             if node.node_type == 'note' and hasattr(node.data, 'id'):
                 self.note_selected_with_focus.emit(node.data.id)
-                
+
     def mousePressEvent(self, event):
         """Handle mouse press events"""
         # Get the clicked item before calling super()
         index = self.indexAt(event.pos())
-        
+
         # Call super() to handle built-in behavior
         super().mousePressEvent(event)
-        
+
         # Only handle left clicks
         if event.button() != Qt.LeftButton:
             return
-            
+
         if index.isValid():
             # Set the selection explicitly
             self.setCurrentIndex(index)
@@ -989,13 +989,13 @@ class NotesTreeView(QTreeView):
         """Select the tree item corresponding to the given note ID"""
         # Find the index for this note ID
         index = self.model._find_index_by_id(note_id, 'note')
-        
+
         if index.isValid():
             # Set selection and ensure item is visible
             self.setCurrentIndex(index)
             self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.ClearAndSelect)
             self.scrollTo(index)
-            
+
             # Emit our custom signal if requested
             if emit_signal and index.internalPointer().node_type == 'note':
                 self.note_selected.emit(index.internalPointer().data.id)

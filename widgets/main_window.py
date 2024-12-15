@@ -46,7 +46,7 @@ class NoteApp(QMainWindow):
         self.menu_handler.view_actions["toggle_right_sidebar"] = self._actions[
             "toggle_right_sidebar"
         ]
-        
+
         # Create dict of view actions for tabs
         self.tab_view_actions = {
             "maximize_editor": self._actions["maximize_editor"],
@@ -60,7 +60,7 @@ class NoteApp(QMainWindow):
         self.menu_handler.setup_menus()
 
         # Create tree model and connect it to the view
-        tree_model = NotesTreeModel()  # Create the tree model
+        tree_model = NotesTreeModel(api_url=self.api_url)
         tree_model.set_view(self.main_content.left_sidebar.tree)  # Give model reference to view
         self.main_content.left_sidebar.tree.model = tree_model  # Set model on view using property
 

@@ -37,7 +37,7 @@ class TabContent(QWidget):
         self.note_link_palette = None  # Will be initialized when needed
 
         # Create components
-        self.left_sidebar = LeftSidebar()
+        self.left_sidebar = LeftSidebar(api_url=base_url)
         self.right_sidebar = RightSidebar()
         # Create the MarkdownEditor Region
         self.editor = MarkdownEditor(self.base_url)
@@ -129,7 +129,7 @@ class TabContent(QWidget):
         self.notes_model = notes_model
 
         # Create the tree model and set it on the view
-        tree_model = NotesTreeModel()  # Create new tree model instance
+        tree_model = NotesTreeModel(api_url=self.base_url)  # Create new tree model instance
         self.left_sidebar.tree.model = tree_model  # Use model property instead of setModel
 
         # Connect note selection to view updates, but only when this tab is active
@@ -212,7 +212,6 @@ class TabContent(QWidget):
         # Store current cursor position and tree state before save
         cursor = self.editor.editor.textCursor()
         cursor_position = cursor.position()
-        tree_state = self.left_sidebar.tree.save_state()
 
         content = self.editor.get_content()
         if self.notes_model:
@@ -221,8 +220,6 @@ class TabContent(QWidget):
             if self.notes_model.update_note(note_id, content=content):
                 # After model refresh, restore UI state
                 if current_note_id is not None:
-                    # Restore tree state first
-                    self.left_sidebar.tree.restore_state(tree_state)
                     # Then restore note selection and cursor
                     self.set_current_note(current_note_id)
                     cursor = self.editor.editor.textCursor()

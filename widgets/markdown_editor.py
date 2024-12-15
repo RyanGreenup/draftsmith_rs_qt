@@ -112,7 +112,7 @@ class MarkdownEditor(QWidget):
         # Also the scroll doesn't bounce around, it's managed by JS not Py
         # so if updates are too quick the scroll position is lost and resets
         # to the top. Overall this buffer is a lot smoother.
-        self.update_delay = 200
+        self.update_delay = 100
 
         # Create horizontal splitter for side-by-side view
         self.splitter = QSplitter(Qt.Orientation.Horizontal)

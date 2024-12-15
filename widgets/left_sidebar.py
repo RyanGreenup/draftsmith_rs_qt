@@ -6,9 +6,9 @@ from .notes_tree_view import NotesTreeView  # Import the new class
 
 
 class LeftSidebar(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
-        self.tree = NotesTreeView()
+        self.tree = NotesTreeView(api_url)
         self.search_sidebar = SearchSidebar()
         self.tab_widget = QTabWidget()
 
