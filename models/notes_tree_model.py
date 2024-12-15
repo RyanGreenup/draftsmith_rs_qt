@@ -643,7 +643,7 @@ class NotesTreeModel(QAbstractItemModel):
         if node is not None:
             # Add Mark option for notes and tags
             if node.node_type in ['note', 'tag']:
-                mark_action = menu.addAction("Mark")
+                mark_action = menu.addAction("&Mark")
                 mark_action.setShortcut("Ctrl+M")  # Add keyboard shortcut
                 mark_action.triggered.connect(lambda: self._mark_node(node))
 
@@ -655,25 +655,25 @@ class NotesTreeModel(QAbstractItemModel):
                 if marked_type == 'note' and target_type == 'tag':
                     # Note -> Tag options
                     menu.addSeparator()
-                    attach_action = menu.addAction("Attach Marked Note Here")
+                    attach_action = menu.addAction("&Attach Marked Note Here")
                     attach_action.triggered.connect(
                         lambda: self._handle_paste(self.marked_node, node, "attach"))
 
-                    move_action = menu.addAction("Move Marked Note Here")
+                    move_action = menu.addAction("&Move Marked Note Here")
                     move_action.triggered.connect(
                         lambda: self._handle_paste(self.marked_node, node, "move"))
 
                 elif marked_type == 'tag' and target_type == 'tag':
                     # Tag -> Tag option
                     menu.addSeparator()
-                    move_action = menu.addAction("Move Marked Tag as Child")
+                    move_action = menu.addAction("Move Marked Tag as &Child")
                     move_action.triggered.connect(
                         lambda: self._handle_paste(self.marked_node, node, "move"))
 
                 elif marked_type == 'note' and target_type == 'note':
                     # Note -> Note option
                     menu.addSeparator()
-                    move_action = menu.addAction("Move Marked Note as Subpage")
+                    move_action = menu.addAction("Move Marked Note as &Subpage")
                     move_action.triggered.connect(
                         lambda: self._handle_paste(self.marked_node, node, "move"))
 
@@ -682,7 +682,7 @@ class NotesTreeModel(QAbstractItemModel):
                 node.parent and
                 node.parent.node_type == 'tag'):
                 menu.addSeparator()
-                detach_action = menu.addAction("Detach from tag")
+                detach_action = menu.addAction("&Detach from tag")
                 detach_action.triggered.connect(lambda: self.detach_note_from_tag(index))
 
             # Show detach option for tags under other tags
@@ -690,7 +690,7 @@ class NotesTreeModel(QAbstractItemModel):
                   node.parent and
                   node.parent.node_type == 'tag'):
                 menu.addSeparator()
-                detach_action = menu.addAction("Detach from parent tag")
+                detach_action = menu.addAction("&Detach from parent tag")
                 detach_action.triggered.connect(lambda: self.detach_tag_from_parent(index))
 
         self.contextMenuRequested.emit(index, menu)
