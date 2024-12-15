@@ -149,6 +149,10 @@ class MarkdownEditor(QWidget):
             self.preview.settings().WebAttribute.LocalContentCanAccessFileUrls, True
         )
 
+        # The background should be transparent to match the UI
+        self.preview.setStyleSheet("background: transparent;")
+        self.preview.page().setBackgroundColor(Qt.GlobalColor.transparent)
+
         # Add widgets to splitter
         self.splitter.addWidget(self.editor)
         self.splitter.addWidget(self.preview)
@@ -247,6 +251,23 @@ class MarkdownEditor(QWidget):
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
             <link rel="stylesheet" href="qrc:/katex/katex.min.css">
             {css_includes}
+            <style>
+                body {{
+                    background-color: transparent !important;
+                }}
+                .markdown {{
+                    background-color: transparent !important;
+                }}
+
+                :root,
+                [data-theme] {{
+                  background-color: transparent !important;
+                }}
+
+                .prose :where(code):not(:where([class~="not-prose"] *)) {{
+                  background-color: transparent !important;
+                }}
+            </style>
         </head>
         <body><div class="markdown">
             {html}
