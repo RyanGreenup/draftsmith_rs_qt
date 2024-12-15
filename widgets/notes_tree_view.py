@@ -12,9 +12,12 @@ class NotesTreeView(QTreeView):
     note_selected = Signal(int)  # Signal emitted when a note is selected
     note_selected_with_focus = Signal(int)  # Signal emitted when note should be selected and focused
     note_deleted = Signal(int)  # Signal emitted when a note should be deleted
+    
+    follow_mode = False  # Controls whether selection changes trigger note preview
 
     def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
+        self.follow_mode = False  # Initialize follow mode
         # Create the model and store a reference
         self._tree_model = NotesTreeModel(parent=self, api_url=api_url)
         # Set it as the model for the view
@@ -994,12 +997,13 @@ class NotesTreeView(QTreeView):
         """Override selectionChanged to handle selection changes"""
         super().selectionChanged(selected, deselected)
         
-        # Get the currently selected index
-        current = self.currentIndex()
-        if current.isValid():
-            node = current.internalPointer()
-            if node and node.node_type == 'note' and hasattr(node.data, 'id'):
-                self.note_selected.emit(node.data.id)
+        # Only emit selection signals if follow mode is enabled
+        if self.follow_mode:
+            current = self.currentIndex()
+            if current.isValid():
+                node = current.internalPointer()
+                if node and node.node_type == 'note' and hasattr(node.data, 'id'):
+                    self.note_selected.emit(node.data.id)
 
     def select_note_by_id(self, note_id: int, emit_signal: bool = True) -> None:
         """Select the tree item corresponding to the given note ID"""
@@ -1012,8 +1016,8 @@ class NotesTreeView(QTreeView):
             self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.ClearAndSelect)
             self.scrollTo(index)
 
-            # Emit our custom signal if requested
-            if emit_signal and index.internalPointer().node_type == 'note':
+            # Only emit signal if requested AND follow mode is enabled
+            if emit_signal and self.follow_mode and index.internalPointer().node_type == 'note':
                 self.note_selected.emit(index.internalPointer().data.id)
 
     def _find_node_by_id(self, node_id: int, node_type: str):
