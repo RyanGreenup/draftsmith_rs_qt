@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QSplitter, QLineEdit, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget, QSplitter, QLineEdit
 from pydantic import BaseModel, Field
 from PySide6.QtCore import Signal, Qt, QBuffer, QByteArray, QIODevice
 from PySide6.QtNetwork import QNetworkRequest
@@ -23,7 +23,7 @@ class TabContent(QWidget):
     """A complete view implementation for a note"""
 
     note_saved = Signal(int)  # Emits note_id when saved
-    text_entered = Signal(str)  # Add this new signal
+    filter_text_entered = Signal(str)  # Add this new signal
 
     def __init__(self, base_url: str, parent=None):
         super().__init__(parent)
@@ -54,7 +54,7 @@ class TabContent(QWidget):
     def _setup_ui(self):
         """Setup the UI layout"""
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
-        
+
         # Create a container for left sidebar and text input
         left_container = QWidget()
         left_layout = QVBoxLayout()
@@ -62,7 +62,7 @@ class TabContent(QWidget):
         left_layout.addWidget(self.text_input)
         left_layout.addWidget(self.left_sidebar)
         left_container.setLayout(left_layout)
-        
+
         main_splitter.addWidget(left_container)
         main_splitter.addWidget(self.editor)
         main_splitter.addWidget(self.right_sidebar)
@@ -70,8 +70,6 @@ class TabContent(QWidget):
         # Set default sizes
         main_splitter.setSizes([200, 600, 200])
 
-        # Add to layout
-        from PySide6.QtWidgets import QVBoxLayout
 
         layout = QVBoxLayout()
         layout.addWidget(main_splitter)
@@ -81,7 +79,7 @@ class TabContent(QWidget):
     def _connect_signals(self):
         """Connect internal signals"""
         # Add this new connection
-        self.text_input.textChanged.connect(self.text_entered.emit)
+        self.text_input.textChanged.connect(self.filter_text_entered.emit)
 
         # Add connection for note deletion
         # What to do when the user has asked to delete a note
@@ -208,7 +206,7 @@ class TabContent(QWidget):
         cursor = self.editor.editor.textCursor()
         cursor_position = cursor.position()
         tree_state = self.left_sidebar.tree.save_state()
-        
+
         content = self.editor.get_content()
         if self.notes_model:
             # Store current note ID before save
