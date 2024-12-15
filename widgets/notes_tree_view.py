@@ -994,14 +994,11 @@ class NotesTreeView(QTreeView):
         index = self.model._find_index_by_id(note_id, 'note')
         
         if index.isValid():
-            # Block signals if requested
-            if not emit_signal:
-                self.blockSignals(True)
-                
-            # Select and scroll to the item
+            # Set selection and ensure item is visible
+            self.selectionModel().select(index, self.selectionModel().ClearAndSelect)
             self.setCurrentIndex(index)
             self.scrollTo(index)
             
-            # Restore signal blocking
-            if not emit_signal:
-                self.blockSignals(False)
+            # Emit our custom signal if requested
+            if emit_signal and index.internalPointer().node_type == 'note':
+                self.note_selected.emit(index.internalPointer().data.id)
