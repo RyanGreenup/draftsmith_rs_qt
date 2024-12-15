@@ -1003,8 +1003,8 @@ class NotesTreeView(QTreeView):
 
     def select_note_by_id(self, note_id: int, emit_signal: bool = True) -> None:
         """Select the tree item corresponding to the given note ID"""
-        # Find the index for this note ID
-        index = self.model._find_index_by_id(note_id, 'note')
+        # Find the index for this note ID using iterative search
+        index = self._tree_model._find_index_by_id(note_id, 'note')
 
         if index.isValid():
             # Set selection and ensure item is visible
@@ -1015,3 +1015,42 @@ class NotesTreeView(QTreeView):
             # Emit our custom signal if requested
             if emit_signal and index.internalPointer().node_type == 'note':
                 self.note_selected.emit(index.internalPointer().data.id)
+
+    def _find_node_by_id(self, node_id: int, node_type: str):
+        """Find a node by its ID and type using iterative search"""
+        # Use a stack for iterative traversal
+        stack = [self._tree_model.root_node]
+        
+        while stack:
+            current = stack.pop()
+            
+            # Check current node
+            if (current.node_type == node_type and 
+                hasattr(current.data, 'id') and 
+                current.data.id == node_id):
+                return current
+                
+            # Add children to stack in reverse order 
+            # (so they're processed in original order when popped)
+            for child in reversed(current.children):
+                stack.append(child)
+                
+        return None
+
+    def _find_index_by_id(self, node_id: int, node_type: str):
+        """Find the model index for a node with the given ID and type"""
+        node = self._find_node_by_id(node_id, node_type)
+        if node:
+            # Create index path to node
+            index_path = []
+            current = node
+            while current and current != self._tree_model.root_node:
+                index_path.insert(0, current.row())
+                current = current.parent
+                
+            # Build the model index
+            result = QModelIndex()
+            for row in index_path:
+                result = self.model.index(row, 0, result)
+            return result
+        return QModelIndex()
