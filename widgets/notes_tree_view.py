@@ -95,6 +95,11 @@ class NotesTreeView(QTreeView):
             # The actions will handle these keys through their shortcuts
             return
 
+        # Handle Escape to clear mark
+        if event.key() == Qt.Key_Escape and self.model.marked_node:
+            self.model._mark_node(None)
+            return
+
         # Handle all other keys normally
         super().keyPressEvent(event)
 
