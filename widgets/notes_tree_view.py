@@ -146,15 +146,20 @@ class NotesTreeView(QTreeView):
                 
     def mousePressEvent(self, event):
         """Handle mouse press events"""
+        # Get the clicked item before calling super()
+        index = self.indexAt(event.pos())
+        
+        # Call super() to handle built-in behavior
         super().mousePressEvent(event)
         
         # Only handle left clicks
         if event.button() != Qt.LeftButton:
             return
             
-        # Get the clicked item
-        index = self.indexAt(event.pos())
         if index.isValid():
+            # Set the selection explicitly
+            self.setCurrentIndex(index)
+            
             node = index.internalPointer()
             if node.node_type == 'note' and hasattr(node.data, 'id'):
                 self.note_selected.emit(node.data.id)
