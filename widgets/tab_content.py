@@ -127,22 +127,10 @@ class TabContent(QWidget):
     def set_model(self, notes_model: NotesModel):
         """Connect this view to the model"""
         self.notes_model = notes_model
-
-        # Create the tree model and set it on the view
-        tree_model = NotesTreeModel(api_url=self.base_url)
         
-        # First set up all signal connections
+        # Only connect the note_selected signal for view updates
         self.notes_model.note_selected.connect(self._filtered_update_view)
-        self.notes_model.notes_updated.connect(tree_model.refresh_tree)
-        self.notes_model.note_updated.connect(lambda note_id: tree_model.refresh_tree())
-        self.notes_model.note_deleted.connect(lambda note_id: tree_model.refresh_tree())
         
-        # Store reference to tree model to prevent it from being garbage collected
-        self._tree_model = tree_model
-        
-        # Now set the model on the tree view
-        self.left_sidebar.tree.setModel(tree_model)  # Use Qt's setModel directly
-
         # Initialize palettes with view actions
         self.note_select_palette = NoteSelectPalette(notes_model, self)
 
