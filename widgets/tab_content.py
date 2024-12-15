@@ -80,6 +80,7 @@ class TabContent(QWidget):
         """Connect internal signals"""
         # Add this new connection
         self.text_input.textChanged.connect(self.filter_text_entered.emit)
+        self.filter_text_entered.connect(self.parent().parent().handle_filter_text)
 
         # Add connection for note deletion
         # What to do when the user has asked to delete a note
@@ -386,6 +387,11 @@ class TabContent(QWidget):
         if current_item:
             return self.left_sidebar.tree.demote_note(current_item)
         return False
+
+    def filter_sidebar(self, text: str) -> None:
+        """Filter the sidebar tree based on entered text"""
+        if self.notes_model:
+            self.left_sidebar.tree.filter_tree(text)
 
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however

@@ -342,3 +342,9 @@ class NoteApp(QMainWindow):
                 self.status_bar.showMessage("Note demoted", 3000)
             else:
                 self.status_bar.showMessage("Could not demote note", 3000)
+
+    def handle_filter_text(self, text: str) -> None:
+        """Handle filter text entered in the current tab"""
+        current_tab = self.tab_handler.tab_widget.currentWidget()
+        if isinstance(current_tab, TabContent):
+            current_tab.filter_sidebar(text)
