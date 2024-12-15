@@ -130,7 +130,7 @@ class TabContent(QWidget):
         
         # Create the tree model and set it on the view
         tree_model = NotesTreeModel()  # Create new tree model instance
-        self.left_sidebar.tree.setModel(tree_model)  # Use Qt's setModel method
+        self.left_sidebar.tree.model = tree_model  # Use model property instead of setModel
         
         # Connect note selection to view updates, but only when this tab is active
         self.notes_model.note_selected.connect(self._filtered_update_view)
