@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QTreeView, QMenu, QInputDialog, QMessageBox
 from PySide6.QtGui import QAction, QActionEvent, QKeyEvent
+from PySide6.QtCore import Signal
 from widgets.notes_tree_delegate import NotesTreeDelegate
 from PySide6.QtCore import Qt, QModelIndex
 from models.notes_tree_model import NotesTreeModel, TreeNode
@@ -7,6 +8,11 @@ from api.client import TreeNote
 
 
 class NotesTreeView(QTreeView):
+    # Signals for note operations
+    note_selected = Signal(int)  # Signal emitted when a note is selected
+    note_selected_with_focus = Signal(int)  # Signal emitted when note should be selected and focused 
+    note_deleted = Signal(int)  # Signal emitted when a note should be deleted
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.model = NotesTreeModel(self)
@@ -89,6 +95,19 @@ class NotesTreeView(QTreeView):
         self.addAction(self.action_refresh)
 
     def keyPressEvent(self, event):
+        # Handle Return/Enter for note selection
+        if event.key() == Qt.Key_Return:
+            current = self.currentIndex()
+            if current.isValid():
+                node = current.internalPointer()
+                if node.node_type == 'note' and hasattr(node.data, 'id'):
+                    if event.modifiers() & Qt.ControlModifier:
+                        self.note_selected_with_focus.emit(node.data.id)
+                    else:
+                        self.note_selected.emit(node.data.id)
+                    event.accept()
+                    return
+
         # Let the actions handle the key events
         if event.key() in [Qt.Key_J, Qt.Key_K, Qt.Key_Space, Qt.Key_M, Qt.Key_P,
                           Qt.Key_Left, Qt.Key_Right, Qt.Key_F5]:
@@ -106,6 +125,17 @@ class NotesTreeView(QTreeView):
     def _handle_refresh(self):
         """Handle refreshing the tree"""
         self.model.refresh_tree()
+
+    def mouseDoubleClickEvent(self, event):
+        """Handle double click to focus the selected note"""
+        index = self.indexAt(event.pos())
+        if index.isValid():
+            node = index.internalPointer()
+            if node.node_type == 'note' and hasattr(node.data, 'id'):
+                self.note_selected_with_focus.emit(node.data.id)
+                event.accept()
+                return
+        super().mouseDoubleClickEvent(event)
 
     def _show_context_menu_at_current(self):
         """Show context menu at current item's position"""
@@ -147,6 +177,14 @@ class NotesTreeView(QTreeView):
 
         if index.isValid():
             node = index.internalPointer()
+
+            # Add delete action for notes
+            if node.node_type == 'note':
+                menu.addSeparator()
+                delete_action = menu.addAction("Delete Note")
+                delete_action.triggered.connect(
+                    lambda: self.note_deleted.emit(node.data.id)
+                )
 
             # Add Note ID label if this is a note
             if node.node_type == 'note':
