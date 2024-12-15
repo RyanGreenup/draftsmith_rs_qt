@@ -7,11 +7,10 @@ class NotesTreeDelegate(QStyledItemDelegate):
         # First draw the default item
         super().paint(painter, option, index)
         
-        # Check if this is the marked node
-        model = index.model()
-        node = index.internalPointer()
+        # Check if this is marked using the model's data role
+        is_marked = index.data(Qt.UserRole)
         
-        if node == model.marked_node:
+        if is_marked:
             # Save the painter's state
             painter.save()
             

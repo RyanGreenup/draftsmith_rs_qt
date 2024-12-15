@@ -169,13 +169,13 @@ class NotesTreeModel(QAbstractItemModel):
 
         node = index.internalPointer()
 
+        # Add a custom role for marked state
+        if role == Qt.UserRole:
+            return node == self.marked_node
+
         if role == Qt.DecorationRole:
             style = QApplication.style()
             icons = []
-
-            # Add marked indicator if this is the marked node
-            if node == self.marked_node:
-                icons.append(style.standardIcon(QStyle.StandardPixmap.SP_DialogYesButton))
 
             # Add regular icon based on node type
             if node.node_type == 'tag':
@@ -829,7 +829,35 @@ class NotesTreeModel(QAbstractItemModel):
 
     def _mark_node(self, node):
         """Mark a node for later operations"""
+        # If there was a previously marked node, we need to update its display
+        if self.marked_node:
+            old_index = self._find_index_by_node(self.marked_node)
+            if old_index.isValid():
+                self.marked_node = None
+                self.dataChanged.emit(old_index, old_index, [Qt.UserRole])
+
+        # Set the new marked node and update its display
         self.marked_node = node
+        if node:
+            new_index = self._find_index_by_node(node)
+            if new_index.isValid():
+                self.dataChanged.emit(new_index, new_index, [Qt.UserRole])
+
+    def _find_index_by_node(self, node):
+        """Helper method to find a node's index"""
+        def search(parent_index):
+            rows = self.rowCount(parent_index)
+            for row in range(rows):
+                index = self.index(row, 0, parent_index)
+                if index.internalPointer() == node:
+                    return index
+                # Recursively search children
+                result = search(index)
+                if result.isValid():
+                    return result
+            return QModelIndex()
+        
+        return search(QModelIndex())
 
     def _handle_paste(self, source_node, target_node, operation):
         """Handle paste operations between nodes"""
