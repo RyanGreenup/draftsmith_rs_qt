@@ -607,8 +607,14 @@ class NotesTreeModel(QAbstractItemModel):
     def create_context_menu(self, index: QModelIndex) -> QMenu:
         """Create and return a context menu for the given index"""
         menu = QMenu()
-        node = index.internalPointer()
+        
+        # If no item is clicked (empty space), show refresh option
+        if not index.isValid():
+            refresh_action = menu.addAction("Refresh Tree")
+            refresh_action.triggered.connect(self.refresh_tree)
+            return menu
 
+        node = index.internalPointer()
         if node is not None:
             # Show detach option for notes under tags
             if (node.node_type == 'note' and
@@ -719,8 +725,27 @@ class NotesTreeModel(QAbstractItemModel):
         except Exception as e:
             print(f"Error detaching tag from parent: {e}")
 
+    def refresh_tree(self) -> None:
+        """Rebuild the entire tree from scratch using fresh API data"""
+        try:
+            # Store expanded states for the entire tree before refresh
+            expanded_states = {}
+            self._store_expanded_state(self.root_node, expanded_states)
+
+            # Reset and reload the entire tree
+            self.beginResetModel()
+            self.root_node = TreeNode(None)
+            self.setup_data()
+            self.endResetModel()
+
+            # Restore expanded states after refresh
+            self._restore_expanded_state(self.root_node, expanded_states)
+
+        except Exception as e:
+            print(f"Error refreshing tree: {e}")
+
     def delete_tag(self, index: QModelIndex) -> None:
-        """Delete a tag and remove it from the tree"""
+        """Delete a tag and refresh the entire tree"""
         if not index.isValid():
             return
 
@@ -733,14 +758,8 @@ class NotesTreeModel(QAbstractItemModel):
             tag_id = int(node.data.id)
             self.tag_api.delete_tag(tag_id)
 
-            # Remove tag from tree
-            parent_index = index.parent()
-            parent_node = parent_index.internalPointer() if parent_index.isValid() else self.root_node
-            row = index.row()
-
-            self.beginRemoveRows(parent_index, row, row)
-            parent_node.children.pop(row)
-            self.endRemoveRows()
+            # Refresh the entire tree
+            self.refresh_tree()
 
         except Exception as e:
             print(f"Error deleting tag: {e}")
