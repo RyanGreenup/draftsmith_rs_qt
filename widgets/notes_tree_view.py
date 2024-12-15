@@ -15,8 +15,8 @@ class NotesTreeView(QTreeView):
 
     def __init__(self, api_url: str, parent=None):
         super().__init__(parent)
-        self.model = NotesTreeModel(parent=self, api_url=api_url)
-        self.setModel(self.model)
+        tree_model = NotesTreeModel(parent=self, api_url=api_url)
+        self.setModel(tree_model)
 
         # Add the custom delegate
         self.setItemDelegate(NotesTreeDelegate())
