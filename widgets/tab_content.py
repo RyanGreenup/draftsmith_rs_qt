@@ -129,6 +129,8 @@ class TabContent(QWidget):
         self.left_sidebar.tree.set_model(notes_model)
         # Connect note selection to view updates, but only when this tab is active
         self.notes_model.note_selected.connect(self._filtered_update_view)
+        # Connect tree model's note_updated signal to notes_model's note_updated signal
+        self.left_sidebar.tags_tree.model.note_updated.connect(self.notes_model.note_updated.emit)
         # Initialize palettes with view actions
         self.note_select_palette = NoteSelectPalette(notes_model, self)
         # Initialize note link palette

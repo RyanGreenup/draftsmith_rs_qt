@@ -21,6 +21,7 @@ class NotesModel(QObject):
         object
     )  # Emitted when a note is selected with NoteSelectionData
     note_deleted = Signal(int)  # Add this new signal - emits deleted note's ID
+    note_updated = Signal(int)  # Signal emitted when a note is updated
 
     def __init__(self, api_url: str):
         super().__init__()
