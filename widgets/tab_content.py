@@ -131,6 +131,8 @@ class TabContent(QWidget):
         self.notes_model.note_selected.connect(self._filtered_update_view)
         # Connect tree model's note_updated signal to notes_model's note_updated signal
         self.left_sidebar.tags_tree.model.note_updated.connect(self.notes_model.note_updated.emit)
+        # Connect tree model's note_deleted signal to notes_model's note_deleted signal
+        self.left_sidebar.tags_tree.model.note_deleted.connect(self.notes_model.note_deleted.emit)
         # Initialize palettes with view actions
         self.note_select_palette = NoteSelectPalette(notes_model, self)
         # Initialize note link palette
