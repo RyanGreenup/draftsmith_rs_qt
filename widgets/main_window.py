@@ -62,7 +62,7 @@ class NoteApp(QMainWindow):
         # Create tree model and connect it to the view
         tree_model = NotesTreeModel()  # Create the tree model
         tree_model.set_view(self.main_content.left_sidebar.tree)  # Give model reference to view
-        self.main_content.left_sidebar.tree.setModel(tree_model)  # Set model on view
+        self.main_content.left_sidebar.tree.model = tree_model  # Set model on view using property
 
         # Connect the notes model to the tree model
         self.notes_model.notes_updated.connect(tree_model.refresh_tree)
