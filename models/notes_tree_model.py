@@ -843,6 +843,20 @@ class NotesTreeModel(QAbstractItemModel):
         except Exception as e:
             print(f"Error refreshing tree: {e}")
 
+    def _handle_click(self, index):
+        """Handle single click selection of notes"""
+        if index.isValid():
+            node = index.internalPointer()
+            if node.node_type == 'note' and hasattr(node.data, 'id'):
+                self.note_selected.emit(node.data.id)
+
+    def _handle_double_click(self, index):
+        """Handle double click to focus the selected note"""
+        if index.isValid():
+            node = index.internalPointer()
+            if node.node_type == 'note' and hasattr(node.data, 'id'):
+                self.note_selected_with_focus.emit(node.data.id)
+
     def _cleanup_node(self, node: TreeNode):
         """Recursively clean up node references"""
         if not node:

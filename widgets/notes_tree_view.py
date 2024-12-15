@@ -21,6 +21,10 @@ class NotesTreeView(QTreeView):
         # Add the custom delegate
         self.setItemDelegate(NotesTreeDelegate())
 
+        # Connect mouse event handlers
+        self.clicked.connect(self._handle_click)
+        self.doubleClicked.connect(self._handle_double_click)
+
         # Set the view for the model
         self.model.set_view(self)
         self.model.tagMoved.connect(self._focus_moved_tag)
