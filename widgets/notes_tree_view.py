@@ -31,6 +31,11 @@ class NotesTreeView(QTreeView):
 
     def _setup_actions(self):
         """Setup actions that can be triggered by both menu and keyboard"""
+        # Context menu action
+        self.action_context_menu = QAction("Show Context Menu", self)
+        self.action_context_menu.setShortcuts(["Menu", "Shift+F10"])
+        self.action_context_menu.triggered.connect(self._show_context_menu_at_current)
+
         # Navigation actions
         self.action_move_down = QAction("Move Down", self)
         self.action_move_down.setShortcut("J")
@@ -72,6 +77,7 @@ class NotesTreeView(QTreeView):
         self.action_refresh.triggered.connect(self._handle_refresh)
 
         # Add actions to widget
+        self.addAction(self.action_context_menu)
         self.addAction(self.action_move_down)
         self.addAction(self.action_move_up)
         self.addAction(self.action_toggle_expand)
@@ -95,6 +101,20 @@ class NotesTreeView(QTreeView):
     def _handle_refresh(self):
         """Handle refreshing the tree"""
         self.model.refresh_tree()
+
+    def _show_context_menu_at_current(self):
+        """Show context menu at current item's position"""
+        current = self.currentIndex()
+        if current.isValid():
+            # Get the item's rect and calculate position at center
+            rect = self.visualRect(current)
+            pos = rect.center()
+            # Show the context menu
+            self._show_tags_context_menu(pos)
+        else:
+            # If no current item, show at mouse cursor position
+            pos = self.mapFromGlobal(self.cursor().pos())
+            self._show_tags_context_menu(pos)
 
     def _handle_move_operation(self, source_node, target_node):
         """Handle Move operations based on node types"""
