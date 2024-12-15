@@ -26,8 +26,8 @@ class LeftSidebar(QWidget):
         self.search_sidebar.hide()  # Initially hidden
 
         # Add tabs to the tab widget
-        self.tab_widget.addTab(self.tree, "Notes")
         self.tab_widget.addTab(self.tags_tree, "Tags")
+        self.tab_widget.addTab(self.tree, "Notes")
         self.tab_widget.addTab(self.search_sidebar, "Search")
 
         layout = QVBoxLayout(self)
