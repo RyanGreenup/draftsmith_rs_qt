@@ -107,14 +107,18 @@ class SearchSidebar(QWidget):
 
     def _apply_filter(self, filter_text: str) -> None:
         """Apply fuzzy filter to current search results"""
+        self._apply_results(self._current_results, filter_text)
+
+    def _apply_results(self, results: List[tuple[str, int]], filter_text: str = "") -> None:
+        """Apply any existing filter to the provided results and display them."""
         self.results_list.clear()
         
-        if not self._current_results:
+        if not results:
             return
             
         if not filter_text:
             # Show all results if no filter
-            for title, note_id in self._current_results:
+            for title, note_id in results:
                 item = QListWidgetItem(title)
                 item.setData(Qt.ItemDataRole.UserRole, note_id)
                 self.results_list.addItem(item)
@@ -122,7 +126,7 @@ class SearchSidebar(QWidget):
 
         # Apply fuzzy filtering
         filtered_results = []
-        for title, note_id in self._current_results:
+        for title, note_id in results:
             ratio = fuzz.partial_ratio(filter_text.lower(), title.lower())
             if ratio > 60:  # Adjust threshold as needed
                 filtered_results.append((title, note_id, ratio))
@@ -162,14 +166,7 @@ class SearchSidebar(QWidget):
                 
                 # Apply any existing filter
                 filter_text = self.filter_input.text()
-                if filter_text:
-                    self._apply_filter(filter_text)
-                else:
-                    # Show all results
-                    for title, note_id in self._current_results:
-                        item = QListWidgetItem(title)
-                        item.setData(Qt.ItemDataRole.UserRole, note_id)
-                        self.results_list.addItem(item)
+                self._apply_results(self._current_results, filter_text)
 
             except Exception as e:
                 print(f"Error fetching notes: {e}")
@@ -209,14 +206,7 @@ class SearchSidebar(QWidget):
             
             # Apply any existing filter
             filter_text = self.filter_input.text()
-            if filter_text:
-                self._apply_filter(filter_text)
-            else:
-                # Show all results
-                for title, note_id in self._current_results:
-                    item = QListWidgetItem(title)
-                    item.setData(Qt.ItemDataRole.UserRole, note_id)
-                    self.results_list.addItem(item)
+            self._apply_results(self._current_results, filter_text)
 
         except Exception as e:
             print(f"Error performing search: {e}")
