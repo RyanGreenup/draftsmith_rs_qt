@@ -1,4 +1,5 @@
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, QMimeData, QByteArray, Signal
+from utils.ngram_filter import text_matches_filter
 from PySide6.QtGui import QIcon, QPixmap, QPainter
 from PySide6.QtWidgets import QMenu
 from typing import List
@@ -1014,8 +1015,37 @@ class NotesTreeModel(QAbstractItemModel):
             self.marked_node = None
 
     def filter_tree(self, text: str) -> None:
-        """Print filter text to stdout for debugging"""
-        print(f"Tree filtering with text: '{text}'")
+        """Filter tree items using digram matching"""
+        if not self._view:
+            return
+            
+        def check_node(node: TreeNode) -> bool:
+            """Check if node or any children match filter text"""
+            # Get display text based on node type
+            if node.node_type == 'tag':
+                node_text = node.data.name
+            elif node.node_type == 'page':
+                node_text = node.data["name"]
+            else:  # note
+                node_text = node.data.title if hasattr(node.data, 'title') else node.data.get('title', '')
+                
+            # Check if this node matches
+            matches = text_matches_filter(text, node_text)
+            
+            # Check children recursively
+            for child in node.children:
+                if check_node(child):
+                    matches = True
+                    
+            # Show/hide based on matches
+            node_index = self.createIndex(node.row(), 0, node)
+            self._view.setRowHidden(node.row(), node_index.parent(), not matches)
+            
+            return matches
+
+        # Start recursive check from root's children
+        for child in self.root_node.children:
+            check_node(child)
 
     def detach_note_from_tag(self, index: QModelIndex) -> None:
         """Detach a note from its parent tag"""
