@@ -68,7 +68,7 @@ class NotesTreeView(QTreeView):
 
         # Add refresh action
         self.action_refresh = QAction("Refresh Tree", self)
-        self.action_refresh.setShortcut("F5")
+        self.action_refresh.setShortcut("R")
         self.action_refresh.triggered.connect(self._handle_refresh)
 
         # Add actions to widget
@@ -84,7 +84,7 @@ class NotesTreeView(QTreeView):
 
     def keyPressEvent(self, event):
         # Let the actions handle the key events
-        if event.key() in [Qt.Key_J, Qt.Key_K, Qt.Key_Space, Qt.Key_M, Qt.Key_P, 
+        if event.key() in [Qt.Key_J, Qt.Key_K, Qt.Key_Space, Qt.Key_M, Qt.Key_P,
                           Qt.Key_Left, Qt.Key_Right, Qt.Key_F5]:
             # The actions will handle these keys through their shortcuts
             return
