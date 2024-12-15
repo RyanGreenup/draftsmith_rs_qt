@@ -37,6 +37,7 @@ class TreeNode:
 class NotesTreeModel(QAbstractItemModel):
     contextMenuRequested = Signal(QModelIndex, 'QMenu')
     tagMoved = Signal(QModelIndex)
+    note_created = Signal(int)  # Signal emitted when a new note is created
 
     def __init__(self, parent=None):
         super().__init__(parent)
