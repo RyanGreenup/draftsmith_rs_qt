@@ -57,6 +57,15 @@ class NotesTreeView(QTreeView):
         self.action_move.setShortcut("Shift+P")
         self.action_move.triggered.connect(self._handle_move)
 
+        # Add promote/demote actions
+        self.action_promote = QAction("Promote", self)
+        self.action_promote.setShortcut("Shift+Left")
+        self.action_promote.triggered.connect(self._handle_promote)
+
+        self.action_demote = QAction("Demote", self)
+        self.action_demote.setShortcut("Shift+Right")
+        self.action_demote.triggered.connect(self._handle_demote)
+
         # Add actions to widget
         self.addAction(self.action_move_down)
         self.addAction(self.action_move_up)
@@ -64,10 +73,13 @@ class NotesTreeView(QTreeView):
         self.addAction(self.action_mark)
         self.addAction(self.action_put)
         self.addAction(self.action_move)
+        self.addAction(self.action_promote)
+        self.addAction(self.action_demote)
 
     def keyPressEvent(self, event):
         # Let the actions handle the key events
-        if event.key() in [Qt.Key_J, Qt.Key_K, Qt.Key_Space, Qt.Key_M, Qt.Key_P]:
+        if event.key() in [Qt.Key_J, Qt.Key_K, Qt.Key_Space, Qt.Key_M, Qt.Key_P, 
+                          Qt.Key_Left, Qt.Key_Right]:
             # The actions will handle these keys through their shortcuts
             return
 
@@ -135,22 +147,18 @@ class NotesTreeView(QTreeView):
 
             menu.addSeparator()
 
-            promote_action = None
-            demote_action = None
-
             if node.node_type != 'page':  # Don't show edit options for special items
                 rename_action = menu.addAction("Rename")
                 delete_action = menu.addAction("Delete")
 
                 # Add promote action if the item has a parent
                 if node.parent and node.parent != self.model.root_node:
-                    promote_action = menu.addAction("Promote")
+                    menu.addAction(self.action_promote)
 
                 # Add demote action if there's a previous sibling to become the parent
                 prev_sibling = self._get_previous_sibling(index)
-                demote_action = menu.addAction("Demote")
-                if not prev_sibling:
-                    demote_action.setEnabled(False)
+                if prev_sibling:
+                    menu.addAction(self.action_demote)
 
                 menu.addSeparator()
 
@@ -199,10 +207,6 @@ class NotesTreeView(QTreeView):
                 self.edit(index)
             elif action == delete_action:
                 self._delete_item(node, index)
-            elif action == promote_action:
-                self._promote_item(node, index)
-            elif action == demote_action:
-                self._demote_item(node, index)
             elif action == new_action:
                 self._create_new_item(None, is_child=False, force_note=(node.node_type == 'note'))
             elif action == new_child_action:
@@ -852,3 +856,19 @@ class NotesTreeView(QTreeView):
 
         except Exception as e:
             raise Exception(f"Failed to promote item: {str(e)}")
+    def _handle_promote(self):
+        """Handle promoting the current item"""
+        current_index = self.currentIndex()
+        if current_index.isValid():
+            current_node = current_index.internalPointer()
+            if current_node.parent and current_node.parent != self.model.root_node:
+                self._promote_item(current_node, current_index)
+
+    def _handle_demote(self):
+        """Handle demoting the current item"""
+        current_index = self.currentIndex()
+        if current_index.isValid():
+            current_node = current_index.internalPointer()
+            prev_sibling = self._get_previous_sibling(current_index)
+            if prev_sibling:
+                self._demote_item(current_node, current_index)
