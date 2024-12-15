@@ -42,9 +42,43 @@ class NotesTreeView(QTreeView):
                     self.collapse(current_index)
                 else:
                     self.expand(current_index)
+        elif event.key() == Qt.Key_M:
+            # Handle Mark (lowercase m) and Move (uppercase M)
+            current_index = self.currentIndex()
+            if current_index.isValid():
+                current_node = current_index.internalPointer()
+                if event.modifiers() == Qt.ShiftModifier:  # Capital M for Move
+                    if self.model.marked_node:
+                        self._handle_move_operation(self.model.marked_node, current_node)
+                else:  # lowercase m for Mark
+                    self.model._mark_node(current_node)
+        elif event.key() == Qt.Key_P:
+            # Handle Put operation
+            current_index = self.currentIndex()
+            if current_index.isValid() and self.model.marked_node:
+                current_node = current_index.internalPointer()
+                self._handle_put_operation(self.model.marked_node, current_node)
         else:
             # Handle all other keys normally
             super().keyPressEvent(event)
+
+    def _handle_move_operation(self, source_node, target_node):
+        """Handle Move operations based on node types"""
+        if source_node.node_type == 'note' and target_node.node_type == 'note':
+            # Move note as subpage
+            self.model._handle_paste(source_node, target_node, "move")
+        elif source_node.node_type == 'tag' and target_node.node_type == 'tag':
+            # Move tag as child
+            self.model._handle_paste(source_node, target_node, "move")
+        elif source_node.node_type == 'note' and target_node.node_type == 'tag':
+            # Move note under tag
+            self.model._handle_paste(source_node, target_node, "move")
+
+    def _handle_put_operation(self, source_node, target_node):
+        """Handle Put operations based on node types"""
+        if source_node.node_type == 'note' and target_node.node_type == 'tag':
+            # Attach note to tag (without moving/removing from current location)
+            self.model._handle_paste(source_node, target_node, "attach")
 
     def _show_tags_context_menu(self, position):
         index = self.indexAt(position)
