@@ -70,6 +70,9 @@ class TabHandler:
 
         # Add to tab widget
         index = self.tab_widget.addTab(tab_content, title)
+        
+        # Connect filter text signal
+        tab_content.filter_text_entered.connect(self.main_window.handle_filter_text)
 
         # Store current note ID for this tab
         if self.tab_widget.count() > 1:
