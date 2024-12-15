@@ -1015,7 +1015,7 @@ class NotesTreeModel(QAbstractItemModel):
 
     def filter_tree(self, text: str) -> None:
         """Print filter text to stdout for debugging"""
-        print(f"NotesTreeModel filtering with text: '{text}'")
+        print(f"Tree filtering with text: '{text}'")
 
     def detach_note_from_tag(self, index: QModelIndex) -> None:
         """Detach a note from its parent tag"""

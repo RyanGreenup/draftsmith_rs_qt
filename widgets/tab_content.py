@@ -389,8 +389,7 @@ class TabContent(QWidget):
 
     def filter_sidebar(self, text: str) -> None:
         """Filter the sidebar tree based on entered text"""
-        if self.notes_model:
-            self.notes_model.filter_tree(text)
+        self.left_sidebar.tree.model().filter_tree(text)
 
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
