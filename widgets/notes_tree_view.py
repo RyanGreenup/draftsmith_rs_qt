@@ -60,8 +60,14 @@ class NotesTreeView(QTreeView):
                 current_node = current_index.internalPointer()
                 if event.modifiers() == Qt.ShiftModifier:  # Capital P for Move
                     self._handle_move_operation(self.model.marked_node, current_node)
-                else:  # lowercase p for Put
-                    self._handle_put_operation(self.model.marked_node, current_node)
+                else:  # lowercase p for Put/Move as subpage
+                    if (self.model.marked_node.node_type == 'note' and 
+                        current_node.node_type == 'note'):
+                        # Move note as subpage
+                        self.model._handle_paste(self.model.marked_node, current_node, "move")
+                    else:
+                        # Handle other put operations
+                        self._handle_put_operation(self.model.marked_node, current_node)
         else:
             # Handle all other keys normally
             super().keyPressEvent(event)
