@@ -389,16 +389,18 @@ class TabContent(QWidget):
 
     def filter_sidebar(self, text: str) -> None:
         """Filter the sidebar tree based on entered text"""
-        model = self.left_sidebar.tree.model()
-        if hasattr(model, 'filter_tree'):
-            model.filter_tree(text)
+        # Get the tree model directly from the left sidebar's tree
+        tree_model = self.left_sidebar.tree.model()
+        
+        # If using a proxy model, get the source model
+        source_model = getattr(tree_model, 'sourceModel', lambda: None)()
+        if source_model:
+            tree_model = source_model
+            
+        if hasattr(tree_model, 'filter_tree'):
+            tree_model.filter_tree(text)
         else:
-            # Get the source model if using a proxy model
-            source_model = getattr(model, 'sourceModel', lambda: None)()
-            if source_model and hasattr(source_model, 'filter_tree'):
-                source_model.filter_tree(text)
-            else:
-                print("Warning: Tree model does not support filtering")
+            print("Warning: Tree model does not support filtering")
 
     def handle_new_note_request(self, level: HierarchyLevel) -> Note | None:
         # Typically, we would act on the id of the view, however
