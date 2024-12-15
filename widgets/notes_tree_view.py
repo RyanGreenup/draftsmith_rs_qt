@@ -21,6 +21,8 @@ class NotesTreeView(QTreeView):
         self.setModel(self._tree_model)
         # Set the view reference in the model
         self._tree_model.set_view(self)
+        # Connect selection changes
+        self.selectionModel().selectionChanged.connect(self.selectionChanged)
 
         # Add the custom delegate
         self.setItemDelegate(NotesTreeDelegate())
@@ -987,6 +989,17 @@ class NotesTreeView(QTreeView):
             prev_sibling = self._get_previous_sibling(current_index)
             if prev_sibling:
                 self._demote_item(current_node, current_index)
+
+    def selectionChanged(self, selected: QItemSelection, deselected: QItemSelection) -> None:
+        """Override selectionChanged to handle selection changes"""
+        super().selectionChanged(selected, deselected)
+        
+        # Get the currently selected index
+        current = self.currentIndex()
+        if current.isValid():
+            node = current.internalPointer()
+            if node and node.node_type == 'note' and hasattr(node.data, 'id'):
+                self.note_selected.emit(node.data.id)
 
     def select_note_by_id(self, note_id: int, emit_signal: bool = True) -> None:
         """Select the tree item corresponding to the given note ID"""
